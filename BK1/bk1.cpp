@@ -124,7 +124,8 @@ int main(int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0)
-      std::cout << "avg throughput: " << (size*(double)n_states*nRep)/elapsedTime/1e6 << " MStates/s\n";
+      printf("avg throughput: %.3f GDOF/s\n",
+        (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
 
     // get results from device
     auto rates = new double[n_species*n_states];

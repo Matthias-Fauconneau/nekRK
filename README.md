@@ -32,7 +32,7 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 active occa mode: CUDA
 mechanism file: GRIMech-3.0.c
 nSpecies: 53
-avg throughput: 73.0634 MStates/s
+avg throughput: 3.945 GDOF/s
 ```
 
 ### 2 x AMD EPYC 7742 
@@ -42,5 +42,5 @@ avg throughput: 73.0634 MStates/s
 active occa mode: SERIAL
 mechanism file: GRIMech-3.0.c
 nSpecies: 53
-avg throughput: 11.6161 MStates/s
+avg throughput: 0.627 GDOF/s
 ```
