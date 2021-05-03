@@ -11,9 +11,11 @@ Dependencies:
 
 ```sh
 export NEKRK_PATH=$HOME/.local/nekRK
-#fuego/run.sh GRIMech-3.0.ck2
+fuego/run.sh GRIMech-3.0.ck2 (only required if mechanisms doesn't exist in share/mechanism)
 cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH 
 cd build && make && make install
+
+Please ensure that env-var `$OCCA_DIR` points to your OCCA installation. 
 ```
 
 ## Benchmark Kernels/Problems
