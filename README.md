@@ -38,7 +38,7 @@ avg throughput: 73.0634 MStates/s
 ### 2 x AMD EPYC 7742 
 ```sh
 >cd $NEKRK_PATH
->OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 48 bin/bk1 SERIAL 100000 1 100 
+>OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 128 bin/bk1 SERIAL 100000 1 100 
 active occa mode: SERIAL
 mechanism file: GRIMech-3.0.c
 nSpecies: 53
