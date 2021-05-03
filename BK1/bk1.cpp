@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(argc < 5) {
-        printf("Usage: ./bw [SERIAL|CUDA] [number of states] [blockSize] [nRep]\n");
+        printf("Usage: ./bk1 [SERIAL|CUDA|HIP] [number of states] [threads per block] [nRep]\n");
         return 1;
     }
     std::string threadModel; threadModel.assign(strdup(argv[1]));
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     double pressure_Pa   = 101325.;
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
-    for (int i=0; i<n_species; i+=1) mole_fractions[i] = 0.;
+    for (int i=0; i<n_species; i++) mole_fractions[i] = 0.;
     mole_fractions[ 3] = 2./5.; // O2
     mole_fractions[13] = 1./5.; // CH4
     mole_fractions[47] = 2./5.; // N2
@@ -67,6 +67,7 @@ int main(int argc, char **argv) {
 
     double molar_mass = 0.;
     for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
+
     auto reference_mass_fractions = new double[n_species];
     for(int k=0; k<n_species; k++) { 
       reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;

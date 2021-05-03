@@ -25,22 +25,22 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 
 ## Results BK1
 
-### NVidia V100
+### NVidia A100
 ```sh
 >cd $NEKRK_PATH
->bin/bk1 CUDA 100000 256 100
+>bin/bk1 CUDA 100000 256 1000
 active occa mode: CUDA
-mechanism: GRIMech-3.0
+mechanism file: GRIMech-3.0.c
 nSpecies: 53
-throughput: 48.0111 MStates/s
+avg throughput: 73.0634 MStates/s
 ```
 
-### 2xIntel 6252 
+### 2 x AMD EPYC 7742 
 ```sh
 >cd $NEKRK_PATH
->OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 48 bin/bk1 SERIAL 100000 256 20
+>OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 48 bin/bk1 SERIAL 100000 1 100 
 active occa mode: SERIAL
-mechanism: GRIMech-3.0
+mechanism file: GRIMech-3.0.c
 nSpecies: 53
-throughput: 3.11479 MStates/s
+avg throughput: 11.6161 MStates/s
 ```
