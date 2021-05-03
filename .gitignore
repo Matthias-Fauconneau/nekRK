@@ -1,14 +1,1 @@
-Cargo.lock
-target
-combustion
-main.ptx
-main.cu
-main.okl
-*.backtrace
-*.data*
-okl.cu
-okl.ptx
-fuego.out
 build
-share
-rates
