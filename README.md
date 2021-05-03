@@ -25,7 +25,7 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 
 ## Results BK1
 
-# NVidia V100
+### NVidia V100
 ```sh
 >cd $NEKRK_PATH
 >bin/bk1 CUDA 100000 256 100
@@ -35,7 +35,7 @@ nSpecies: 53
 throughput: 48.0111 MStates/s
 ```
 
-# 2xIntel 6252 
+### 2xIntel 6252 
 ```sh
 >cd $NEKRK_PATH
 >OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 48 bin/bk1 SERIAL 100000 256 20
