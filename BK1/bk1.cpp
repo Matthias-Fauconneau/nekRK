@@ -53,10 +53,6 @@ int main(int argc, char **argv) {
     const char* mech = "GRIMech-3.0";
     nekRK::init(mech, device, {}, blockSize, MPI_COMM_WORLD);
     const int n_species = nekRK::number_of_species();
-    if(rank==0) {
-      printf("mechanism: %s\n", mech);
-      printf("nSpecies: %d\n", n_species);
-    }
 
     // setup reference quantities
     double pressure_Pa   = 101325.;
@@ -127,7 +123,7 @@ int main(int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0)
-      std::cout << "throughput: " << (size*(double)n_states*nRep)/elapsedTime/1e6 << " MStates/s\n";
+      std::cout << "avg throughput: " << (size*(double)n_states*nRep)/elapsedTime/1e6 << " MStates/s\n";
 
     // get results from device
     auto rates = new double[n_species*n_states];

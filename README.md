@@ -23,7 +23,9 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 
 * BP1: Ignition of 0D-reactor (not available yet)
 
-## Running BK1 on NVIDIA V100
+## Results BK1
+
+# NVidia V100
 ```sh
 >cd $NEKRK_PATH
 >bin/bk1 CUDA 100000 256 100
@@ -33,11 +35,11 @@ nSpecies: 53
 throughput: 48.0111 MStates/s
 ```
 
-## Running BK1 on 2xIntel 6252 
+# 2xIntel 6252 
 ```sh
 >cd $NEKRK_PATH
 >OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 48 bin/bk1 SERIAL 100000 256 20
-active occa mode: CUDA
+active occa mode: SERIAL
 mechanism: GRIMech-3.0
 nSpecies: 53
 throughput: 3.11479 MStates/s

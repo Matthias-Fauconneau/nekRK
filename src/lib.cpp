@@ -52,7 +52,6 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
-    kernel_properties["defines/__constant__"] = "";
     kernel_properties["defines/dfloat"] = "double";
     kernel_properties["defines/p_blockSize"] = to_string(group_size);
 
@@ -71,6 +70,11 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     }
     set_number_of_species();
     set_molar_mass();
+
+    if(rank==0) {
+      printf("mechanism file: %s\n", mechFile.c_str());
+      printf("nSpecies: %d\n", n_species);
+    }
 }
 
 #include "nekrk.h"
