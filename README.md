@@ -16,7 +16,13 @@ cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH
 cd build && make && make install
 ```
 
-## Running BP1 on NVIDIA V100
+## Benchmark Kernels/Problems
+* BK1: Species production rates
+* BK2: Properties (not available yet)
+
+* BP1: Ignition of 0D-reactor (not available yet)
+
+## Running BK1 on NVIDIA V100
 ```sh
 >cd $NEKRK_PATH
 >bin/bk1 CUDA 100000 256 1000
