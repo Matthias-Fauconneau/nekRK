@@ -1,10 +1,12 @@
+
+
+# How to compile
 Dependencies:
 - CMake-3.11
 - MPI
 - OCCA
 - Python
 
-## How to compile
 ```sh
 export NEKRK_PATH=$HOME/.local/nekRK
 #fuego/run.sh GRIMech-3.0.ck2
