@@ -1,0 +1,30 @@
+Dependencies:
+- CMake-3.11
+- MPI
+- OCCA
+- Python
+
+## How to compile
+```sh
+export NEKRK_PATH=$HOME/.local/nekRK
+#fuego/run.sh GRIMech-3.0.ck2
+cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH 
+cd build && make && make install
+```
+
+# Run benchmark problem BP1 
+```sh
+>cd $NEKRK_PATH
+>bin/bk1 CUDA 100000 256 1000
+active occa mode: CUDA
+throughput: 48.0111 MStates/s
+    1    +2.9524919e-10
+    2    +8.1408052e-15
+    3    -4.5777626e-05
+    6    +4.7219632e-05
+   12    +2.1513628e-05
+   13    -2.2955929e-05
+   34    +1.3672248e-15
+   37    +2.1710586e-14
+   47    -1.5138158e-14
+```
