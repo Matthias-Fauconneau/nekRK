@@ -2,13 +2,16 @@
 #define NEKRK_H
 
 #include <occa.hpp>
+#include "mpi.h"
+
 namespace nekRK {
 
     void init(
         const char* mechanism,
         occa::device device,
         occa::properties kernel_properties,
-        int blockSize 
+        int blockSize,
+        MPI_Comm comm	
     );
 
     int number_of_species();

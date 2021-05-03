@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     if(rank == 0) std::cout << "active occa mode: " << device.mode() << '\n';
 
     const char* mech = "GRIMech-3.0";
-    nekRK::init(mech, device, {}, blockSize);
+    nekRK::init(mech, device, {}, blockSize, MPI_COMM_WORLD);
     const int n_species = nekRK::number_of_species();
     if(rank==0) {
       printf("mechanism: %s\n", mech);
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
     // print results
     for (int k=0; k<n_species; k++) {
         double mass_production_rate = rates[k*n_states+0];
-        printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
+        if(rank==0) printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
     }
     /*double concentration = reference_pressure / R / reference_temperature;
     double density = concentration * molar_mass;

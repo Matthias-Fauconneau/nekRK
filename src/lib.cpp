@@ -23,6 +23,8 @@ namespace {
 
     int n_species = -1;
     double *m_molar;
+
+    MPI_Comm comm;
 };
 
 void set_number_of_species()
@@ -34,26 +36,40 @@ void set_number_of_species()
 
 void set_molar_mass()
 {
+  if(!m_molar) m_molar = new double[n_species];
   auto o_tmp = device.malloc<double>(n_species);
   molar_mass_kernel(o_tmp);
   o_tmp.copyTo(m_molar);
 }
 
-void setup(const char* mech, occa::device _device, occa::properties kernel_properties, const int group_size) {
+void setup(const char* mech, occa::device _device, occa::properties kernel_properties, 
+   	   const int group_size, MPI_Comm _comm) 
+{
+    comm = _comm;
     device = _device;
-    kernel_properties["includes"].asArray();
+
     std::string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".c";
+
+    kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
     kernel_properties["defines/__constant__"] = "";
     kernel_properties["defines/dfloat"] = "double";
     kernel_properties["defines/p_blockSize"] = to_string(group_size);
+
     string okl_path = string(getenv("NEKRK_PATH") ?: ".")+"/okl/fuego_wrapper.okl";
-    production_rates_kernel = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
-    number_of_species_kernel = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
-    mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
-    molar_mass_kernel = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
+
+    int rank;
+    MPI_Comm_rank(comm, &rank);
+    for (int r = 0; r < 2; r++) {
+      if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
+        production_rates_kernel = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
+        number_of_species_kernel = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
+        mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
+       molar_mass_kernel = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
+      }
+      MPI_Barrier(comm);
+    }
     set_number_of_species();
-    m_molar = new double[n_species];
     set_molar_mass();
 }
 
@@ -64,9 +80,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 //
 
 void nekRK::init(const char* model_path, occa::device device, 
-	  occa::properties kernel_properties, int group_size) 
+	  occa::properties kernel_properties, int group_size, MPI_Comm comm) 
 {
-  setup(model_path, device, kernel_properties, group_size);
+  setup(model_path, device, kernel_properties, group_size, comm);
 }
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
