@@ -54,7 +54,9 @@ class CPickler(CMill):
         def _renderDocument(self, mechanism, options=None):
                 self.set_species(mechanism)
                 self._write('#define n_species %d' % (len(mechanism.species())))
-                inert_specie = next(i for i,s in enumerate(mechanism.species()) if s.symbol=='AR')
+                inert_specie = next((i for i,s in enumerate(mechanism.species()) if s.symbol=='AR'), -1)
+                if inert_specie == -1:
+                    inert_specie = next((i for i,s in enumerate(mechanism.species()) if s.symbol=='N2'), -1)
                 self._write('const int inert_specie= %d;' % inert_specie)
 
                 weight = 0.0 #species.molecularWeight()
@@ -187,8 +189,8 @@ class CPickler(CMill):
                 self._write('dfloat troe;                    ' + self.line('TROE intermediate'))
                 self._write('dfloat troe_c;                  ' + self.line('TROE intermediate'))
                 self._write('dfloat troe_n;                  ' + self.line('TROE intermediate'))
-                self._write('dfloat refC = (%.16e / %.16e) * tc[5];' % (atm.value, R.value))
-                self._write('dfloat rcp_refC = 1. / refC;')
+                self._write('const dfloat refC = (%.16e / %.16e) * tc[5];' % (atm.value, R.value))
+                self._write('const dfloat rcp_refC = 1/refC;')
                 self._write('mixture = 0.0;')
                 self._write('for (id = 0; id < %d; ++id) {' % n_species)
                 self._indent()
@@ -244,9 +246,9 @@ class CPickler(CMill):
 
                         self._write("X = 1.0 / (1.0 + logPred*logPred);")
 
-                        SRI = "exp(X * log(%e*exp(%e*tc[5]) + exp(T*%e))" % (sri[0], -sri[1], 1./-sri[2])
+                        SRI = "fgexp(X * log(%e*fgexp(%e*tc[5]) + fgexp(T*%e))" % (sri[0], -sri[1], 1./-sri[2])
                         if len(sri) > 3:
-                                SRI += " * %e * exp(%e*tc[0])" % (sri[3], sri[4])
+                                SRI += " * %e * fgexp(%e*tc[0])" % (sri[3], sri[4])
 
                         self._write("F_sri = %s;" % SRI)
                         self._write("F *= Ftroe;")
@@ -255,10 +257,10 @@ class CPickler(CMill):
                         self._write("logPred = log10(redP);")
 
                         logF_cent = "logFcent = log10("
-                        logF_cent += "(%e*exp(T*(%e)))" % (1-troe[0], 1./-troe[1])
-                        logF_cent += "+ (%e*exp(T*(%e)))" % (troe[0], 1./-troe[2])
+                        logF_cent += "(%e*fgexp(T*(%e)))" % (1-troe[0], 1./-troe[1])
+                        logF_cent += "+ (%e*fgexp(T*(%e)))" % (troe[0], 1./-troe[2])
                         if len(troe) == 4:
-                                logF_cent += "+ (exp(%e*tc[5]))" % (-troe[3])
+                                logF_cent += "+ (fgexp(%e*tc[5]))" % (-troe[3])
                         logF_cent += ');'
                         self._write(logF_cent)
 
@@ -316,7 +318,7 @@ class CPickler(CMill):
                 expr = "%e" % A
                 if beta == 0 and E == 0:
                         return expr
-                expr +="*exp("
+                expr +="*fgexp("
                 if beta != 0:
                         expr += "%e*tc[0]" % beta
                 if E != 0:
@@ -509,7 +511,7 @@ class CPickler(CMill):
                         terms.append("%sgibbs0_RT[%d]" % (factor, mechanism.species(symbol).id))
                         dim += coefficient
                 dG += ' - (' + ' + '.join(terms) + ')'
-                rcp_Kp = 'exp(-(' + dG + '))'
+                rcp_Kp = 'fgexp(-(' + dG + '))'
                 if dim == 0:
                         conversion = ""
                 elif dim > 0:

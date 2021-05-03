@@ -22,13 +22,15 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(argc < 5) {
-        printf("Usage: ./bk1 [SERIAL|CUDA|HIP] [number of states] [threads per block] [nRep]\n");
+        printf("Usage: ./bk1 [SERIAL|CUDA|HIP] [number of states] [threads per block] [nRep] <mechanism>\n");
         return 1;
     }
     std::string threadModel; threadModel.assign(strdup(argv[1]));
     const int n_states = std::stoi(argv[2])/size;
     const int blockSize = std::stoi(argv[3]);
     const int nRep = std::stoi(argv[4]);
+    std::string mech("GRIMech-3.0");
+    if(argc > 5) mech.assign(argv[5]);
 
     char deviceConfig[BUFSIZ];
     const int deviceId = 0;
@@ -50,8 +52,7 @@ int main(int argc, char **argv) {
     device.setup(deviceConfigString);
     if(rank == 0) std::cout << "active occa mode: " << device.mode() << '\n';
 
-    const char* mech = "GRIMech-3.0";
-    nekRK::init(mech, device, {}, blockSize, MPI_COMM_WORLD);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD);
     const int n_species = nekRK::number_of_species();
 
     // setup reference quantities
@@ -59,9 +60,13 @@ int main(int argc, char **argv) {
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 0.;
-    mole_fractions[ 3] = 2./5.; // O2
-    mole_fractions[13] = 1./5.; // CH4
-    mole_fractions[47] = 2./5.; // N2
+    if(argc > 5) {
+      for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
+    } else { 
+      mole_fractions[ 3] = 2./5.; // O2
+      mole_fractions[13] = 1./5.; // CH4
+      mole_fractions[47] = 2./5.; // N2
+    }
 
     auto molar_mass_species = nekRK::molar_mass();
 
