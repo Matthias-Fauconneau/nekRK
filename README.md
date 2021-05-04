@@ -18,29 +18,27 @@ cd build && make && make install
 Please ensure that env-var `$OCCA_DIR` points to your OCCA installation. 
 
 ## Benchmark Kernels/Problems
-* BK1: Species production rates
-* BK2: Properties (not available yet)
 
-* BP1: Ignition of 0D-reactor (not available yet)
+# BK1: Species production rates
 
-## Results BK1
+| CPU/GPU         | MECH    | GDOF/s |
+| --------------- | ------- | ------ |
+| Nvidia V100     | GRI 3.0 |  2.61  | 
+| Nvidia A100     | GRI 3.0 |  3.98  |
+| AMD MI100       | GRI 3.0 |  ???   |
+| 2xAMD EPYC 7742 | GRI 3.0 |  0.63  |
+| 2xIntel 6252    | GRI 3.0 |  0.17  |
+|                 |         |        | 
+| Nvidia V100     | LiH2    | 21.57  |
+| Nvidia A100     | LiH2    | 28.67  | 
+| AMD MI100       | LiH2    |  ???   |
+| 2xAMD EPYC 7742 | LiH2    |  1.68  |
+| 2xIntel 6252    | LiH2    |  0.46  |
+| --------------- | ------- | ------ |
 
-### NVidia A100
-```sh
->cd $NEKRK_PATH
->bin/bk1 CUDA 100000 256 1000
-active occa mode: CUDA
-mechanism file: GRIMech-3.0.c
-nSpecies: 53
-avg throughput: 3.945 GDOF/s
-```
+# BK2: Properties (not available yet)
 
-### 2 x AMD EPYC 7742 
-```sh
->cd $NEKRK_PATH
->OCCA_CXXFLAGS="-O3 -ffast-math" mpirun -np 128 bin/bk1 SERIAL 100000 1 100 
-active occa mode: SERIAL
-mechanism file: GRIMech-3.0.c
-nSpecies: 53
-avg throughput: 0.627 GDOF/s
-```
+# BP1: Ignition of 0D-reactor (not available yet)
+
+
+
