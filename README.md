@@ -34,7 +34,6 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 | AMD MI100       | LiH2    |  ???   |
 | 2xAMD EPYC 7742 | LiH2    |  1.68  |
 | 2xIntel 6252    | LiH2    |  0.46  |
-| --------------- | ------- | ------ |
 
 # BK2: Properties (not available yet)
 
