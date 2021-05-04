@@ -19,7 +19,7 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 
 ## Benchmark Kernels/Problems
 
-# BK1: Species production rates
+### BK1: Species production rates
 
 | CPU/GPU         | MECH    | GDOF/s |
 | --------------- | ------- | ------ |
@@ -35,9 +35,10 @@ Please ensure that env-var `$OCCA_DIR` points to your OCCA installation.
 | 2xAMD EPYC 7742 | LiH2    |  1.68  |
 | 2xIntel 6252    | LiH2    |  0.46  |
 
-# BK2: Properties (not available yet)
+### BK2: Properties
 
-# BP1: Ignition of 0D-reactor (not available yet)
+TODO
 
+### BP1: Ignition of 0D-reactor
 
-
+TODO
