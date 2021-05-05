@@ -7632,7 +7632,13 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 }
 dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat* mole_fractions)
 {
-    dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T }; 
+    dfloat tc[6]; 
+    tc[0] = log(T); 
+    tc[1] = T; 
+    tc[2] = T*T; 
+    tc[3] = T*T*T; 
+    tc[4] = T*T*T*T; 
+    tc[5] = 1./T; 
     dfloat result = 0; 
     dfloat cpor[53]; 
     cp_R(cpor, tc);

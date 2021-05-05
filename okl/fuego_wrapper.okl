@@ -14,7 +14,14 @@
     dfloat molar_rates[n_species];
 
     const dfloat T = reference_temperature * temperature[id];
-    dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
+    //dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
+    dfloat tc[6];  
+    tc[0] = log(T);
+    tc[1] = T;
+    tc[2] = T*T;
+    tc[3] = T*T*T;
+    tc[4] = T*T*T*T;
+    tc[5] = 1./T;
 
     dfloat sum_active_mass_fractions = 0.;
     dfloat mean_rcp_molar_mass = 0.;
