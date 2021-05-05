@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(argc < 5) {
-        printf("Usage: ./bk1 [SERIAL|CUDA|HIP] [number of states] [threads per block] [nRep] <mechanism>\n");
+        printf("Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]\n");
         return 1;
     }
     std::string threadModel; threadModel.assign(strdup(argv[1]));

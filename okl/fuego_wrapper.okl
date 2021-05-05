@@ -1,6 +1,6 @@
 @kernel void production_rates(
     const int n_states,
-    const dfloat pressure_Pa_R,
+    const dfloat pressure_R,
     @restrict const dfloat* temperature,
     @restrict const dfloat* mass_fractions,
     @restrict dfloat* mass_rates,
@@ -28,7 +28,7 @@
     }
     wrk[inert_specie] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[inert_specie];
     mean_rcp_molar_mass += wrk[inert_specie];
-    for(int k=0;k<n_species;k++) wrk[k] *= pressure_Pa_R * tc[5] / mean_rcp_molar_mass;
+    for(int k=0;k<n_species;k++) wrk[k] *= pressure_R * tc[5] / mean_rcp_molar_mass;
 
     fg_rates(wrk, tc, molar_rates);
     fg_speciesEnthalpy_RT(wrk, tc);

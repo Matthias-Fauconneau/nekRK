@@ -6,7 +6,7 @@ nekRK is a software package for nekRS to compute species production rates and tr
 Dependencies:
 - CMake-3.11
 - MPI
-- OCCA
+- [OCCA](https://github.com/libocca/occa) 
 - Python
 
 ```sh
@@ -21,17 +21,22 @@ Please ensure that the env-var `$OCCA_DIR` points to your OCCA installation.
 
 ### BK1: Species production rates
 
+```sh
+Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]
+bin/bk1 CUDA 100000 256 1000
+```
+
 | CPU/GPU           | MECH    | GDOF/s |
 | ----------------- | ------- | ------ |
 | Nvidia V100       | GRI 3.0 |  2.61  | 
 | Nvidia A100       | GRI 3.0 |  3.98  |
-| AMD MI100         | GRI 3.0 |  ???   |
+| AMD MI100         | GRI 3.0 |  ?.??  |
 | 2xAMD EPYC 7742   | GRI 3.0 |  0.63  |
-| 2xIntel 6252      | GRI 3.0 |  0.17  |
+| 2xIntel XEON 6252 | GRI 3.0 |  0.17  |
 |                   |         |        | 
 | Nvidia V100       | LiH2    | 21.57  |
 | Nvidia A100       | LiH2    | 28.67  | 
-| AMD MI100         | LiH2    |  ???   |
+| AMD MI100         | LiH2    | ??.??  |
 | 2xAMD EPYC 7742   | LiH2    |  1.68  |
 | 2xIntel XEON 6252 | LiH2    |  0.46  |
 
