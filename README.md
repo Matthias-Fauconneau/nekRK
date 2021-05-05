@@ -23,7 +23,10 @@ Please ensure that the env-var `$OCCA_DIR` points to your OCCA installation.
 
 ```sh
 Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]
-bin/bk1 CUDA 100000 256 1000
+>cd $NEKRK_PATH; bin/bk1 CUDA 100000 256 1000
+mechanism file: ./share/mechanisms/GRIMech-3.0.c
+nSpecies: 53
+avg throughput: 2.609 GDOF/s
 ```
 
 | CPU/GPU           | MECH    | GDOF/s |
