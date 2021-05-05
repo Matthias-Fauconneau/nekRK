@@ -135,11 +135,6 @@ class CPickler(CMill):
                 self._indent()
                 self._write('dfloat qdot;')
                 self.initialize_rates_calculation(mechanism)
-                self._write('for (id = 0; id < %d; ++id) {' % n_species)
-                self._indent()
-                self._write('wdot[id] = 0.0;')
-                self._outdent()
-                self._write('}')
                 for reaction in mechanism.reaction():
                         self._write()
                         self._write(self.line('reaction %d: %s' % (reaction.id, reaction.equation())))
@@ -191,6 +186,7 @@ class CPickler(CMill):
                 self._write('dfloat troe_n;                  ' + self.line('TROE intermediate'))
                 self._write('const dfloat refC = (%.16e / %.16e) * tc[5];' % (atm.value, R.value))
                 self._write('const dfloat rcp_refC = 1/refC;')
+                self._write('const dfloat T = tc[1];')
                 self._write('mixture = 0.0;')
                 self._write('for (id = 0; id < %d; ++id) {' % n_species)
                 self._indent()
@@ -198,7 +194,6 @@ class CPickler(CMill):
                 self._outdent()
                 self._write('}')
                 self._write('gibbs_RT(gibbs0_RT, tc);')
-                self._write('dfloat T = tc[1];')
 
         def forward_rates(self, mechanism, reaction):
                 lt = reaction.lt

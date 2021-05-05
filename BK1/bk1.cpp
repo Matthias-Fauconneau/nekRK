@@ -59,14 +59,7 @@ int main(int argc, char **argv) {
     double pressure_Pa   = 101325.;
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
-    for (int i=0; i<n_species; i++) mole_fractions[i] = 0.;
-    if(argc > 5) {
-      for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
-    } else { 
-      mole_fractions[ 3] = 2./5.; // O2
-      mole_fractions[13] = 1./5.; // CH4
-      mole_fractions[47] = 2./5.; // N2
-    }
+    for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
 
     auto molar_mass_species = nekRK::molar_mass();
 
@@ -141,7 +134,7 @@ int main(int argc, char **argv) {
     // print results
     for (int k=0; k<n_species; k++) {
         double mass_production_rate = rates[k*n_states+0];
-        if(rank==0) printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
+        if(rank==0 && argc > 5) printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
     }
     /*double concentration = reference_pressure / R / reference_temperature;
     double density = concentration * molar_mass;

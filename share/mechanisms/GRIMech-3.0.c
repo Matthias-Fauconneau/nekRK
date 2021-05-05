@@ -2844,15 +2844,12 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
     dfloat troe_n;                  /*TROE intermediate */
     const dfloat refC = (1.0132500000000000e+05 / 8.3145100000000003e+00) * tc[5];
     const dfloat rcp_refC = 1/refC;
+    const dfloat T = tc[1];
     mixture = 0.0;
     for (id = 0; id < 53; ++id) {
         mixture += sc[id];
     }
     gibbs_RT(gibbs0_RT, tc);
-    dfloat T = tc[1];
-    for (id = 0; id < 53; ++id) {
-        wdot[id] = 0.0;
-    }
 
     /*reaction 1: 2 O + M <=> O2 + M */
     phi_f = sc[2]*sc[2];

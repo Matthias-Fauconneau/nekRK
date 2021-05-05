@@ -11,7 +11,7 @@
 {
   for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) { 
     dfloat wrk[n_species];
-    dfloat molar_rates[n_species];
+    dfloat molar_rates[n_species] = {0};
 
     const dfloat T = reference_temperature * temperature[id];
     //dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
