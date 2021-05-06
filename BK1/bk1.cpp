@@ -76,17 +76,17 @@ int main(int argc, char **argv) {
     const double reference_temperature = temperature_K;
 
     nekRK::set_reference_parameters(reference_pressure, 
-		                    reference_temperature, 
-				    reference_length, 
-				    reference_velocity, 
-				    reference_mass_fractions);
+                            reference_temperature, 
+                    reference_length, 
+                    reference_velocity, 
+                    reference_mass_fractions);
 
     // populdate states
     auto mass_fractions = new double[n_species*n_states];
     for (int i=0; i<n_species; i++) {
         for (int id=0; id<n_states; id++) {
-	  mass_fractions[i*n_states+id] = reference_mass_fractions[i];
-	}
+      mass_fractions[i*n_states+id] = reference_mass_fractions[i];
+    }
     }
     auto o_mass_fractions = device.malloc<double>(n_species*n_states, mass_fractions);
 
@@ -102,21 +102,21 @@ int main(int argc, char **argv) {
     // warm up
     nekRK::production_rates(n_states, 
                             pressure, 
-		            o_temperature, 
-		            o_mass_fractions, 
-		            o_rates, 
-		            o_heat_release_rate);
+                    o_temperature, 
+                    o_mass_fractions, 
+                    o_rates, 
+                    o_heat_release_rate);
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto startTime = MPI_Wtime();
     for(int i=0; i<nRep; i++) {
         nekRK::production_rates(n_states, 
-			        pressure, 
-				o_temperature, 
-				o_mass_fractions, 
-				o_rates, 
-				o_heat_release_rate);
+                    pressure, 
+                o_temperature, 
+                o_mass_fractions, 
+                o_rates, 
+                o_heat_release_rate);
     }
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
