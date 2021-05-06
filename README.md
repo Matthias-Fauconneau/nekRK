@@ -29,19 +29,19 @@ nSpecies: 53
 avg throughput: 2.609 GDOF/s
 ```
 
-| CPU/GPU           | MECH    | GDOF/s |
-| ----------------- | ------- | ------ |
-| Nvidia V100       | GRI 3.0 |  2.61  | 
-| Nvidia A100       | GRI 3.0 |  3.98  |
-| AMD MI100         | GRI 3.0 |  ?.??  |
-| 2xAMD EPYC 7742   | GRI 3.0 |  0.63  |
-| 2xIntel XEON 6252 | GRI 3.0 |  0.17  |
-|                   |         |        | 
-| Nvidia V100       | LiH2    | 21.57  |
-| Nvidia A100       | LiH2    | 28.67  | 
-| AMD MI100         | LiH2    | ??.??  |
-| 2xAMD EPYC 7742   | LiH2    |  1.68  |
-| 2xIntel XEON 6252 | LiH2    |  0.46  |
+| CPU/GPU           | MECH    | GDOF/s | GRXN/s |
+| ----------------- | ------- | ------ | ------ |
+| Nvidia V100       | GRI 3.0 |  2.61  |  15.7  | 
+| Nvidia A100       | GRI 3.0 |  3.98  |  23.9  |
+| AMD MI100         | GRI 3.0 |  ?.??  |  ??.?  |
+| 2xAMD EPYC 7742   | GRI 3.0 |  0.63  |  3.79  |
+| 2xIntel XEON 6252 | GRI 3.0 |  0.17  |  1.02  |
+|                   |         |        |        | 
+| Nvidia V100       | LiH2    |  21.6  |  50.4  |
+| Nvidia A100       | LiH2    |  28.7  |  66.9  | 
+| AMD MI100         | LiH2    |  ??.?  |  ??.?  |
+| 2xAMD EPYC 7742   | LiH2    |  1.68  |  3.91  |
+| 2xIntel XEON 6252 | LiH2    |  0.46  |  1.07  |
 
 ### BK2: Properties
 
