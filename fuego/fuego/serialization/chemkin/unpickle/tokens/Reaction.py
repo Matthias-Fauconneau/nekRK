@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -157,7 +157,7 @@ class Reaction(Token):
 
         # Convert coefficient to an integer
         try:
-            c = int(coefficient)
+            c = float(coefficient)
         except TypeError: # attempt to int(None); set to 1
             c = 1
         except ValueError:
@@ -177,7 +177,7 @@ class Reaction(Token):
 
 
 # version
-__id__ = "$Id: Reaction.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

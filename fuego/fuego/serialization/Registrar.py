@@ -4,25 +4,38 @@
 # 
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007 All Rights Reserved
+#                        (C) 1998-2003 All Rights Reserved
 # 
 #  <LicenseText>
 # 
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 
-from pyre.util.ResourceManager import ResourceManager
+from pyre.applications.Registrar import Registrar as BaseRegistrar
 
 
-class Registrar(ResourceManager):
+class Registrar(BaseRegistrar):
 
 
-    def __init__(self):
-        ResourceManager.__init__(self, "fuego")
+    def retrieve(self, name):
+        return self.registry.get(name)
+
+
+    def register(self, entity, id, aliases=[]):
+        self.registered.append(id)
+        self.registry[id] = entity
+        for alias in aliases:
+            self.registry[alias] = entity
+        return
+
+
+    def init(self):
+        BaseRegistrar.init(self)
+        self.registered = []
         return
 
 
 # version
-__id__ = "$Id: Registrar.py,v 1.1.1.1 2007-09-13 18:17:28 aivazis Exp $"
+__id__ = "$Id$"
 
 #  End of file 

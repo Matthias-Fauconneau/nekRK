@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -25,21 +25,25 @@ class BaseParser(Parser):
         self._tokenizer.unfetch(token)
         return self.anEndSection(token)
 
-
     def aSpeciesSection(self, token):
         self._tokenizer.unfetch(token)
         return self.anEndSection(token)
-        
+
+    def aQssSpeciesSection(self, token):
+        self._tokenizer.unfetch(token)
+        return self.anEndSection(token)
 
     def aThermoSection(self, token):
         self._tokenizer.unfetch(token)
         return self.anEndSection(token)
         
+    def aTransSection(self, token):
+        self._tokenizer.unfetch(token)
+        return self.anEndSection(token)
 
     def aReactionSection(self, token):
         self._tokenizer.unfetch(token)
         return self.anEndSection(token)
-        
 
     def anEndSection(self, token):
         return 1
@@ -101,7 +105,7 @@ class BaseParser(Parser):
 
 
 # version
-__id__ = "$Id: BaseParser.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

@@ -4,101 +4,123 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
-from pyre.applications.Script import Script
+from pyre.applications.Application import Application
 
 
-class FMC(Script):
+class FMC(Application):
 
 
-    class Inventory(Script.Inventory):
+    def run(self):
 
-        import pyre.inventory
-
-        out = pyre.inventory.outputFile(name="name")
-        out.meta['tip'] = "the name of the output file"
-        
-        thermo = pyre.inventory.str(name="thermo")
-        thermo.meta['tip'] = "the name of the thermodynamic properties database"
-        
-        mechanism = pyre.inventory.str(name="mechanism", default="GRIMech-3.0.ck2")
-        mechanism.meta['tip'] = "the mechanism file to be processed"
-
-        read = pyre.inventory.str(name="read")
-        read.meta['tip'] = "the format of the input file; default is chemkin"
-        
-        write = pyre.inventory.str(name="write", default="c")
-        write.meta['tip'] = "the format of the output file; default is c"
-
-        import pyre.weaver
-        pickler = pyre.inventory.facility("pickler", factory=pyre.weaver.weaver)
-        pickler.meta['tip'] = 'the output generator'
-
-
-    def main(self, *args, **kwds):
-
+        import fuego
         import pyre.monitors
-        import fuego.serialization
+
+        save          = self.inventory.name
+        input         = self.inventory.input
+        output        = self.inventory.output
+        mechanismFile = self.inventory.mechanism
+        thermo        = self.inventory.thermo
+        trans         = self.inventory.trans
+        #AF
+        save_chop   = save.split(".")[0]+"_1.cpp" #self.inventory.name_chop
+        save_header = "chemistry_file.H" #save.split(".")[0]+".H" #self.inventory.header
+        mech_header = "mechanism.h"
 
         timer = pyre.monitors.timer("fuego")
-        if not self.read:
-            print "loading '%s'" % (self.mechanism)
+        if not input:
+            print "\nLoading '%s' as input file" % (mechanismFile)
         else:
-            print "loading '%s' using '%s' parser" % (self.mechanism, self.read)
+            print "\nLoading '%s' using '%s' parser" % (mechanismFile, input)
 
         timer.start()
 
         mechanism = fuego.serialization.mechanism()
-        if self.thermo:
-            mechanism.externalThermoDatabase(self.thermo)
+        if thermo:
+            print "Loading '%s' as thermo file" % (thermo)
+            mechanism.externalThermoDatabase(thermo)
+        if trans:
+            print "Loading '%s' as thermo file" % (trans)
+            mechanism.externalTransDatabase(trans)
         mechanism = fuego.serialization.load(
-            filename=self.mechanism, format=self.read, mechanism=mechanism)
+            filename=mechanismFile, format=input, mechanism=mechanism)
     
-        print "    ... done (%g sec)" % timer.stop()
+        print "... done (%g sec)" % timer.stop()
 
         timer.reset()
         timer.start()
-        print "saving in '%s' as '%s' format" % (self.out.name, self.write)
-        lines = fuego.serialization.save(
-            weaver=self.pickler, mechanism=mechanism, stream=self.out, format=self.write)
-        print "    ... done (%g sec)" % timer.stop()
+        print "\nConverting into '%s' format" % output
+        lines        = fuego.serialization.save(mechanism, output)
+        print "... done (%g sec)" % timer.stop()
+
+        print "saving in '%s' '%s' (headers) and '%s'" % (mech_header, save_header, save),
+        timer.reset()
+        timer.start()
+        outputFileHeader  = self._openOutput(save_header)
+        count_lines = 0
+        for line in lines:
+            if ('ifndef MECHANISM_CPP') in line:
+                line_start_core = count_lines
+                break;
+            outputFileHeader.write(line)
+            outputFileHeader.write('\n')
+            count_lines += 1
+
+        outputFile = self._openOutput(save)
+        for line in lines[line_start_core:]:
+            if ('#ifndef MECHANISM_h') in line:
+                line_start_mech_header = count_lines
+                break;
+            outputFile.write(line)
+            outputFile.write('\n')
+            count_lines += 1
+
+        MechHeaderFile = self._openOutput(mech_header)
+        for line in lines[line_start_mech_header:]:
+            MechHeaderFile.write(line)
+            MechHeaderFile.write('\n')
+
+        print "... done (%g sec)" % timer.stop()
 
         return
 
 
     def __init__(self):
-        Script.__init__(self, "fmc")
-        self.out = None
-        self.thermo = ""
-        self.mechanism = ""
-        self.read = ""
-        self.write = ""
-        self.pickler = None
-        
+        Application.__init__(self, "fmc")
         return
 
 
-    def _configure(self):
-        Script._configure(self)
+    def _openOutput(self, name):
+        if name == "stdout":
+            import sys
+            return sys.stdout
 
-        self.out = self.inventory.out
-        self.thermo = self.inventory.thermo
-        self.mechanism = self.inventory.mechanism
-        self.read = self.inventory.read
-        self.write = self.inventory.write
-        self.pickler = self.inventory.pickler
-        
-        return
+        return file(name, "w")
+
+
+    class Inventory(Application.Inventory):
+
+        import pyre.properties
+
+        inventory = [
+            pyre.properties.str("name", default="stdout"),
+            pyre.properties.str("mechanism", default="GRIMech-3.0.ck2"),
+            pyre.properties.str("thermo", default=""),
+            pyre.properties.str("trans", default=""),
+            pyre.properties.str("input", default=""),
+            pyre.properties.str("output", default="c"),
+            #pyre.properties.str("output", default="f"),
+            ]
 
 
 # version
-__id__ = "$Id: FMC.py,v 1.1.1.1 2007-09-13 18:17:28 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

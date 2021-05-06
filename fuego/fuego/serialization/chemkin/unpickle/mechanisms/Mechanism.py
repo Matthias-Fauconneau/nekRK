@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -15,7 +15,7 @@
 class Mechanism(object):
 
 
-    from MechanismExceptions import DuplicateElement, DuplicateSpecies, DuplicateThermalProperties
+    from MechanismExceptions import DuplicateElement, DuplicateSpecies, DuplicateQssSpecies, DuplicateThermalProperties, DuplicateTransProperties
 
 
     # housekeeping
@@ -28,7 +28,9 @@ class Mechanism(object):
         print "Mechanism '%s'" % self._source
         print "    elements:", self._elements.size()
         print "     species:", self._species.size()
+        print " qss species:", self._qss_species.size()
         print "      thermo:", self._thermoDb.size()
+        print "      trans:", self._transDb.size()
         print "   reactions:", self._reactions.size()
 
 
@@ -76,8 +78,29 @@ class Mechanism(object):
         return self._species
 
 
-    # thermo
+    # qss species
 
+    def declareQssSpecies(self, qss_species):
+        symbol = qss_species.symbol
+        duplicate = self._qss_species.find(symbol)
+
+        self._qss_species.qss_species(qss_species)
+
+        if duplicate:
+            raise self.DuplicateQssSpecies(symbol)
+
+        return
+
+
+    def qss_species(self, symbol=None):
+        return self._qss_species.find(symbol)
+
+
+    def qss_speciesDeclarations(self):
+        return self._qss_species
+
+
+    # thermo
 
     def declareThermalProperties(self, species):
         symbol = species.symbol
@@ -117,6 +140,45 @@ class Mechanism(object):
         return self._thermoDb.range(range)
 
 
+    # trans
+
+
+    def declareTransProperties(self, species):
+        symbol = species.symbol
+        duplicate = self._transDb.find(symbol)
+
+        self._transDb.species(species)
+
+        if duplicate:
+            raise self.DuplicateTrans(symbol)
+
+        return
+
+
+    def transProperties(self, species=None):
+        prop = self._transDb.find(species)
+        #if not prop:
+        #    return self._externalDb.find(species)
+
+
+    def transDatabase(self):
+        return self._transDb
+
+
+    def transAll(self):
+        return self._transDb.all(1)
+
+
+    def transDone(self):
+        if self._transDb.all():
+            return
+        else:
+            print "Someting went wrong with your transport"
+
+        #self._externalDb = self._readExternalThermoDatabase()
+        #return
+
+
     # reactions
 
     def declareReaction(self, reaction):
@@ -125,7 +187,6 @@ class Mechanism(object):
 
     def reaction(self, species=None):
         return self._reactions.find(species)
-
 
     def reactionDeclarations(self):
         return self._reactions
@@ -143,9 +204,15 @@ class Mechanism(object):
 
         from SpeciesDb import SpeciesDb
         self._species = SpeciesDb()
+
+        from QssSpeciesDb import QssSpeciesDb
+        self._qss_species = QssSpeciesDb()
         
         from ThermoDb import ThermoDb
         self._thermoDb = ThermoDb()
+
+        from TransDb import TransDb
+        self._transDb = TransDb()
 
         from ReactionDb import ReactionDb
         self._reactions = ReactionDb()
@@ -174,12 +241,28 @@ class Mechanism(object):
         externalDb = open(therm, "r")
 
         mechanism = ExternalThermo(therm)
+
+        pyre.diagnostics.category("chemkin-parser").maxHits(100000000)
+        pyre.diagnostics.report(
+            "chemkin-parser",
+            "loading external thermo database '%s'" % externalDb.name)
+
+        diagnosticState = pyre.diagnostics.category("chemkin-parser").active()
+
+        #pyre.diagnostics.category("chemkin-parser").deactivate()
         mechanism = pyre.chemistry.unpickle.unpickleChemkin(externalDb, mechanism)
+        if diagnosticState:
+            pyre.diagnostics.category("chemkin-parser").activate()
+            
+        pyre.diagnostics.report(
+            "chemkin-parser",
+            "done loading external thermo database '%s'" % externalDb.name)
+
         db = mechanism.thermalDatabase()
         return db
 
 
 # version
-__id__ = "$Id: Mechanism.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 # End of file

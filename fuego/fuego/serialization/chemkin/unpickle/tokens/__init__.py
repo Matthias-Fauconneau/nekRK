@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -18,12 +18,14 @@ def sectionsTokenClasses():
 
     from ElementSection import ElementSection
     from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
     from ThermoSection import ThermoSection
+    from TransSection import TransSection
     from ReactionSection import ReactionSection
 
     tokenClasses = [
         Whitespace, Comments,
-        ElementSection, SpeciesSection, ThermoSection, ReactionSection
+        ElementSection, SpeciesSection, QssSpeciesSection, ThermoSection, TransSection, ReactionSection
         ]
 
     return tokenClasses
@@ -36,14 +38,16 @@ def elementTokenClasses():
 
     from ElementSection import ElementSection
     from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
     from ThermoSection import ThermoSection
+    from TransSection import TransSection
     from ReactionSection import ReactionSection
 
     from ElementName import ElementName
 
     tokenClasses = [
         Whitespace, Comments,
-        EndSection, ElementSection, SpeciesSection, ThermoSection, ReactionSection,
+        EndSection, ElementSection, SpeciesSection, QssSpeciesSection, ThermoSection, TransSection, ReactionSection,
         ElementName
         ]
 
@@ -59,14 +63,37 @@ def speciesTokenClasses():
     from ElementSection import ElementSection
     from SpeciesSection import SpeciesSection
     from ThermoSection import ThermoSection
+    from TransSection import TransSection
     from ReactionSection import ReactionSection
 
     from SpeciesName import SpeciesName
 
     tokenClasses = [
         Whitespace, Comments,
-        EndSection, ElementSection, SpeciesSection, ThermoSection, ReactionSection,
-        SpeciesName
+        EndSection, ElementSection, SpeciesSection, ThermoSection, TransSection, ReactionSection, SpeciesName
+        ]
+
+    return tokenClasses
+
+def qss_speciesTokenClasses():
+
+    from Whitespace import Whitespace
+    from Comments import Comments
+    from EndSection import EndSection
+
+    from ElementSection import ElementSection
+    #from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
+    from ThermoSection import ThermoSection
+    from TransSection import TransSection
+    from ReactionSection import ReactionSection
+
+    #from SpeciesName import SpeciesName
+    from QssSpeciesName import QssSpeciesName
+
+    tokenClasses = [
+        Whitespace, Comments,
+        EndSection, ElementSection, QssSpeciesSection, ThermoSection, TransSection, ReactionSection, QssSpeciesName
         ]
 
     return tokenClasses
@@ -80,15 +107,42 @@ def thermoTokenClasses():
 
     from ElementSection import ElementSection
     from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
     from ThermoSection import ThermoSection
+    from TransSection import TransSection
     from ReactionSection import ReactionSection
 
     from TemperatureRange import TemperatureRange
     from ThermoLine import ThermoLine
 
     tokenClasses = [
-        EndSection, ElementSection, SpeciesSection, ThermoSection, ReactionSection,
+        EndSection, ElementSection, SpeciesSection, QssSpeciesSection, ThermoSection, TransSection, ReactionSection,
         TemperatureRange, ThermoLine,
+        Whitespace, Comments,
+        ]
+
+    return tokenClasses
+
+
+def transTokenClasses():
+
+    from Whitespace import Whitespace
+    from Comments import Comments
+    from EndSection import EndSection
+
+    from ElementSection import ElementSection
+    from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
+    from ThermoSection import ThermoSection
+    from TransSection import TransSection
+    from ReactionSection import ReactionSection
+
+    from TransLine import TransLine
+
+    tokenClasses = [
+        EndSection, ElementSection, SpeciesSection, QssSpeciesSection, ThermoSection, TransSection, 
+        ReactionSection,
+        TransLine,
         Whitespace, Comments,
         ]
 
@@ -103,7 +157,9 @@ def reactionTokenClasses():
 
     from ElementSection import ElementSection
     from SpeciesSection import SpeciesSection
+    from QssSpeciesSection import QssSpeciesSection
     from ThermoSection import ThermoSection
+    from TransSection import TransSection
     from ReactionSection import ReactionSection
 
     from Reaction import Reaction
@@ -122,7 +178,7 @@ def reactionTokenClasses():
 
     tokenClasses = [
         Comments, Whitespace,
-        EndSection, ElementSection, SpeciesSection, ThermoSection, ReactionSection,
+        EndSection, ElementSection, SpeciesSection, QssSpeciesSection, ThermoSection, TransSection, ReactionSection,
         ReactionDuplicate, ReactionLOW, ReactionSRI, ReactionTROE,
         ReactionUnitsA, ReactionUnitsE,
         ReactionHV, ReactionLT, ReactionRLT, ReactionReverse, ReactionFORD,
@@ -146,7 +202,7 @@ def parameterTokenClasses():
 
 
 # version
-__id__ = "$Id: __init__.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -35,9 +35,9 @@ class TemperatureRange(Token):
             self.range = tuple(map(float, text))
         except ValueError:
             # this can't happen because the regexp requires a float here 
-            import journal
+            import pyre
             msg = "Can't convert '%s' into a list of numbers" % text
-            journal.firewall("fuego").log(msg)
+            pyre.debug.Firewall.hit(msg)
             return
 
         return
@@ -48,7 +48,7 @@ class TemperatureRange(Token):
     
 
 # version
-__id__ = "$Id: TemperatureRange.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

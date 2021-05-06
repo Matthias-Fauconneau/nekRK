@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -43,9 +43,9 @@ class ReactionEfficiencies(Token):
                 efficiency = float(split[i+1])
             except ValueError:
                 # this can't happen because the regexp requires a float here 
-                import journal
-                msg = "Could not convert '%s' into a number" % split[i+1]
-                journal.firewall("fuego").log(msg)
+                import pyre
+                str = "Could not convert '%s' into a number" % split[i+1]
+                pyre.debug.Firewall.hit(str)
                 return
 
             self.efficiencies.append( (species, efficiency) )
@@ -59,7 +59,7 @@ class ReactionEfficiencies(Token):
 
 
 # version
-__id__ = "$Id: ReactionEfficiencies.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

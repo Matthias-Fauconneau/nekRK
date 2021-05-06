@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -36,7 +36,7 @@ class Thermo(BaseParser):
                 msg = "THERMO ALL: Expected temperature range definition, not species info"
                 self.onWarning(msg, self.locator())
                 self._thermoAllWarned = 1
-
+            
         # is this the next valid thermo line in the sequence?
         id = token.id - 1
         if id != self._nextId:
@@ -45,8 +45,8 @@ class Thermo(BaseParser):
             self.onError(msg, self.locator())
 
         # dispatch to appropriate line info parser
-        self._lineParsers[id](token)
-
+        self._lineParsers[id](token) 
+        
         # next valid thermo line is...
         self._nextId = (self._nextId + 1) % 4
 
@@ -90,7 +90,7 @@ class Thermo(BaseParser):
             # self.onWarning(msg)
 
         self._mechanism.thermoDone()
-
+            
         return 1
 
 
@@ -142,7 +142,7 @@ class Thermo(BaseParser):
             msg = "thermo section: undeclared species '%s'" % speciesName
             self.onWarning(msg, self.locator())
             species = self._mechanism.newSpecies(speciesName)
-
+            
         species.locator(self.locator())
 
         # Parse the element coefficient in columns 24-43 (zero-based)
@@ -174,9 +174,7 @@ class Thermo(BaseParser):
 
         # Save this information
         self._currentSpecies = species
-
-        print  species, lowT, midT, highT
-
+        
         return
 
 
@@ -184,14 +182,13 @@ class Thermo(BaseParser):
         if not self._currentSpecies: return
 
         text = token.text
-        print("here %s",text)
 
         # extract the high T range parametrization
         self._parameters = []
         for i in range(0, 5):
             number = self._extractFloat(token, text, i*15, 15)
             self._parameters.append(number)
-
+        
         return
 
 
@@ -210,13 +207,13 @@ class Thermo(BaseParser):
             "NASA", self._currentRange[1], self._currentRange[2], self.locator(),
             self._parameters
             )
-
+        
         # extract the first part of the low T parameters
         self._parameters = []
         for i in range(2, 5):
             number = self._extractFloat(token, text, i*15, 15)
             self._parameters.append(number)
-
+        
         return
 
 
@@ -230,15 +227,15 @@ class Thermo(BaseParser):
         for i in range(0, 4):
             number = self._extractFloat(token, text, i*15, 15)
             self._parameters.append(number)
-
+        
         # store in the species
         self._currentSpecies.thermalParametrization(
             "NASA", self._currentRange[0], self._currentRange[1], self.locator(),
             self._parameters
             )
-
+        
         return
-
+            
 
     def _extractFloat(self, token, text, offset, width, optional=0):
         str = text[offset:offset+width].strip()
@@ -248,7 +245,7 @@ class Thermo(BaseParser):
             locator = self.locator()
             locator.column = offset
             self.onError(msg, locator)
-
+            
 
         try:
             value = float(str)
@@ -259,7 +256,7 @@ class Thermo(BaseParser):
             self.onError(msg, locator)
 
         return value
-
+            
 
     def _extractComposition(self, token, text, offset, composition):
 
@@ -285,10 +282,10 @@ class Thermo(BaseParser):
             composition.append( (name, coef) )
 
         return
-
+        
 
 # version
-__id__ = "$Id: Thermo.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

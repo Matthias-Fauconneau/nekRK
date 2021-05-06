@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -33,8 +33,8 @@ class ArrheniusCoefficients(Token):
     def __init__(self, match, groups):
         Token.__init__(self, match, groups)
 
-        import journal
-        journal.firewall("fuego").log("arrhenius coefficients token")
+        import pyre
+        pyre.debug.Firewall.hit("arrhenius coefficients token")
 
         numbers = map(groups.get, arrhenius)
 
@@ -42,9 +42,9 @@ class ArrheniusCoefficients(Token):
             self.parameters = map(float, numbers)
         except ValueError:
             # this can't happen because the regexp requires three floats
-            import journal
+            import pyre
             msg = "Could not convert /%s/ into a list of numbers" % text
-            journal.firewall("fuego").log(msg)
+            pyre.debug.Firewall.hit(msg)
             return
             
         return
@@ -56,7 +56,7 @@ class ArrheniusCoefficients(Token):
 
 
 # version
-__id__ = "$Id: ArrheniusCoefficients.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

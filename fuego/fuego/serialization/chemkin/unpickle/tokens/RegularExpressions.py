@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -20,8 +20,8 @@ element = r"[A-Za-z][\w+-]?"
 namedElement = r"(?P<%s>" + element + r")"
 species = r"[A-Za-z(][\w()=*,-]{0,15}[+]*"
 
-coeff = r"\d+"
-coeffOpt = r"\d*"
+coeff = r"\d+[.]?\d*"
+coeffOpt = r"\d+[.]?\d*"
 
 number = r"[+-]?(\d+[.]\d*|[.]\d+|\d+)([eE][-+]?\d{1,3})?"
 numberOpt = r"(" + number + r")*"
@@ -59,7 +59,7 @@ namedInlineNumbers_3 = r"/" + whitespaceOpt \
 
 
 # version
-__id__ = "$Id: RegularExpressions.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

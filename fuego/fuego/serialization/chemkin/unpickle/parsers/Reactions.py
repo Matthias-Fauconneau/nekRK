@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -96,13 +96,14 @@ class Reactions(BaseParser):
 
 
     def aReactionFORD(self, token):
+        print "ford !!"
         record = self._currentReaction
         if not record:
             msg = "no current reaction"
             self.onWarning(msg, self.locator())
             return 0
 
-        record.ford = self._parameterParser.extractRaw("FORD", 2)
+        (record.ford).append(self._parameterParser.extractRaw("FORD", 2))
         return 0
 
 
@@ -339,7 +340,7 @@ class Reactions(BaseParser):
     
 
 # version
-__id__ = "$Id: Reactions.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

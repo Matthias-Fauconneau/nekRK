@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -18,7 +18,7 @@ class Entity(object):
 
 
     def locator(self,locator):
-        self.filename = locator.source
+        self.filename = locator.filename
         self.line = locator.line
         self.column = locator.column
         return
@@ -27,7 +27,7 @@ class Entity(object):
     def __init__(self, id, locator):
         self.id = id
         if locator:
-            self.filename = locator.source
+            self.filename = locator.filename
             self.line = locator.line
             self.column = locator.column
         else:
@@ -50,6 +50,6 @@ class Entity(object):
 
 
 # version
-__id__ = "$Id: Entity.py,v 1.1.1.1 2007-09-13 18:17:32 aivazis Exp $"
+__id__ = "$Id$"
 
 # End of file

@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -63,7 +63,7 @@ class Reaction(Entity):
         for species, factor in composition:
             str = ""
             if factor != 1:
-                str += "%d " % factor
+                str += "%f " % factor
             str += species
 
             terms.append(str)
@@ -82,7 +82,7 @@ class Reaction(Entity):
                 thirdBody += ' + '
 
             if factor != 1:
-                thirdBody += "%d" % factor
+                thirdBody += "%f" % factor
 
             thirdBody += species
 
@@ -104,6 +104,6 @@ class Reaction(Entity):
 
 
 # version
-__id__ = "$Id: Reaction.py,v 1.1.1.1 2007-09-13 18:17:32 aivazis Exp $"
+__id__ = "$Id$"
 
 # End of file

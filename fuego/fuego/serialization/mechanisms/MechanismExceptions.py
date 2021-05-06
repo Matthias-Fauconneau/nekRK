@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -38,6 +38,20 @@ class DuplicateSpecies(Exception):
         return "duplicate species '%s'" % self._symbol
 
 
+# qss species
+
+class DuplicateQssSpecies(Exception):
+
+
+    def __init__(self, symbol):
+        self._symbol = symbol
+        return
+
+
+    def __str__(self):
+        return "duplicate QSS species '%s'" % self._symbol
+
+
 # thermo
 
 class DuplicateThermalProperties(Exception):
@@ -53,7 +67,7 @@ class DuplicateThermalProperties(Exception):
 
 
 # version
-__id__ = "$Id: MechanismExceptions.py,v 1.1.1.1 2007-09-13 18:17:32 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

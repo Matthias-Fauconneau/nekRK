@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -26,16 +26,18 @@ class ChemkinParser(BaseParser):
         import journal
         from fuego.serialization.chemkin.unpickle.tokens.Token import Token
 
+        print "Hello Chemkin Parser !!"
+
         Token._constructed = 0
         Token._destructed = 0
 
         self._mechanism = mechanism
-        
+
         # prepare the parsing machinery
         scanner = fuego.serialization.chemkin.unpickle.scanners.sections()
         tokenizer = pyre.parsing.tokenizer(file)
         tokenizer._info = journal.debug("fuego")
-        
+
         # section parsers
         from Elements import Elements
         self._elementParser = Elements(mechanism, tokenizer)
@@ -46,11 +48,14 @@ class ChemkinParser(BaseParser):
         from Thermo import Thermo
         self._thermoParser = Thermo(mechanism, tokenizer)
 
+        #if doTrans/='n':
+        from Trans import Trans
+        self._transParser = Trans(mechanism, tokenizer)
+
         from Reactions import Reactions
         self._reactionParser = Reactions(mechanism, tokenizer)
 
         # enter the parsing loop
-
         return BaseParser.parse(self, scanner, tokenizer)
 
 
@@ -59,14 +64,14 @@ class ChemkinParser(BaseParser):
     def anElementSection(self, token):
         return self._elementParser.anElementSection(token)
 
-
     def aSpeciesSection(self, token):
         return self._speciesParser.aSpeciesSection(token)
-
 
     def aThermoSection(self, token):
         return self._thermoParser.aThermoSection(token)
 
+    def aTransSection(self, token):
+        return self._transParser.aTransSection(token)
 
     def aReactionSection(self, token):
         return self._reactionParser.aReactionSection(token)
@@ -78,9 +83,11 @@ class ChemkinParser(BaseParser):
         self._elementParser.onEndOfFile()
         self._speciesParser.onEndOfFile()
         self._thermoParser.onEndOfFile()
+        #if doTrans/='n':
+        self._transParser.onEndOfFile()
         self._reactionParser.onEndOfFile()
         return
-        
+
 
     # others
 
@@ -88,9 +95,10 @@ class ChemkinParser(BaseParser):
         print "Chemkin input file: '%s'" % self._filename
         print "    Tokens: %d-%d" % (Token._constructed, Token._destructed)
         return
-    
+
 
     def __init__(self):
+
         BaseParser.__init__(self)
 
         # the table of declared species
@@ -100,6 +108,7 @@ class ChemkinParser(BaseParser):
         self._elementParser = None
         self._speciesParser = None
         self._thermoParser = None
+        self._transParser = None
         self._reactionParser = None
 
         return
@@ -115,6 +124,10 @@ class ChemkinParser(BaseParser):
         thermo = self._thermoParser._scanner._pattern()
         print "Thermo parser (%d): %s" % (len(thermo), thermo)
 
+        #if doTrans/='n':
+        trans = self._transParser._scanner._pattern()
+        print "Trans parser (%d): %s" % (len(trans), trans)
+
         reaction = self._reactionParser._scanner._pattern()
         print "Reaction parser (%d): %s" % (len(reaction), reaction)
 
@@ -122,7 +135,7 @@ class ChemkinParser(BaseParser):
 
 
 # version
-__id__ = "$Id: ChemkinParser.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 #
 # End of file

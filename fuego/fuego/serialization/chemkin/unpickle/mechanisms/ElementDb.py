@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -39,6 +39,6 @@ class ElementDb:
 
 
 # version
-__id__ = "$Id: ElementDb.py,v 1.1.1.1 2007-09-13 18:17:30 aivazis Exp $"
+__id__ = "$Id$"
 
 # End of file

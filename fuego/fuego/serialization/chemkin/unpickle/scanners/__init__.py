@@ -4,7 +4,7 @@
 #
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007  All Rights Reserved
+#                        (C) 1998-2003  All Rights Reserved
 #
 # <LicenseText>
 #
@@ -26,10 +26,18 @@ def species():
     from Species import Species
     return Species()
 
+def qss_species():
+    from QssSpecies import QssSpecies
+    return QssSpecies()
 
 def thermo():
     from Thermo import Thermo
     return Thermo()
+
+
+def trans():
+    from Trans import Trans
+    return Trans()
 
 
 def reactions():
@@ -43,6 +51,6 @@ def parameters():
 
 
 # version
-__id__ = "$Id: __init__.py,v 1.1.1.1 2007-09-13 18:17:31 aivazis Exp $"
+__id__ = "$Id$"
 
 # End of file

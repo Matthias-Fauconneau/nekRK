@@ -11,10 +11,10 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
-from Thermo import Thermo
+from Trans import Trans
 
 
-class ThermoDatabaseParser(Thermo):
+class TransDatabaseParser(Trans):
 
 
     # the main parsing loop
@@ -30,13 +30,13 @@ class ThermoDatabaseParser(Thermo):
         tokenizer._info = journal.debug("fuego")
 
         # enter the parsing loop
-        return Thermo.parse(self, self._scanner, tokenizer)
+        return Trans.parse(self, self._scanner, tokenizer)
 
 
     # transitions
 
-    def aThermoSection(self, token):
-        self._thermoAll = 1
+    def aTransSection(self, token):
+        self._transAll = 1
         return 0
 
 
@@ -53,7 +53,7 @@ class ThermoDatabaseParser(Thermo):
         
 
     def __init__(self):
-        Thermo.__init__(self, None, None)
+        Trans.__init__(self, None, None)
         return
 
 

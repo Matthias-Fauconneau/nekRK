@@ -4,37 +4,35 @@
 # 
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007 All Rights Reserved
+#                        (C) 1998-2003 All Rights Reserved
 # 
 #  <LicenseText>
 # 
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 
-def save(weaver, mechanism, stream, format="chemkin"):
-
-    # mga 20070913: FIXME: impossible to use with an driver:
-    # who can configure a weaver manually?
+def save(mechanism, format="chemkin"):
 
     import journal
     journal.debug("fuego").log("pickling mechanism, format='%s')" % format)
-
-    mill = pickler(format)
-    if not pickler:
+    
+    factory = registrar().retrieve(format)
+    if not factory:
         journal.error("fuego").log("unknown mechanism file format '%s'" % format)
         return []
         
-    weaver.renderer = mill
-    return weaver.weave(mechanism, stream)
+    pickler = factory.pickler()
+    pickler.initialize()
+
+    return pickler.pickle(mechanism)
 
 
 # factory methods for the serializers
 
 def pickler(format="chemkin"):
-    factory = registrar().find(format)
+    factory = registrar().retrieve(format)
     if factory:
-        # mga: 20070913
-        return factory.pickler()
+        return factory()
     
     return None
 
@@ -47,22 +45,25 @@ def registrar():
         _registrar = Registrar()
 
         import native
-        _registrar.manage(native, native.format())
+        _registrar.register(native, native.format())
 
         import chemkin
-        _registrar.manage(chemkin, chemkin.format())
+        _registrar.register(chemkin, chemkin.format())
 
         import ckml
-        _registrar.manage(ckml, ckml.format())
+        _registrar.register(ckml, ckml.format())
 
         import c
-        _registrar.manage(c, c.format())
+        _registrar.register(c, c.format())
+
+        import f
+        _registrar.register(f, f.format())
 
         import html
-        _registrar.manage(html, html.format())
+        _registrar.register(html, html.format())
 
         import python
-        _registrar.manage(python, python.format())
+        _registrar.register(python, python.format())
 
     return _registrar
 
@@ -77,6 +78,6 @@ _registrar = None
 
 
 # version
-__id__ = "$Id: pickle.py,v 1.1.1.1 2007-09-13 18:17:28 aivazis Exp $"
+__id__ = "$Id$"
 
 #  End of file 

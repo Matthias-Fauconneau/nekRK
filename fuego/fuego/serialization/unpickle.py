@@ -4,7 +4,7 @@
 # 
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
-#                        (C) 1998-2007 All Rights Reserved
+#                        (C) 1998-2003 All Rights Reserved
 # 
 #  <LicenseText>
 # 
@@ -22,21 +22,26 @@ def load(filename, format=None, mechanism=None):
     if not mechanism:
         from mechanisms.Mechanism import Mechanism
         mechanism = Mechanism(filename)
-    # patrickh
-    else: 
-        mechanism._name = filename
 
     if not format:
         format = guessMechanismType(filename)
+ 
+    print "***** Using format", format
 
-    factory = registrar().find(format)
+    factory = registrar().retrieve(format)
+
     if not factory:
         journal.error("fuego").log("unknown mechanism file format '%s'" % format)
         return None
 
+    # GO TO packages/fuego/fuego/serialization/chemkin/unpickle/parsers
     parser = factory.parser()
 
     file = locate(filename)
+    if not file:
+        return None
+
+    # chemkin/unpickle/parsers/ChemkinParser.py
     parser.parse(mechanism, file)
 
     return mechanism
@@ -58,6 +63,8 @@ def loadThermoDatabase(filename, format="chemkin", mechanism=None):
     if not mechanism:
         from mechanisms.Mechanism import Mechanism
         mechanism = Mechanism(filename)
+
+
 
     from chemkin.unpickle.parsers.ThermoDatabaseParser import ThermoDatabaseParser
     parser = ThermoDatabaseParser()
@@ -90,7 +97,7 @@ def guessMechanismType(filename):
     import os
     name, ext = os.path.splitext(filename)
 
-    factory = registrar().find(ext)
+    factory = registrar().retrieve(ext)
     if factory:
         return factory.format()
     
@@ -100,7 +107,7 @@ def guessMechanismType(filename):
 # factory method
 
 def unpickler(format="chemkin"):
-    factory = registrar().find(format)
+    factory = registrar().retrieve(format)
     if factory:
         return factory()
     
@@ -115,13 +122,13 @@ def registrar():
         _registrar = Registrar()
 
         import native
-        _registrar.manage(native, native.format(), native.extensions())
+        _registrar.register(native, native.format(), native.extensions())
 
         import chemkin
-        _registrar.manage(chemkin, chemkin.format(), chemkin.extensions())
+        _registrar.register(chemkin, chemkin.format(), chemkin.extensions())
 
         import ckml
-        _registrar.manage(ckml, ckml.format(), ckml.extensions())
+        _registrar.register(ckml, ckml.format(), ckml.extensions())
 
     return _registrar
 
@@ -136,6 +143,6 @@ _registrar = None
 
 
 # version
-__id__ = "$Id: unpickle.py,v 1.1.1.1 2007-09-13 18:17:28 aivazis Exp $"
+__id__ = "$Id$"
 
 #  End of file 

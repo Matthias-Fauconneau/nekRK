@@ -9,13 +9,13 @@
     const dfloat rcp_mass_rate,
     const dfloat rcp_energy_rate)
 {
-  for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) { 
+  for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
     dfloat wrk[n_species];
     dfloat molar_rates[n_species] = {0};
 
     const dfloat T = reference_temperature * temperature[id];
     //dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
-    dfloat tc[6];  
+    dfloat tc[6];
     tc[0] = log(T);
     tc[1] = T;
     tc[2] = T*T;
@@ -25,12 +25,12 @@
 
     dfloat sum_active_mass_fractions = 0.;
     dfloat mean_rcp_molar_mass = 0.;
-    for(int k=0;k<n_species;k++) { 
+    for(int k=0;k<n_species;k++) {
       if (k != inert_specie) {
-        const dfloat mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
-        wrk[k] = mass_fraction*fg_rcp_molar_mass[k];;
-        sum_active_mass_fractions += mass_fraction;
-        mean_rcp_molar_mass += wrk[k];
+            const dfloat mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
+            wrk[k] = mass_fraction*fg_rcp_molar_mass[k];
+            sum_active_mass_fractions += mass_fraction;
+            mean_rcp_molar_mass += wrk[k];
       }
     }
     wrk[inert_specie] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[inert_specie];
