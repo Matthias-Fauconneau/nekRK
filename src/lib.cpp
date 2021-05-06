@@ -43,7 +43,7 @@ void set_molar_mass()
 }
 
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties, 
-   	   const int group_size, MPI_Comm _comm) 
+       const int group_size, MPI_Comm _comm) 
 {
     comm   = _comm;
     device = _device;
@@ -88,7 +88,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 /* API */
 
 void nekRK::init(const char* model_path, occa::device device, 
-	  occa::properties kernel_properties, int group_size, MPI_Comm comm) 
+      occa::properties kernel_properties, int group_size, MPI_Comm comm) 
 {
   setup(model_path, device, kernel_properties, group_size, comm);
 }
@@ -134,19 +134,19 @@ void nekRK::set_reference_parameters(
 
 void nekRK::production_rates(const int n_states, double pressure,
                             occa::memory o_temperature, occa::memory o_mass_fractions, 
-		            occa::memory o_mass_rates, occa::memory o_energy_rate) 
+                    occa::memory o_mass_rates, occa::memory o_energy_rate) 
 {
   const double pressure_R = pressure * reference_pressure / R;
   production_rates_kernel(
-  	   n_states, 
-	   pressure_R, 
-	   o_temperature, 
-	   o_mass_fractions, 
-	   o_mass_rates, 
-	   o_energy_rate, 
-	   reference_temperature, 
-	   1./reference_mass_rate, 
-	   R/reference_energy_rate);
+       n_states, 
+       pressure_R, 
+       o_temperature, 
+       o_mass_fractions, 
+       o_mass_rates, 
+       o_energy_rate, 
+       reference_temperature, 
+       1./reference_mass_rate, 
+       R/reference_energy_rate);
 }
 
 int nekRK::number_of_species()
