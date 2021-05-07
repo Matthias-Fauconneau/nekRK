@@ -33,15 +33,15 @@ avg throughput: 2.609 GDOF/s
 | ----------------- | ----------- | ------ | ------ |
 | Nvidia V100       | GRIMech-3.0 |  2.61  |  15.7  | 
 | Nvidia A100       | GRIMech-3.0 |  3.98  |  23.9  |
-| AMD MI100         | GRIMech-3.0 |  ?.??  |  ??.?  |
+| AMD MI100         | GRIMech-3.0 |  2.00  |  12.0  |
 | 2xAMD EPYC 7742   | GRIMech-3.0 |  0.63  |  3.79  |
 | 2xIntel XEON 6252 | GRIMech-3.0 |  0.17  |  1.02  |
 |                   |             |        |        | 
-| Nvidia V100       | LiH2        |  21.6  |  50.4  |
-| Nvidia A100       | LiH2        |  28.7  |  66.9  | 
-| AMD MI100         | LiH2        |  ??.?  |  ??.?  |
-| 2xAMD EPYC 7742   | LiH2        |  1.68  |  3.91  |
-| 2xIntel XEON 6252 | LiH2        |  0.46  |  1.07  |
+| Nvidia V100       | LiH2        |  21.6  |  45.4  |
+| Nvidia A100       | LiH2        |  28.7  |  60.3  | 
+| AMD MI100         | LiH2        |  14.3  |  30.3  |
+| 2xAMD EPYC 7742   | LiH2        |  1.68  |  3.53  |
+| 2xIntel XEON 6252 | LiH2        |  0.46  |  0.97  |
 
 ### BK2: Properties
 
