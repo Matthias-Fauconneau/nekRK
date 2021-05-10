@@ -589,6 +589,7 @@ class CPickler(CMill):
                                 import pyre
                                 pyre.debug.Firewall.hit("unsupported configuration in species.trans")
                                 return
+                        print(specie)
                         m1 = models[0]
                         lin = m1.parameters[0]
                         eps = m1.eps

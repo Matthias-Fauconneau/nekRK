@@ -46,11 +46,11 @@ class FMC(Application):
             print "Loading '%s' as thermo file" % (thermo)
             mechanism.externalThermoDatabase(thermo)
         if trans:
-            print "Loading '%s' as thermo file" % (trans)
+            print "Loading '%s' as trans file" % (trans)
             mechanism.externalTransDatabase(trans)
         mechanism = fuego.serialization.load(
             filename=mechanismFile, format=input, mechanism=mechanism)
-    
+
         print "... done (%g sec)" % timer.stop()
 
         timer.reset()
