@@ -7,7 +7,8 @@ Dependencies:
 - CMake-3.11
 - MPI
 - [OCCA](https://github.com/libocca/occa)
-- Python
+- Python2
+- Numpy for Python2: This old version might have been renamed to integrate with modern systems e.g numpy-python2
 
 ```sh
 export NEKRK_PATH=$HOME/.local/nekRK

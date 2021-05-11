@@ -1,3 +1,4 @@
+# coding=utf8
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2007 All Rights Reserved
@@ -10,6 +11,7 @@ from pyre.units.length import cm
 from pyre.units.energy import cal, kcal, J, kJ
 from pyre.handbook.constants.fundamental import avogadro
 from pyre.handbook.constants.fundamental import gas_constant as R
+import numpy as np
 
 smallnum = 1.0e-100
 R = 8.314510 * J/mole/kelvin
@@ -29,7 +31,8 @@ class CPickler(CMill):
                 CMill.__init__(self)
                 self.species = []
                 self.n_species = 0
-                return
+                self.lowT = 100.0
+                self.highT = 10000.0
 
         def set_species(self, mechanism):
                 import pyre.handbook
@@ -40,11 +43,11 @@ class CPickler(CMill):
 
                 for specie in mechanism.species():
                         weight = 0.0
-                        for elem, coef in specie.composition:
-                                aw = mechanism.element(elem).weight
-                                if not aw:
-                                        aw = periodic.symbol(elem.capitalize()).atomicWeight
-                                weight += coef * aw
+                        for element, number_of_atoms in specie.composition:
+                                atomic_weight = mechanism.element(element).weight #?
+                                if not atomic_weight:
+                                        atomic_weight = periodic.symbol(element.capitalize()).atomicWeight # handbook
+                                weight += number_of_atoms * atomic_weight
 
                         tempsp = speciesDb(specie.id, specie.symbol, weight)
                         self.species[specie.id] = tempsp
@@ -564,20 +567,10 @@ class CPickler(CMill):
         def _transport(self, mechanism):
                 self._write(self.line(' Transport function declarations '))
                 speciesTransport = self._analyzeTransport(mechanism)
-                NLITE=0
-                self._miscTransInfo(KK=self.nSpecies, NLITE=NLITE, do_declarations=False)
-                self._wt(False)
-                self._eps(mechanism, speciesTransport, False)
-                self._sig(mechanism, speciesTransport, False)
-                self._dip(mechanism, speciesTransport, False)
-                self._pol(mechanism, speciesTransport, False)
-                self._zrot(mechanism, speciesTransport, False)
-                self._nlin(mechanism, speciesTransport, False)
                 self._viscosity(mechanism, speciesTransport, False, NTFit=50)
                 self._diffcoefs(speciesTransport, False, NTFit=50)
                 self._thermaldiffratios(speciesTransport, idxLightSpecs, False, NTFit=50)
                 return
-
 
         def _analyzeTransport(self, mechanism):
                 transdata = OrderedDict()
@@ -596,141 +589,8 @@ class CPickler(CMill):
                         dip = m1.dip
                         pol = m1.pol
                         zrot = m1.zrot
-                        transdata[spec] = [lin, eps, sig, dip, pol, zrot]
+                        transdata[specie] = [lin, eps, sig, dip, pol, zrot]
                 return transdata
-
-        def _miscTransInfo(self, KK, NLITE, do_declarations, NO=4):
-                self._write()
-                self._write()
-                LENIMC = 4*KK+NLITE
-                self._generateTransRoutineInteger(["egtransetLENIMC", "EGTRANSETLENIMC", "egtransetlenimc", "egtransetlenimc_", "LENIMC"], LENIMC, do_declarations)
-
-                self._write()
-                self._write()
-                LENRMC = (19+2*NO+NO*NLITE)*KK+(15+NO)*KK**2
-                self._generateTransRoutineInteger(["egtransetLENRMC", "EGTRANSETLENRMC", "egtransetlenrmc", "egtransetlenrmc_", "LENRMC"], LENRMC, do_declarations)
-
-                self._write()
-                self._write()
-                self._generateTransRoutineInteger(["egtransetNO", "EGTRANSETNO", "egtransetno", "egtransetno_", "NO"], NO, do_declarations)
-
-                self._write()
-                self._write()
-                self._generateTransRoutineInteger(["egtransetKK", "EGTRANSETKK", "egtransetkk", "egtransetkk_", "KK"], KK, do_declarations)
-
-                self._write()
-                self._write()
-                self._generateTransRoutineInteger(["egtransetNLITE", "EGTRANSETNLITE", "egtransetnlite", "egtransetnlite_", "NLITE"], NLITE, do_declarations)
-
-                self._write()
-                self._write()
-                self._write(self.line('Patm in ergs/cm3'))
-
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetPATM EGTRANSETPATM')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetPATM egtransetpatm')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetPATM egtransetpatm_')
-                        self._write('#endif')
-
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void egtransetPATM(amrex::Real* PATM) {')
-                self._indent()
-                self._write('*PATM =   0.1013250000000000E+07;};')
-                self._outdent()
-                return
-
-        def _wt(self, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the molecular weights in g/mol'))
-
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetWT EGTRANSETWT')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetWT egtransetwt')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetWT egtransetwt_')
-                        self._write('#endif')
-
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void %s(amrex::Real* %s ) {' % ("egtransetWT", "WT"))
-                self._indent()
-
-                for sp in range(self.nSpecies):
-                        species  = self.nonqss_species[sp]
-                        self._write('%s[%d] = %.8E;' % ("WT", species.id, float(species.weight)))
-
-                self._outdent()
-                self._write('};')
-                return
-
-
-        def _eps(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the lennard-jones potential well depth eps/kb in K'))
-                self._generateTransRoutineSimple(mechanism, ["egtransetEPS", "EGTRANSETEPS", "egtranseteps", "egtranseteps_", "EPS"], 1, speciesTransport, do_declarations)
-                return
-
-
-        def _sig(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the lennard-jones collision diameter in Angstroms'))
-                self._generateTransRoutineSimple(mechanism, ["egtransetSIG", "EGTRANSETSIG", "egtransetsig", "egtransetsig_", "SIG"], 2, speciesTransport, do_declarations)
-                return
-
-
-        def _dip(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the dipole moment in Debye'))
-                self._generateTransRoutineSimple(mechanism, ["egtransetDIP", "EGTRANSETDIP", "egtransetdip", "egtransetdip_", "DIP"], 3, speciesTransport, do_declarations)
-                return
-
-        def _pol(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the polarizability in cubic Angstroms'))
-                self._generateTransRoutineSimple(mechanism, ["egtransetPOL", "EGTRANSETPOL", "egtransetpol", "egtransetpol_", "POL"], 4, speciesTransport, do_declarations)
-                return
-
-
-        def _zrot(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('the rotational relaxation collision number at 298 K'))
-                self._generateTransRoutineSimple(mechanism, ["egtransetZROT", "EGTRANSETZROT", "egtransetzrot", "egtransetzrot_", "ZROT"], 5, speciesTransport, do_declarations)
-                return
-
-        def _nlin(self, mechanism, speciesTransport, do_declarations):
-                self._write()
-                self._write()
-                self._write(self.line('0: monoatomic, 1: linear, 2: nonlinear'))
-
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetNLIN EGTRANSETNLIN')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetNLIN egtransetnlin')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetNLIN egtransetnlin_')
-                        self._write('#endif')
-
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void egtransetNLIN(int* NLIN) {')
-                self._indent()
-
-                for species in self.nonqss_species:
-                        self._write('%s[%d] = %d;' % ("NLIN", species.id, int(speciesTransport[species][0])))
-
-                self._outdent()
-                self._write('};')
-                return
 
         def _viscosity(self, mechanism, speciesTransport, do_declarations, NTFit):
                 #compute single constants in g/cm/s
@@ -740,9 +600,9 @@ class CPickler(CMill):
                 #temperature increment
                 dt = (self.highT-self.lowT) / (NTFit-1)
                 #factor dependent upon the molecule
-                m_crot = np.zeros(self.nSpecies)
-                m_cvib = np.zeros(self.nSpecies)
-                isatm = np.zeros(self.nSpecies)
+                m_crot = np.zeros(self.n_species)
+                m_cvib = np.zeros(self.n_species)
+                isatm = np.zeros(self.n_species)
                 for spec in speciesTransport:
                         if int(speciesTransport[spec][0]) == 0:
                                 m_crot[spec.id] = 0.0
@@ -760,7 +620,7 @@ class CPickler(CMill):
                 cofeta = OrderedDict()
                 #conductivities coefs (4 per spec)
                 coflam = OrderedDict()
-                for spec in speciesTransport:
+                for transport_specie in speciesTransport:
                         spvisc = []
                         spcond = []
                         tlog = []
@@ -768,26 +628,24 @@ class CPickler(CMill):
                                 t = self.lowT + dt*n
                                 #variables
                                 #eq. (2)
-                                tr = t/ float(speciesTransport[spec][1])
-                                conversion = DEBYEtoCGS * DEBYEtoCGS / AtoCM / AtoCM / AtoCM / kb
-                                dst = 0.5 * conversion * float(speciesTransport[spec][3])**2 / (float(speciesTransport[spec][1]) \
-                                                * float(speciesTransport[spec][2])**3)
-                                #viscosity of spec at t
+                                interaction_well_depth = float(speciesTransport[transport_specie][1])
+                                diameter_Aengstroem = float(speciesTransport[transport_specie][2]) #Ångström
+                                tr = t/interaction_well_depth
+                                diameter = diameter_Aengstroem*1e-10
+                                dst = (1./2 / kb#Why?
+                                                * float(speciesTransport[transport_specie][3]#What is this?
+                                        )**2 / (interaction_well_depth * diameter**3)) #What is this?
+                                #viscosity of specie at t
                                 #eq. (1)
-                                conversion = AtoCM * AtoCM
-                                visc = (5.0 / 16.0) * np.sqrt(np.pi * spec.weight * kb * t / Na) / \
-                                        (self.om22_CHEMKIN(tr,dst) * np.pi * \
-                                        float(speciesTransport[spec][2]) * float(speciesTransport[spec][2]) * conversion)
+                                molar_mass = self.species[transport_specie.id].weight
+                                visc = (5.0 / 16.0) * np.sqrt(np.pi * molar_mass * kb * t / Na) / (self.om22_CHEMKIN(tr,dst) * np.pi * diameter**2)
                                 #conductivity of spec at t
                                 #eq. (30)
-                                conversion = AtoCM * AtoCM
-                                m_red = spec.weight / (2.0 * Na)
-                                diffcoef = (3.0 / 16.0) * np.sqrt(2.0 * np.pi * kb**3 * t**3 / m_red) /  \
-                                                (10.0 * np.pi * self.om11_CHEMKIN(tr,dst) * float(speciesTransport[spec][2]) * \
-                                                float(speciesTransport[spec][2]) * conversion)
+                                m_red = molar_mass / (2.0 * Na)
+                                diffcoef = (3.0 / 16.0) * np.sqrt(2.0 * np.pi * kb**3 * t**3 / m_red) / (10.0 * np.pi * self.om11_CHEMKIN(tr,dst) * diameter**2)
                                 #eq. (19)
                                 cv_vib_R = (self._getCVdRspecies(mechanism, t, spec) - m_cvib[spec.id]) * isatm[spec.id]
-                                rho_atm = 10.0 * spec.weight /(RU * t)
+                                rho_atm = 10.0 * molar_mass /(RU * t)
                                 f_vib = rho_atm * diffcoef / visc
                                 #eq. (20)
                                 A = 2.5 - f_vib
@@ -803,10 +661,10 @@ class CPickler(CMill):
                                 cv_trans_R = 3.0 / 2.0
                                 f_trans = 5.0 / 2.0 * (1.0 - 2.0 / np.pi * A / B * cv_rot_R / cv_trans_R )
                                 if (int(speciesTransport[spec][0]) == 0):
-                                        cond = (visc * RU / spec.weight) * \
+                                        cond = (visc * RU / molar_mass) * \
                                                         (5.0 / 2.0) * cv_trans_R
                                 else:
-                                        cond = (visc * RU / spec.weight) * \
+                                        cond = (visc * RU / molar_mass) * \
                                                 (f_trans * cv_trans_R + f_rot * cv_rot_R + f_vib * cv_vib_R)
 
                                 #log transformation for polyfit
@@ -817,25 +675,10 @@ class CPickler(CMill):
                         cofeta[spec.id] = np.polyfit(tlog, spvisc, 3)
                         coflam[spec.id] = np.polyfit(tlog, spcond, 3)
 
-                #header for visco
-                self._write()
-                self._write()
-                self._write(self.line('Poly fits for the viscosities, dim NO*KK'))
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetCOFETA EGTRANSETCOFETA')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetCOFETA egtransetcofeta')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetCOFETA egtransetcofeta_')
-                        self._write('#endif')
-
-                #visco coefs
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
                 self._write('void egtransetCOFETA(amrex::Real* COFETA) {')
                 self._indent()
 
-                for spec in self.nonqss_species:
+                for spec in self.species:
                         for i in range(4):
                                 self._write('%s[%d] = %.8E;' % ('COFETA', spec.id*4+i, cofeta[spec.id][3-i]))
 
@@ -861,7 +704,7 @@ class CPickler(CMill):
 
                 self._indent()
 
-                for spec in self.nonqss_species:
+                for spec in self.species:
                         for i in range(4):
                                 self._write('%s[%d] = %.8E;' % ('COFLAM', spec.id*4+i, coflam[spec.id][3-i]))
 
@@ -872,7 +715,7 @@ class CPickler(CMill):
         def _diffcoefs(self, speciesTransport, do_declarations, NTFit) :
                 #REORDERING OF SPECS
                 specOrdered = []
-                for i in range(self.nSpecies):
+                for i in range(self.n_species):
                         for spec in speciesTransport:
                                 if spec.id == i:
                                         specOrdered.append(spec)
@@ -959,11 +802,11 @@ class CPickler(CMill):
                         #for j,spec2 in enumerate(specOrdered):
                         for j,spec2 in enumerate(specOrdered[0:i+1]):
                                 for k in range(4):
-                                        #self._write('%s[%d] = %.8E;' % ('COFD', i*self.nSpecies*4+j*4+k, cofd[j][i][3-k]))
-                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.nSpecies*4+j*4+k, cofd[i][j][3-k]))
+                                        #self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, cofd[j][i][3-k]))
+                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, cofd[i][j][3-k]))
                         for j,spec2 in enumerate(specOrdered[i+1:]):
                                 for k in range(4):
-                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.nSpecies*4+(j+i+1)*4+k, cofd[j+i+1][i][3-k]))
+                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+(j+i+1)*4+k, cofd[j+i+1][i][3-k]))
 
                 self._outdent()
                 self._write('};')
@@ -973,7 +816,7 @@ class CPickler(CMill):
                 # This is an overhaul of CHEMKIN version III
                 #REORDERING OF SPECS
                 specOrdered = []
-                for i in range(self.nSpecies):
+                for i in range(self.n_species):
                         for spec in speciesTransport:
                                 if spec.id == i:
                                         specOrdered.append(spec)
@@ -1054,48 +897,10 @@ class CPickler(CMill):
                 self._indent()
 
                 for i in range(len(coftd)):
-                        for j in range(self.nSpecies):
+                        for j in range(self.n_species):
                                 for k in range(4):
-                                        self._write('%s[%d] = %.8E;' % ('COFTD', i*4*self.nSpecies+j*4+k, coftd[i][j][3-k]))
+                                        self._write('%s[%d] = %.8E;' % ('COFTD', i*4*self.n_species+j*4+k, coftd[i][j][3-k]))
 
-                self._outdent()
-                self._write('};')
-                return
-
-        def _generateTransRoutineInteger(self, nametab, expression, do_declarations):
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[1]))
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[2]))
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[3]))
-                        self._write('#endif')
-
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void %s(int* %s ) {' % (nametab[0], nametab[4]))
-                self._indent()
-
-                self._write('*%s = %d;};' % (nametab[4], expression ))
-                self._outdent()
-                return
-
-        def _generateTransRoutineSimple(self, mechanism, nametab, id, speciesTransport, do_declarations):
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[1]))
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[2]))
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define %s %s' % (nametab[0], nametab[3]))
-                        self._write('#endif')
-
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void %s(amrex::Real* %s ) {' % (nametab[0], nametab[4]))
-                self._indent()
-
-                for spec in self.nonqss_species:
-                        self._write('%s[%d] = %.8E;' % (nametab[4], spec.id, float(speciesTransport[spec][id])))
                 self._outdent()
                 self._write('};')
                 return
