@@ -568,8 +568,7 @@ class CPickler(CMill):
                 self._write(self.line(' Transport function declarations '))
                 speciesTransport = self._analyzeTransport(mechanism)
                 self._viscosity(mechanism, speciesTransport, False, NTFit=50)
-                self._diffcoefs(speciesTransport, False, NTFit=50)
-                return
+                #self._diffcoefs(speciesTransport, False, NTFit=50)
 
         def _analyzeTransport(self, mechanism):
                 transdata = OrderedDict()
@@ -676,7 +675,7 @@ class CPickler(CMill):
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
                         coflam[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void transport(dfloat p, dfloat T, dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& density_times_mixture_diffusion_coefficients) {')
+                self._write('void fg_transport(dfloat p, dfloat T, dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& density_times_mixture_diffusion_coefficients) {')
                 self._indent()
                 """mixture_viscosity = Σ(i| mole . viscosity / Σ(mole . sq(1 + √(viscosity[i]/viscosity * √(molar_mass/molar_mass[i]))) / (√8 * √(1 + molar_mass[i]/molar_mass))))"""
                 self._write('viscosity = 0.;')
@@ -685,7 +684,7 @@ class CPickler(CMill):
                         self._write('{')
                         self._indent()
                         #{
-                        self._write('int i = %d' % (i))
+                        self._write('int i = %d;' % (i))
                         self._write('dfloat mole_ratio = mass_fraction*fg_rcp_molar_mass[i];')
                         def evaluate_polynomial(P, x):
                             self._write('dfloat y = 0.;')
@@ -715,33 +714,6 @@ class CPickler(CMill):
                 #}
                 self._outdent()
                 self._write('}')
-
-                #header for cond
-                self._write()
-                self._write()
-                self._write(self.line('Poly fits for the conductivities, dim NO*KK'))
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetCOFLAM EGTRANSETCOFLAM')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetCOFLAM egtransetcoflam')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetCOFLAM egtransetcoflam_')
-                        self._write('#endif')
-
-                #visco coefs
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void egtransetCOFLAM(amrex::Real* COFLAM) {')
-
-                self._indent()
-
-                for spec in self.species:
-                        for i in range(4):
-                                self._write('%s[%d] = %.8E;' % ('COFLAM', spec.id*4+i, coflam[spec.id][3-i]))
-
-                self._outdent()
-                self._write('};')
-                return
 
         def _diffcoefs(self, speciesTransport, do_declarations, NTFit) :
                 #REORDERING OF SPECS

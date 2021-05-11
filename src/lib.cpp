@@ -49,6 +49,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     comm   = _comm;
     device = _device;
 
+    // FIXME: Assert exists. OCCA seems to create an empty file otherwise
     std::string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".c";
 
     kernel_properties["includes"].asArray();
@@ -67,11 +68,13 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     MPI_Comm_rank(comm, &rank);
     for (int r = 0; r < 2; r++) {
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
-        production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
-        transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
-        number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
-        mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
-        molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
+            printf("transport\n");
+            transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
+            printf("production_rates\n");
+            production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
+            number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
+            mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
+            molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
       }
       MPI_Barrier(comm);
     }

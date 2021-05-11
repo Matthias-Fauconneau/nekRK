@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     const int n_states = std::stoi(argv[2])/size;
     const int blockSize = std::stoi(argv[3]);
     const int nRep = std::stoi(argv[4]);
-    std::string mech("GRIMech-3.0");
+    std::string mech("grimech30");
     if(argc > 5) mech.assign(argv[5]);
 
     char deviceConfig[BUFSIZ];
@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
 
     auto reference_mass_fractions = new double[n_species];
-    for(int k=0; k<n_species; k++) { 
+    for(int k=0; k<n_species; k++) {
       reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;
     }
     const double reference_length = 1.;
@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
     const double reference_pressure = pressure_Pa;
     const double reference_temperature = temperature_K;
 
-    nekRK::set_reference_parameters(reference_pressure, 
-                            reference_temperature, 
-                    reference_length, 
-                    reference_velocity, 
+    nekRK::set_reference_parameters(reference_pressure,
+                            reference_temperature,
+                    reference_length,
+                    reference_velocity,
                     reference_mass_fractions);
 
     // populdate states
@@ -96,27 +96,27 @@ int main(int argc, char **argv) {
 
     const double pressure = pressure_Pa / reference_pressure;
 
-    auto o_rates = device.malloc<double>(n_species*n_states);
-    auto o_heat_release_rate = device.malloc<double>(n_states);
+    auto o_viscosity = device.malloc<double>(n_states);
+    auto o_density_times_mixture_diffusion_coefficients = device.malloc<double>(n_species*n_states);
 
     // warm up
-    nekRK::production_rates(n_states, 
-                            pressure, 
-                    o_temperature, 
-                    o_mass_fractions, 
-                    o_rates, 
-                    o_heat_release_rate);
+    nekRK::transportCoeffs(n_states,
+                            pressure,
+                    o_temperature,
+                    o_mass_fractions,
+                    o_viscosity,
+                    o_density_times_mixture_diffusion_coefficients);
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto startTime = MPI_Wtime();
     for(int i=0; i<nRep; i++) {
-        nekRK::production_rates(n_states, 
-                    pressure, 
-                o_temperature, 
-                o_mass_fractions, 
-                o_rates, 
-                o_heat_release_rate);
+        nekRK::transportCoeffs(n_states,
+                                                     pressure,
+                                                 o_temperature,
+                                                 o_mass_fractions,
+                                                 o_viscosity,
+                                                 o_density_times_mixture_diffusion_coefficients);
     }
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     if(rank==0)
       printf("avg throughput: %.3f GDOF/s\n",
         (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
-
+#if 0
     // get results from device
     auto rates = new double[n_species*n_states];
     o_rates.copyTo(rates);
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
     printf("%5s    %.15e\n", "HRR", heat_release_rate[0] * energy_rate);
     printf("%5s    %.15e\n", "HRR0", energy_rate);
     printf("%5s    %.15e\n", "HRR/HRR0", heat_release_rate[0]);*/
-
+#endif
     MPI_Finalize();
     exit(EXIT_SUCCESS);
 }

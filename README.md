@@ -47,7 +47,10 @@ avg throughput: 2.609 GDOF/s
 
 ### BK2: Properties
 
-TODO
+```sh
+Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]
+>cd $NEKRK_PATH; bin/bk2 CUDA 100000 256 1000
+```
 
 ## Benchmark Problems
 
