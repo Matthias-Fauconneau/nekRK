@@ -575,7 +575,6 @@ class CPickler(CMill):
                 self._nlin(mechanism, speciesTransport, False)
                 self._viscosity(mechanism, speciesTransport, False, NTFit=50)
                 self._diffcoefs(speciesTransport, False, NTFit=50)
-                self._lightSpecs(idxLightSpecs, False)
                 self._thermaldiffratios(speciesTransport, idxLightSpecs, False, NTFit=50)
                 return
 
@@ -738,9 +737,6 @@ class CPickler(CMill):
                 kb = 1.3806503e-16
                 Na = 6.02214199e23
                 RU = 8.31447e7
-                #conversion coefs
-                AtoCM = 1.0e-8
-                DEBYEtoCGS = 1.0e-18
                 #temperature increment
                 dt = (self.highT-self.lowT) / (NTFit-1)
                 #factor dependent upon the molecule
