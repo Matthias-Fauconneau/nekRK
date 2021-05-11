@@ -2853,7 +2853,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 1: 2.000000 O + M <=> O2 + M */
     phi_f = sc[2]*sc[2];
-    alpha = mixture + 1.400000e+00*sc[0] + 1.440000e+01*sc[5] + sc[13] + 7.500000e-01*sc[14] + 2.600000e+00*sc[15] + 2.000000e+00*sc[26] -1.700000e-01*sc[48];
+    alpha = mixture + 1.400000e+00*sc[0] + 1.440000e+01*sc[5] + sc[13] + 7.500000e-01*sc[14] + 2.600000e+00*sc[15] + 2.000000e+00*sc[26] + -1.700000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 1.200000e+17*fgexp(-1.000000e+00*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[3];
@@ -2866,7 +2866,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 2: O + H + M <=> OH + M */
     phi_f = sc[2]*sc[1];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 5.000000e+17*fgexp(-1.000000e+00*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[4];
@@ -3006,7 +3006,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 12: O + CO (+M) <=> CO2 (+M) */
     phi_f = sc[2]*sc[14];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[3] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + 2.500000e+00*sc[15] + 2.000000e+00*sc[26] -5.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[3] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + 2.500000e+00*sc[15] + 2.000000e+00*sc[26] + -5.000000e-01*sc[48];
     k_f = 1.000000e-06 * 1.800000e+10*fgexp(-1.200172e+03*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 6.020000e+14*fgexp(-1.509650e+03*tc[5]);
     F = redP / (1 + redP);
@@ -3303,7 +3303,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 33: H + O2 + M <=> HO2 + M */
     phi_f = sc[1]*sc[3];
-    alpha = mixture -1.000000e+00*sc[3] -1.000000e+00*sc[5] -2.500000e-01*sc[14] + 5.000000e-01*sc[15] + 5.000000e-01*sc[26] -1.000000e+00*sc[47] -1.000000e+00*sc[48];
+    alpha = mixture + -1.000000e+00*sc[3] + -1.000000e+00*sc[5] + -2.500000e-01*sc[14] + 5.000000e-01*sc[15] + 5.000000e-01*sc[26] + -1.000000e+00*sc[47] + -1.000000e+00*sc[48];
     k_f = 1.000000e-12 * alpha * 2.800000e+18*fgexp(-8.600000e-01*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[6];
@@ -3390,7 +3390,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 39: 2.000000 H + M <=> H2 + M */
     phi_f = sc[1]*sc[1];
-    alpha = mixture -1.000000e+00*sc[0] -1.000000e+00*sc[5] + sc[13] -1.000000e+00*sc[15] + 2.000000e+00*sc[26] -3.700000e-01*sc[48];
+    alpha = mixture + -1.000000e+00*sc[0] + -1.000000e+00*sc[5] + sc[13] + -1.000000e+00*sc[15] + 2.000000e+00*sc[26] + -3.700000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 1.000000e+18*fgexp(-1.000000e+00*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[0];
@@ -3444,7 +3444,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 43: H + OH + M <=> H2O + M */
     phi_f = sc[1]*sc[4];
-    alpha = mixture -2.700000e-01*sc[0] + 2.650000e+00*sc[5] + sc[13] + 2.000000e+00*sc[26] -6.200000e-01*sc[48];
+    alpha = mixture + -2.700000e-01*sc[0] + 2.650000e+00*sc[5] + sc[13] + 2.000000e+00*sc[26] + -6.200000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 2.200000e+22*fgexp(-2.000000e+00*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[5];
@@ -3541,7 +3541,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 50: H + CH2 (+M) <=> CH3 (+M) */
     phi_f = sc[1]*sc[10];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 6.000000e+14;
     redP = 1.0e-12 * alpha / k_f * 1.040000e+26*fgexp(-2.760000e+00*tc[0]-8.051467e+02*tc[5]);
     F = redP / (1 + redP);
@@ -3579,7 +3579,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 52: H + CH3 (+M) <=> CH4 (+M) */
     phi_f = sc[1]*sc[12];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + 2.000000e+00*sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + 2.000000e+00*sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 1.390000e+16*fgexp(-5.340000e-01*tc[0]-2.697241e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 2.620000e+33*fgexp(-4.760000e+00*tc[0]-1.227849e+03*tc[5]);
     F = redP / (1 + redP);
@@ -3617,7 +3617,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 54: H + HCO (+M) <=> CH2O (+M) */
     phi_f = sc[1]*sc[16];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 1.090000e+12*fgexp(4.800000e-01*tc[0]+1.308363e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 2.470000e+24*fgexp(-2.570000e+00*tc[0]-2.138671e+02*tc[5]);
     F = redP / (1 + redP);
@@ -3891,7 +3891,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 70: H + C2H (+M) <=> C2H2 (+M) */
     phi_f = sc[1]*sc[21];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 1.000000e+17*fgexp(-1.000000e+00*tc[0]);
     redP = 1.0e-12 * alpha / k_f * 3.750000e+33*fgexp(-4.800000e+00*tc[0]-9.561117e+02*tc[5]);
     F = redP / (1 + redP);
@@ -3915,7 +3915,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 71: H + C2H2 (+M) <=> C2H3 (+M) */
     phi_f = sc[1]*sc[22];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 5.600000e+12*fgexp(-1.207720e+03*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 3.800000e+40*fgexp(-7.270000e+00*tc[0]-3.633224e+03*tc[5]);
     F = redP / (1 + redP);
@@ -3939,7 +3939,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 72: H + C2H3 (+M) <=> C2H4 (+M) */
     phi_f = sc[1]*sc[23];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 6.080000e+12*fgexp(2.700000e-01*tc[0]-1.409007e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 1.400000e+30*fgexp(-3.860000e+00*tc[0]-1.670679e+03*tc[5]);
     F = redP / (1 + redP);
@@ -3977,7 +3977,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 74: H + C2H4 (+M) <=> C2H5 (+M) */
     phi_f = sc[1]*sc[24];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 5.400000e+11*fgexp(4.540000e-01*tc[0]-9.158543e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 6.000000e+41*fgexp(-7.620000e+00*tc[0]-3.507420e+03*tc[5]);
     F = redP / (1 + redP);
@@ -4015,7 +4015,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 76: H + C2H5 (+M) <=> C2H6 (+M) */
     phi_f = sc[1]*sc[25];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 5.210000e+17*fgexp(-9.900000e-01*tc[0]-7.950823e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 1.990000e+41*fgexp(-7.080000e+00*tc[0]-3.364003e+03*tc[5]);
     F = redP / (1 + redP);
@@ -4123,7 +4123,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 83: H2 + CO (+M) <=> CH2O (+M) */
     phi_f = sc[0]*sc[14];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 4.300000e+07*fgexp(1.500000e+00*tc[0]-4.005605e+04*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 5.070000e+27*fgexp(-3.420000e+00*tc[0]-4.244633e+04*tc[5]);
     F = redP / (1 + redP);
@@ -4161,7 +4161,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 85: 2.000000 OH (+M) <=> H2O2 (+M) */
     phi_f = sc[4]*sc[4];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 7.400000e+13*fgexp(-3.700000e-01*tc[0]);
     redP = 1.0e-12 * alpha / k_f * 2.300000e+18*fgexp(-9.000000e-01*tc[0]+8.554683e+02*tc[5]);
     F = redP / (1 + redP);
@@ -4821,7 +4821,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 131: CH + CO (+M) <=> HCCO (+M) */
     phi_f = sc[9]*sc[14];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 5.000000e+13;
     redP = 1.0e-12 * alpha / k_f * 2.690000e+28*fgexp(-3.740000e+00*tc[0]-9.742275e+02*tc[5]);
     F = redP / (1 + redP);
@@ -4953,7 +4953,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 140: CH2 + CO (+M) <=> CH2CO (+M) */
     phi_f = sc[10]*sc[14];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 8.100000e+11*fgexp(5.000000e-01*tc[0]-2.269507e+03*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 2.690000e+33*fgexp(-5.110000e+00*tc[0]-3.570322e+03*tc[5]);
     F = redP / (1 + redP);
@@ -5225,7 +5225,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 158: 2.000000 CH3 (+M) <=> C2H6 (+M) */
     phi_f = sc[12]*sc[12];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 6.770000e+16*fgexp(-1.180000e+00*tc[0]-3.291037e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 3.400000e+41*fgexp(-7.030000e+00*tc[0]-1.389884e+03*tc[5]);
     F = redP / (1 + redP);
@@ -5360,7 +5360,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 167: HCO + M <=> H + CO + M */
     phi_f = sc[16];
-    alpha = mixture + sc[0] -1.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26];
+    alpha = mixture + sc[0] + -1.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26];
     k_f = 1.000000e-06 * alpha * 1.870000e+17*fgexp(-1.000000e+00*tc[0]-8.554683e+03*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[1]*sc[14];
@@ -5458,7 +5458,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 174: C2H4 (+M) <=> H2 + C2H2 (+M) */
     phi_f = sc[24];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e+00 * 8.000000e+12*fgexp(4.400000e-01*tc[0]-4.366411e+04*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 1.580000e+51*fgexp(-9.300000e+00*tc[0]-4.921459e+04*tc[5]);
     F = redP / (1 + redP);
@@ -5620,7 +5620,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 185: N2O (+M) <=> N2 + O (+M) */
     phi_f = sc[37];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.750000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.750000e-01*sc[48];
     k_f = 1.000000e+00 * 7.910000e+10*fgexp(-2.819020e+04*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 6.370000e+14*fgexp(-2.850219e+04*tc[5]);
     F = redP / (1 + redP);
@@ -5651,7 +5651,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 187: NO + O + M <=> NO2 + M */
     phi_f = sc[35]*sc[2];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 1.060000e+20*fgexp(-1.410000e+00*tc[0]);
     q_f = phi_f * k_f;
     phi_r = sc[36];
@@ -5902,7 +5902,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 205: NNH + M <=> N2 + H + M */
     phi_f = sc[34];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * alpha * 1.300000e+14*fgexp(-1.100000e-01*tc[0]-2.506019e+03*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[47]*sc[1];
@@ -6000,7 +6000,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 212: H + NO + M <=> HNO + M */
     phi_f = sc[1]*sc[35];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-12 * alpha * 4.480000e+19*fgexp(-1.320000e+00*tc[0]-3.723803e+02*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[38];
@@ -6211,7 +6211,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 227: NCO + M <=> N + CO + M */
     phi_f = sc[46];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * alpha * 3.100000e+14*fgexp(-2.719886e+04*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[30]*sc[14];
@@ -6253,7 +6253,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 230: HCN + M <=> H + CN + M */
     phi_f = sc[40];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * alpha * 1.040000e+29*fgexp(-3.300000e+00*tc[0]-6.370723e+04*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[1]*sc[39];
@@ -6351,7 +6351,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 237: H + HCN (+M) <=> H2CN (+M) */
     phi_f = sc[1]*sc[40];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 3.300000e+13;
     redP = 1.0e-12 * alpha / k_f * 1.400000e+26*fgexp(-3.400000e+00*tc[0]-9.561117e+02*tc[5]);
     F = redP / (1 + redP);
@@ -6815,7 +6815,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 269: HNCO + M <=> NH + CO + M */
     phi_f = sc[45];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * alpha * 1.180000e+16*fgexp(-4.263252e+04*tc[5]);
     q_f = phi_f * k_f;
     phi_r = sc[31]*sc[14];
@@ -7090,7 +7090,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 289: CH + H2 (+M) <=> CH3 (+M) */
     phi_f = sc[9]*sc[0];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 1.970000e+12*fgexp(4.300000e-01*tc[0]+1.861902e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 4.820000e+25*fgexp(-2.800000e+00*tc[0]-2.968978e+02*tc[5]);
     F = redP / (1 + redP);
@@ -7289,7 +7289,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 304: H + CH2CO (+M) <=> CH2CHO (+M) */
     phi_f = sc[1]*sc[28];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 4.865000e+11*fgexp(4.220000e-01*tc[0]+8.831452e+02*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 1.012000e+42*fgexp(-7.630000e+00*tc[0]-1.939397e+03*tc[5]);
     F = redP / (1 + redP);
@@ -7404,7 +7404,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 312: CH3 + C2H5 (+M) <=> C3H8 (+M) */
     phi_f = sc[12]*sc[25];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 9.430000e+12;
     redP = 1.0e-12 * alpha / k_f * 2.710000e+74*fgexp(-1.682000e+01*tc[0]-6.574526e+03*tc[5]);
     F = redP / (1 + redP);
@@ -7498,7 +7498,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 318: CH3 + C2H4 (+M) <=> C3H7 (+M) */
     phi_f = sc[12]*sc[24];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 2.550000e+06*fgexp(1.600000e+00*tc[0]-2.868335e+03*tc[5]);
     redP = 1.0e-12 * alpha / k_f * 3.000000e+63*fgexp(-1.460000e+01*tc[0]-9.143447e+03*tc[5]);
     F = redP / (1 + redP);
@@ -7536,7 +7536,7 @@ void fg_rates(dfloat * sc, dfloat tc[], dfloat * wdot)
 
     /*reaction 320: H + C3H7 (+M) <=> C3H8 (+M) */
     phi_f = sc[1]*sc[49];
-    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] -3.000000e-01*sc[48];
+    alpha = mixture + sc[0] + 5.000000e+00*sc[5] + sc[13] + 5.000000e-01*sc[14] + sc[15] + 2.000000e+00*sc[26] + -3.000000e-01*sc[48];
     k_f = 1.000000e-06 * 3.613000e+13;
     redP = 1.0e-12 * alpha / k_f * 4.420000e+61*fgexp(-1.354500e+01*tc[0]-5.715032e+03*tc[5]);
     F = redP / (1 + redP);

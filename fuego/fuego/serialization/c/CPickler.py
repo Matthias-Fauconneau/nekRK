@@ -569,7 +569,6 @@ class CPickler(CMill):
                 speciesTransport = self._analyzeTransport(mechanism)
                 self._viscosity(mechanism, speciesTransport, False, NTFit=50)
                 self._diffcoefs(speciesTransport, False, NTFit=50)
-                self._thermaldiffratios(speciesTransport, idxLightSpecs, False, NTFit=50)
                 return
 
         def _analyzeTransport(self, mechanism):
@@ -603,21 +602,23 @@ class CPickler(CMill):
                 m_crot = np.zeros(self.n_species)
                 m_cvib = np.zeros(self.n_species)
                 isatm = np.zeros(self.n_species)
-                for spec in speciesTransport:
-                        if int(speciesTransport[spec][0]) == 0:
-                                m_crot[spec.id] = 0.0
-                                m_cvib[spec.id] = 0.0
-                                isatm[spec.id] = 0.0
-                        elif int(speciesTransport[spec][0]) == 1:
-                                m_crot[spec.id] = 1.0
-                                m_cvib[spec.id] = 5.0 / 2.0
-                                isatm[spec.id] = 1.0
-                        else:
-                                m_crot[spec.id] = 1.5
-                                m_cvib[spec.id] = 3.0
-                                isatm[spec.id] = 1.0
+                def for_():
+                    for spec in speciesTransport:
+                            if int(speciesTransport[spec][0]) == 0:
+                                    m_crot[spec.id] = 0.0
+                                    m_cvib[spec.id] = 0.0
+                                    isatm[spec.id] = 0.0
+                            elif int(speciesTransport[spec][0]) == 1:
+                                    m_crot[spec.id] = 1.0
+                                    m_cvib[spec.id] = 5.0 / 2.0
+                                    isatm[spec.id] = 1.0
+                            else:
+                                    m_crot[spec.id] = 1.5
+                                    m_cvib[spec.id] = 3.0
+                                    isatm[spec.id] = 1.0
+                for_()
                 #viscosities coefs (4 per spec)
-                cofeta = OrderedDict()
+                ln_viscosity = OrderedDict()
                 #conductivities coefs (4 per spec)
                 coflam = OrderedDict()
                 for transport_specie in speciesTransport:
@@ -644,23 +645,23 @@ class CPickler(CMill):
                                 m_red = molar_mass / (2.0 * Na)
                                 diffcoef = (3.0 / 16.0) * np.sqrt(2.0 * np.pi * kb**3 * t**3 / m_red) / (10.0 * np.pi * self.om11_CHEMKIN(tr,dst) * diameter**2)
                                 #eq. (19)
-                                cv_vib_R = (self._getCVdRspecies(mechanism, t, spec) - m_cvib[spec.id]) * isatm[spec.id]
+                                cv_vib_R = (self._getCVdRspecies(mechanism, t, transport_specie) - m_cvib[transport_specie.id]) * isatm[transport_specie.id]
                                 rho_atm = 10.0 * molar_mass /(RU * t)
                                 f_vib = rho_atm * diffcoef / visc
                                 #eq. (20)
                                 A = 2.5 - f_vib
                                 #eqs. (21) + (32-33)
-                                cv_rot_R = m_crot[spec.id]
+                                cv_rot_R = m_crot[transport_specie.id]
                                 #note: the T corr is not applied in CANTERA
-                                B = (float(speciesTransport[spec][5]) \
-                                                * self.Fcorr(298.0, float(speciesTransport[spec][1])) / self.Fcorr(t, float(speciesTransport[spec][1])) \
+                                B = (float(speciesTransport[transport_specie][5]) \
+                                                * self.Fcorr(298.0, float(speciesTransport[transport_specie][1])) / self.Fcorr(t, float(speciesTransport[transport_specie][1])) \
                                                 + (2.0 / np.pi) * ((5.0 / 3.0 ) * cv_rot_R  + f_vib))
                                 #eq. (18)
                                 f_rot = f_vib * (1.0 + 2.0 / np.pi * A / B )
                                 #eq. (17)
                                 cv_trans_R = 3.0 / 2.0
                                 f_trans = 5.0 / 2.0 * (1.0 - 2.0 / np.pi * A / B * cv_rot_R / cv_trans_R )
-                                if (int(speciesTransport[spec][0]) == 0):
+                                if (int(speciesTransport[transport_specie][0]) == 0):
                                         cond = (visc * RU / molar_mass) * \
                                                         (5.0 / 2.0) * cv_trans_R
                                 else:
@@ -672,18 +673,48 @@ class CPickler(CMill):
                                 spvisc.append(np.log(visc))
                                 spcond.append(np.log(cond))
 
-                        cofeta[spec.id] = np.polyfit(tlog, spvisc, 3)
-                        coflam[spec.id] = np.polyfit(tlog, spcond, 3)
+                        ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
+                        coflam[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void egtransetCOFETA(amrex::Real* COFETA) {')
+                self._write('void transport(dfloat p, dfloat T, dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& density_times_mixture_diffusion_coefficients) {')
                 self._indent()
-
-                for spec in self.species:
-                        for i in range(4):
-                                self._write('%s[%d] = %.8E;' % ('COFETA', spec.id*4+i, cofeta[spec.id][3-i]))
-
+                """mixture_viscosity = Σ(i| mole . viscosity / Σ(mole . sq(1 + √(viscosity[i]/viscosity * √(molar_mass/molar_mass[i]))) / (√8 * √(1 + molar_mass[i]/molar_mass))))"""
+                self._write('viscosity = 0.;')
+                for spec in self.species: #i|
+                        i = spec.id
+                        self._write('{')
+                        self._indent()
+                        #{
+                        self._write('int i = %d' % (i))
+                        self._write('dfloat mole_ratio = mass_fraction*fg_rcp_molar_mass[i];')
+                        def evaluate_polynomial(P, x):
+                            self._write('dfloat y = 0.;')
+                            for i in range(4):
+                                    self._write('y += %.8E*pow(%s,%d);' % (P[3-i], x, i)) #?
+                        ln_T = "log(T)"
+                        y = evaluate_polynomial(ln_viscosity[i], ln_T)
+                        self._write('dfloat viscosity_i = exp(y);')
+                        self._write('dfloat denominator = 0.;') #Σ(mole . sq(1 + √(viscosity[i]/viscosity * √(molar_mass/molar_mass[i]))) / (√8 * √(1 + molar_mass[i]/molar_mass)))
+                        for spec in self.species: #j|
+                            j = spec.id
+                            self._write('{')
+                            self._indent()
+                            self._write('int j = %d;' % (j))
+                            self._write('dfloat mole_ratio = mass_fraction*fg_rcp_molar_mass[j];')
+                            y = evaluate_polynomial(ln_viscosity[j], ln_T) # ln
+                            self._write('dfloat viscosity_j = exp(y);')
+                            self._write('dfloat sq = ::sq(1. + sqrt(viscosity_i/viscosity_j * sqrt(fg_molar_mass[j]*fg_rcp_molar_mass[i])));')
+                            self._write('denominator += mole_ratio * sq / (sqrt(8.) * sqrt(1. + fg_molar_mass[i]*fg_rcp_molar_mass[j]));')
+                            self._outdent()
+                            self._write('}')
+                        #}
+                        self._write('viscosity += mole_ratio * viscosity_i / denominator;') #Σi
+                        #}
+                        self._outdent()
+                        self._write('}')
+                #}
                 self._outdent()
-                self._write('};')
+                self._write('}')
 
                 #header for cond
                 self._write()
@@ -724,37 +755,31 @@ class CPickler(CMill):
                 #compute single constants in g/cm/s
                 kb = 1.3806503e-16
                 Na = 6.02214199e23
-                #conversion coefs
-                AtoCM = 1.0e-8
-                DEBYEtoCGS = 1.0e-18
-                PATM = 0.1013250000000000E+07
+                atmospheric_pressure = 101325.
                 #temperature increment
                 dt = (self.highT-self.lowT) / (NTFit-1)
                 #diff coefs (4 per spec pair)
                 cofd = []
-                for i,spec1 in enumerate(specOrdered):
+                for i, transport_specie_i in enumerate(specOrdered):
                         cofd.append([])
-                        if (i != spec1.id):
+                        if (i != transport_specie_i.id):
                                 print "Problem in _diffcoefs computation"
                                 stop
-                        for j,spec2 in enumerate(specOrdered[0:i+1]):
-                                if (j != spec2.id):
+                        for j, transport_specie_j in enumerate(specOrdered[0:i+1]):
+                                if (j != transport_specie_j.id):
                                         print "Problem in _diffcoefs computation"
                                         stop
-                                #eq. (9)
-                                sigm = (0.5 * (float(speciesTransport[spec1][2]) + float(speciesTransport[spec2][2])) * AtoCM)\
-                                                * self.Xi(spec1, spec2, speciesTransport)**(1.0/6.0)
-                                #eq. (4)
-                                m_red = spec1.weight * spec2.weight / \
-                                                (spec1.weight + spec2.weight) / Na
-                                #eq. (8) & (14)
-                                epsm_k = np.sqrt(float(speciesTransport[spec1][1]) * float(speciesTransport[spec2][1])) \
-                                                * self.Xi(spec1, spec2, speciesTransport)**2.0
-
-                                #eq. (15)
-                                dst = 0.5 * float(speciesTransport[spec1][3]) * float(speciesTransport[spec2][3]) / \
-                                        (epsm_k * sigm**3)
-                                if self.Xi_bool(spec1, spec2, speciesTransport)==False:
+                                diameter_Aengstroem_i = float(speciesTransport[transport_specie_i][2]) #Ångström
+                                diameter_i = diameter_Aengstroem_i*1e-10
+                                diameter_Aengstroem_j = float(speciesTransport[transport_specie_j][2]) #Ångström
+                                diameter_j = diameter_Aengstroem_j*1e-10
+                                sigma = (diameter_i + diameter_j)/2. * self.Xi(transport_specie_i, transport_specie_j, speciesTransport)**(1./6.) #What is this ?
+                                molar_mass_i = self.species[transport_specie_i.id].weight
+                                molar_mass_j = self.species[transport_specie_j.id].weight
+                                m_red = molar_mass_i * molar_mass_j / (molar_mass_i + molar_mass_j) / Na #What is this ?
+                                epsm_k = np.sqrt(float(speciesTransport[transport_specie_i][1]) * float(speciesTransport[transport_specie_j][1])) * self.Xi(transport_specie_i, transport_specie_j, speciesTransport)**2.0 #What is this ?
+                                dst = float(speciesTransport[transport_specie_i][3]) * float(speciesTransport[transport_specie_j][3]) / (epsm_k * sigma**3) #What is this ?
+                                if self.Xi_bool(transport_specie_i, transport_specie_j, speciesTransport)==False:
                                         dst = 0.0
                                 #enter the loop on temperature
                                 spdiffcoef = []
@@ -764,7 +789,7 @@ class CPickler(CMill):
                                     tr = t/ epsm_k
                                     #eq. (3)
                                     #note: these are "corrected" in CHEMKIN not in CANTERA... we chose not to
-                                    difcoeff = 3.0 / 16.0 * 1 / PATM * (np.sqrt(2.0 * np.pi * t**3 * kb**3 / m_red) / ( np.pi * sigm * sigm * self.om11_CHEMKIN(tr,dst)))
+                                    difcoeff = 3.0 / 16.0 * 1 / atmospheric_pressure * (np.sqrt(2.0 * np.pi * t**3 * kb**3 / m_red) / ( np.pi * sigma * sigma * self.om11_CHEMKIN(tr,dst)))
 
                                     #log transformation for polyfit
                                     tlog.append(np.log(t))

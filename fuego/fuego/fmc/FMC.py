@@ -65,15 +65,12 @@ class FMC(Application):
         outputFileHeader  = self._openOutput(save_header)
         count_lines = 0
         for line in lines:
-            if ('ifndef MECHANISM_CPP') in line:
-                line_start_core = count_lines
-                break;
             outputFileHeader.write(line)
             outputFileHeader.write('\n')
             count_lines += 1
 
         outputFile = self._openOutput(save)
-        for line in lines[line_start_core:]:
+        for line in lines:
             if ('#ifndef MECHANISM_h') in line:
                 line_start_mech_header = count_lines
                 break;
@@ -82,7 +79,7 @@ class FMC(Application):
             count_lines += 1
 
         MechHeaderFile = self._openOutput(mech_header)
-        for line in lines[line_start_mech_header:]:
+        for line in lines:
             MechHeaderFile.write(line)
             MechHeaderFile.write('\n')
 
