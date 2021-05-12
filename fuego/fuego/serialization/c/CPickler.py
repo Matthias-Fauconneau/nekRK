@@ -793,7 +793,7 @@ class CPickler(CMill):
                 #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
                 self._write(self.line('Poly fits for the diffusion coefficients, dim NO*KK*KK'))
-                self._write('dfloat fg_binary_diffusion_coefficients[n_species*n_species*4] = {')
+                self._write('const dfloat fg_binary_diffusion_coefficients[n_species*n_species*4] = {')
                 self._indent()
                 for i,spec1 in enumerate(specOrdered):
                         #for j,spec2 in enumerate(specOrdered): # Why is this split ?
