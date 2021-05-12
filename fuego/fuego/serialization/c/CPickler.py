@@ -794,18 +794,22 @@ class CPickler(CMill):
                 #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
                 # No idea what this code does
-                self._write('void fg_Pele_Ddiag(const dfloat wbar, const dfloat Xloc[n_species], const dfloat Yloc[n_species], dfloat logT[3], dfloat* Ddiag) {')
+                self._write('void fg_Pele_Ddiag(const dfloat wbar, const dfloat Xloc[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {')
                 self._indent()
+                self._write('dfloat term1 = 0.0;')
+                self._write('for(int i=0; i<n_species; i++) {')
+                self._write('term1 += mass_fractions[i];')
+                self._write('}')
+
                 for i,spec1 in enumerate(specOrdered):
                     self._write('{')
                     self._indent()
-                    self._write('dfloat term1 = 0.0, term2 = 0.0;')
+                    self._write('dfloat term2 = 0.0;')
                     for j,spec2 in enumerate(specOrdered[0:i]):
                         self._write('{')
                         self._indent()
                         self._write('dfloat dbintemp = %.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2];' % (# Why is the coefficient order being reversed here ?
                             binary_diffusion_coefficients[i][j][3], binary_diffusion_coefficients[i][j][2], binary_diffusion_coefficients[i][j][1], binary_diffusion_coefficients[i][j][0]))
-                        self._write('term1 += Yloc[%d];'%( j));
                         self._write('term2 += Xloc[%d] / exp(dbintemp);' % (j))
                         self._write('}')
                         self._outdent()
