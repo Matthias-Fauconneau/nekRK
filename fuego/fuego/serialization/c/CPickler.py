@@ -674,14 +674,14 @@ class CPickler(CMill):
                 self._write('void fg_viscosity_and_thermal_conductivity(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
                 self._indent()
                 self._write('dfloat mean_rcp_molar_mass = 0.;')
-                for spec in self.species: #i|
-                        i = spec.id
-                        self._write('mean_rcp_molar_mass += mass_fractions[%d]*fg_rcp_molar_mass[%d];' %(i, i))
+                self._write('for(int i=0; i<n_species; i++) {')
+                self._write('mean_rcp_molar_mass += mass_fractions[i]*fg_rcp_molar_mass[i];')
+                self._write('}')
                 self._write('dfloat mean_molar_mass = 1./mean_rcp_molar_mass;')
                 self._write('dfloat mole_fractions[n_species];')
-                for spec in self.species: #i|
-                        i = spec.id
-                        self._write('mole_fractions[%d] = mass_fractions[%d]*fg_rcp_molar_mass[%d]*mean_molar_mass;' %(i,i,i))
+                self._write('for(int i=0; i<n_species; i++) {')
+                self._write('mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;')
+                self._write('}')
 
                 def evaluate_polynomial(P, x):
                     self._write('dfloat y = 0.;')
