@@ -7695,7 +7695,7 @@ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat* mole_fractions)
     return result;
 }
 /* Transport function declarations  */
-void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat* density_times_mixture_diffusion_coefficients) {
+void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity, dfloat* density_times_mixture_diffusion_coefficients) {
     dfloat mean_rcp_molar_mass = 0.;
     mean_rcp_molar_mass += mass_fractions[0]*fg_rcp_molar_mass[0];
     mean_rcp_molar_mass += mass_fractions[1]*fg_rcp_molar_mass[1];
@@ -7750,543 +7750,1027 @@ void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dflo
     mean_rcp_molar_mass += mass_fractions[50]*fg_rcp_molar_mass[50];
     mean_rcp_molar_mass += mass_fractions[51]*fg_rcp_molar_mass[51];
     mean_rcp_molar_mass += mass_fractions[52]*fg_rcp_molar_mass[52];
-    dfloat sum = 0.;
+    dfloat mole_fractions[n_species];
+    mole_fractions[0] = mass_fractions[0]*fg_rcp_molar_mass[0]/mean_rcp_molar_mass;
+    mole_fractions[1] = mass_fractions[1]*fg_rcp_molar_mass[1]/mean_rcp_molar_mass;
+    mole_fractions[2] = mass_fractions[2]*fg_rcp_molar_mass[2]/mean_rcp_molar_mass;
+    mole_fractions[3] = mass_fractions[3]*fg_rcp_molar_mass[3]/mean_rcp_molar_mass;
+    mole_fractions[4] = mass_fractions[4]*fg_rcp_molar_mass[4]/mean_rcp_molar_mass;
+    mole_fractions[5] = mass_fractions[5]*fg_rcp_molar_mass[5]/mean_rcp_molar_mass;
+    mole_fractions[6] = mass_fractions[6]*fg_rcp_molar_mass[6]/mean_rcp_molar_mass;
+    mole_fractions[7] = mass_fractions[7]*fg_rcp_molar_mass[7]/mean_rcp_molar_mass;
+    mole_fractions[8] = mass_fractions[8]*fg_rcp_molar_mass[8]/mean_rcp_molar_mass;
+    mole_fractions[9] = mass_fractions[9]*fg_rcp_molar_mass[9]/mean_rcp_molar_mass;
+    mole_fractions[10] = mass_fractions[10]*fg_rcp_molar_mass[10]/mean_rcp_molar_mass;
+    mole_fractions[11] = mass_fractions[11]*fg_rcp_molar_mass[11]/mean_rcp_molar_mass;
+    mole_fractions[12] = mass_fractions[12]*fg_rcp_molar_mass[12]/mean_rcp_molar_mass;
+    mole_fractions[13] = mass_fractions[13]*fg_rcp_molar_mass[13]/mean_rcp_molar_mass;
+    mole_fractions[14] = mass_fractions[14]*fg_rcp_molar_mass[14]/mean_rcp_molar_mass;
+    mole_fractions[15] = mass_fractions[15]*fg_rcp_molar_mass[15]/mean_rcp_molar_mass;
+    mole_fractions[16] = mass_fractions[16]*fg_rcp_molar_mass[16]/mean_rcp_molar_mass;
+    mole_fractions[17] = mass_fractions[17]*fg_rcp_molar_mass[17]/mean_rcp_molar_mass;
+    mole_fractions[18] = mass_fractions[18]*fg_rcp_molar_mass[18]/mean_rcp_molar_mass;
+    mole_fractions[19] = mass_fractions[19]*fg_rcp_molar_mass[19]/mean_rcp_molar_mass;
+    mole_fractions[20] = mass_fractions[20]*fg_rcp_molar_mass[20]/mean_rcp_molar_mass;
+    mole_fractions[21] = mass_fractions[21]*fg_rcp_molar_mass[21]/mean_rcp_molar_mass;
+    mole_fractions[22] = mass_fractions[22]*fg_rcp_molar_mass[22]/mean_rcp_molar_mass;
+    mole_fractions[23] = mass_fractions[23]*fg_rcp_molar_mass[23]/mean_rcp_molar_mass;
+    mole_fractions[24] = mass_fractions[24]*fg_rcp_molar_mass[24]/mean_rcp_molar_mass;
+    mole_fractions[25] = mass_fractions[25]*fg_rcp_molar_mass[25]/mean_rcp_molar_mass;
+    mole_fractions[26] = mass_fractions[26]*fg_rcp_molar_mass[26]/mean_rcp_molar_mass;
+    mole_fractions[27] = mass_fractions[27]*fg_rcp_molar_mass[27]/mean_rcp_molar_mass;
+    mole_fractions[28] = mass_fractions[28]*fg_rcp_molar_mass[28]/mean_rcp_molar_mass;
+    mole_fractions[29] = mass_fractions[29]*fg_rcp_molar_mass[29]/mean_rcp_molar_mass;
+    mole_fractions[30] = mass_fractions[30]*fg_rcp_molar_mass[30]/mean_rcp_molar_mass;
+    mole_fractions[31] = mass_fractions[31]*fg_rcp_molar_mass[31]/mean_rcp_molar_mass;
+    mole_fractions[32] = mass_fractions[32]*fg_rcp_molar_mass[32]/mean_rcp_molar_mass;
+    mole_fractions[33] = mass_fractions[33]*fg_rcp_molar_mass[33]/mean_rcp_molar_mass;
+    mole_fractions[34] = mass_fractions[34]*fg_rcp_molar_mass[34]/mean_rcp_molar_mass;
+    mole_fractions[35] = mass_fractions[35]*fg_rcp_molar_mass[35]/mean_rcp_molar_mass;
+    mole_fractions[36] = mass_fractions[36]*fg_rcp_molar_mass[36]/mean_rcp_molar_mass;
+    mole_fractions[37] = mass_fractions[37]*fg_rcp_molar_mass[37]/mean_rcp_molar_mass;
+    mole_fractions[38] = mass_fractions[38]*fg_rcp_molar_mass[38]/mean_rcp_molar_mass;
+    mole_fractions[39] = mass_fractions[39]*fg_rcp_molar_mass[39]/mean_rcp_molar_mass;
+    mole_fractions[40] = mass_fractions[40]*fg_rcp_molar_mass[40]/mean_rcp_molar_mass;
+    mole_fractions[41] = mass_fractions[41]*fg_rcp_molar_mass[41]/mean_rcp_molar_mass;
+    mole_fractions[42] = mass_fractions[42]*fg_rcp_molar_mass[42]/mean_rcp_molar_mass;
+    mole_fractions[43] = mass_fractions[43]*fg_rcp_molar_mass[43]/mean_rcp_molar_mass;
+    mole_fractions[44] = mass_fractions[44]*fg_rcp_molar_mass[44]/mean_rcp_molar_mass;
+    mole_fractions[45] = mass_fractions[45]*fg_rcp_molar_mass[45]/mean_rcp_molar_mass;
+    mole_fractions[46] = mass_fractions[46]*fg_rcp_molar_mass[46]/mean_rcp_molar_mass;
+    mole_fractions[47] = mass_fractions[47]*fg_rcp_molar_mass[47]/mean_rcp_molar_mass;
+    mole_fractions[48] = mass_fractions[48]*fg_rcp_molar_mass[48]/mean_rcp_molar_mass;
+    mole_fractions[49] = mass_fractions[49]*fg_rcp_molar_mass[49]/mean_rcp_molar_mass;
+    mole_fractions[50] = mass_fractions[50]*fg_rcp_molar_mass[50]/mean_rcp_molar_mass;
+    mole_fractions[51] = mass_fractions[51]*fg_rcp_molar_mass[51]/mean_rcp_molar_mass;
+    mole_fractions[52] = mass_fractions[52]*fg_rcp_molar_mass[52]/mean_rcp_molar_mass;
     {
-        dfloat y = 0.;
-        y += -5.39736154E+00*pow(log(T),0);
-        y += 1.31234479E+00*pow(log(T),1);
-        y += -9.11353302E-02*pow(log(T),2);
-        y += 4.12406043E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[0]*fg_rcp_molar_mass[0]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
+        dfloat sum = 0.;
+        {
+            dfloat y = 0.;
+            y += -4.30812557E+01*pow(log(T),0);
+            y += 2.84002271E+01*pow(log(T),1);
+            y += -4.29333364E+00*pow(log(T),2);
+            y += 2.17253050E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[0] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 9.63526457E+00*pow(log(T),0);
+            y += 3.01325666E+00*pow(log(T),1);
+            y += -2.95085521E-01*pow(log(T),2);
+            y += 1.21939234E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[1] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.02307886E+01*pow(log(T),0);
+            y += 2.12264682E+00*pow(log(T),1);
+            y += -1.88841114E-01*pow(log(T),2);
+            y += 7.98461151E-03*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[2] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[3] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += -3.63385976E+01*pow(log(T),0);
+            y += 2.46550955E+01*pow(log(T),1);
+            y += -3.71380322E+00*pow(log(T),2);
+            y += 1.87979925E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[4] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += -1.29585286E+02*pow(log(T),0);
+            y += 2.24476300E+01*pow(log(T),1);
+            y += -3.38148042E+00*pow(log(T),2);
+            y += 1.78701226E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[5] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[6] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[7] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.04874340E+01*pow(log(T),0);
+            y += 1.95209379E+00*pow(log(T),1);
+            y += -1.67953942E-01*pow(log(T),2);
+            y += 7.13901813E-03*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[8] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += -4.14958780E+01*pow(log(T),0);
+            y += 2.70652065E+01*pow(log(T),1);
+            y += -4.07653636E+00*pow(log(T),2);
+            y += 2.06175358E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[9] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[10] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[11] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[12] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[13] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[14] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[15] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[16] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[17] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[18] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += -4.25914704E+01*pow(log(T),0);
+            y += -1.97616647E+01*pow(log(T),1);
+            y += 3.23903303E+00*pow(log(T),2);
+            y += -1.56492756E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[19] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[20] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[21] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[22] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[23] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[24] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[25] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[26] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[27] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[28] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[29] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.04105838E+01*pow(log(T),0);
+            y += 1.95209379E+00*pow(log(T),1);
+            y += -1.67953942E-01*pow(log(T),2);
+            y += 7.13901813E-03*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[30] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[31] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[32] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[33] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[34] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 2.88689920E+01*pow(log(T),0);
+            y += -7.00943960E+00*pow(log(T),1);
+            y += 1.20714605E+00*pow(log(T),2);
+            y += -6.07387261E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[35] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[36] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[37] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 3.18870262E+00*pow(log(T),0);
+            y += 4.82145376E+00*pow(log(T),1);
+            y += -5.61291789E-01*pow(log(T),2);
+            y += 2.63220892E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[38] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 6.94852813E+00*pow(log(T),0);
+            y += 3.38374043E+00*pow(log(T),1);
+            y += -3.95383837E-01*pow(log(T),2);
+            y += 1.98583820E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[39] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[40] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += -5.02658005E+01*pow(log(T),0);
+            y += 2.93730180E+01*pow(log(T),1);
+            y += -4.28037566E+00*pow(log(T),2);
+            y += 2.11633770E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[41] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[42] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[43] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[44] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 5.48368664E+01*pow(log(T),0);
+            y += -2.02161385E+01*pow(log(T),1);
+            y += 3.32751021E+00*pow(log(T),2);
+            y += -1.69187938E-01*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[45] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[46] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[47] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 7.04515449E+00*pow(log(T),0);
+            y += 2.94246086E+00*pow(log(T),1);
+            y += -2.87232357E-01*pow(log(T),2);
+            y += 1.19056724E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[48] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.16233161E+01*pow(log(T),0);
+            y += -1.06837866E+00*pow(log(T),1);
+            y += 5.46839289E-01*pow(log(T),2);
+            y += -3.59674443E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[49] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.75287365E+01*pow(log(T),0);
+            y += -3.93164403E+00*pow(log(T),1);
+            y += 9.94261235E-01*pow(log(T),2);
+            y += -5.84404474E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[50] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += 2.92600699E+01*pow(log(T),0);
+            y += -8.64410952E+00*pow(log(T),1);
+            y += 1.61107463E+00*pow(log(T),2);
+            y += -8.53069190E-02*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[51] * pow(viscosity_i, 6.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat viscosity_i = exp(y);
+            sum += mole_fractions[52] * pow(viscosity_i, 6.);
+        }
+        viscosity = pow(sum, 1./6.);
     }
     {
-        dfloat y = 0.;
-        y += -9.91464588E+00*pow(log(T),0);
-        y += 3.01325666E+00*pow(log(T),1);
-        y += -2.95085521E-01*pow(log(T),2);
-        y += 1.21939234E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[1]*fg_rcp_molar_mass[1]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
+        dfloat sum = 0.;
+        {
+            dfloat y = 0.;
+            y += -4.30812557E+01*pow(log(T),0);
+            y += 2.84002271E+01*pow(log(T),1);
+            y += -4.29333364E+00*pow(log(T),2);
+            y += 2.17253050E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[0] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 9.63526457E+00*pow(log(T),0);
+            y += 3.01325666E+00*pow(log(T),1);
+            y += -2.95085521E-01*pow(log(T),2);
+            y += 1.21939234E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[1] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.02307886E+01*pow(log(T),0);
+            y += 2.12264682E+00*pow(log(T),1);
+            y += -1.88841114E-01*pow(log(T),2);
+            y += 7.98461151E-03*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[2] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[3] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += -3.63385976E+01*pow(log(T),0);
+            y += 2.46550955E+01*pow(log(T),1);
+            y += -3.71380322E+00*pow(log(T),2);
+            y += 1.87979925E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[4] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += -1.29585286E+02*pow(log(T),0);
+            y += 2.24476300E+01*pow(log(T),1);
+            y += -3.38148042E+00*pow(log(T),2);
+            y += 1.78701226E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[5] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[6] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[7] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.04874340E+01*pow(log(T),0);
+            y += 1.95209379E+00*pow(log(T),1);
+            y += -1.67953942E-01*pow(log(T),2);
+            y += 7.13901813E-03*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[8] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += -4.14958780E+01*pow(log(T),0);
+            y += 2.70652065E+01*pow(log(T),1);
+            y += -4.07653636E+00*pow(log(T),2);
+            y += 2.06175358E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[9] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[10] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[11] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[12] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[13] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[14] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[15] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[16] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[17] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[18] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += -4.25914704E+01*pow(log(T),0);
+            y += -1.97616647E+01*pow(log(T),1);
+            y += 3.23903303E+00*pow(log(T),2);
+            y += -1.56492756E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[19] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[20] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[21] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[22] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[23] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[24] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[25] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[26] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[27] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[28] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[29] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.04105838E+01*pow(log(T),0);
+            y += 1.95209379E+00*pow(log(T),1);
+            y += -1.67953942E-01*pow(log(T),2);
+            y += 7.13901813E-03*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[30] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[31] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[32] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[33] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[34] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 2.88689920E+01*pow(log(T),0);
+            y += -7.00943960E+00*pow(log(T),1);
+            y += 1.20714605E+00*pow(log(T),2);
+            y += -6.07387261E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[35] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[36] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[37] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 3.18870262E+00*pow(log(T),0);
+            y += 4.82145376E+00*pow(log(T),1);
+            y += -5.61291789E-01*pow(log(T),2);
+            y += 2.63220892E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[38] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 6.94852813E+00*pow(log(T),0);
+            y += 3.38374043E+00*pow(log(T),1);
+            y += -3.95383837E-01*pow(log(T),2);
+            y += 1.98583820E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[39] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[40] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += -5.02658005E+01*pow(log(T),0);
+            y += 2.93730180E+01*pow(log(T),1);
+            y += -4.28037566E+00*pow(log(T),2);
+            y += 2.11633770E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[41] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[42] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[43] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[44] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 5.48368664E+01*pow(log(T),0);
+            y += -2.02161385E+01*pow(log(T),1);
+            y += 3.32751021E+00*pow(log(T),2);
+            y += -1.69187938E-01*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[45] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[46] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[47] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 7.04515449E+00*pow(log(T),0);
+            y += 2.94246086E+00*pow(log(T),1);
+            y += -2.87232357E-01*pow(log(T),2);
+            y += 1.19056724E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[48] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.16233161E+01*pow(log(T),0);
+            y += -1.06837866E+00*pow(log(T),1);
+            y += 5.46839289E-01*pow(log(T),2);
+            y += -3.59674443E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[49] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 1.75287365E+01*pow(log(T),0);
+            y += -3.93164403E+00*pow(log(T),1);
+            y += 9.94261235E-01*pow(log(T),2);
+            y += -5.84404474E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[50] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += 2.92600699E+01*pow(log(T),0);
+            y += -8.64410952E+00*pow(log(T),1);
+            y += 1.61107463E+00*pow(log(T),2);
+            y += -8.53069190E-02*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[51] * pow(thermal_conductivity_i, 4.);
+        }
+        {
+            dfloat y = 0.;
+            y += NAN*pow(log(T),0);
+            y += NAN*pow(log(T),1);
+            y += NAN*pow(log(T),2);
+            y += NAN*pow(log(T),3);
+            dfloat thermal_conductivity_i = exp(y);
+            sum += mole_fractions[52] * pow(thermal_conductivity_i, 4.);
+        }
+        thermal_conductivity = pow(sum, 1./4.);
     }
-    {
-        dfloat y = 0.;
-        y += -6.55450901E+00*pow(log(T),0);
-        y += 2.12264682E+00*pow(log(T),1);
-        y += -1.88841114E-01*pow(log(T),2);
-        y += 7.98461151E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[2]*fg_rcp_molar_mass[2]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.02583041E+00*pow(log(T),0);
-        y += 2.61101361E+00*pow(log(T),1);
-        y += -2.48963346E-01*pow(log(T),2);
-        y += 1.04422565E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[3]*fg_rcp_molar_mass[3]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.52396123E+00*pow(log(T),0);
-        y += 2.12264682E+00*pow(log(T),1);
-        y += -1.88841114E-01*pow(log(T),2);
-        y += 7.98461151E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[4]*fg_rcp_molar_mass[4]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.02582022E+02*pow(log(T),0);
-        y += 1.47635589E+00*pow(log(T),1);
-        y += -1.27780867E-01*pow(log(T),2);
-        y += 1.27960418E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[5]*fg_rcp_molar_mass[5]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.01032327E+00*pow(log(T),0);
-        y += 2.61101361E+00*pow(log(T),1);
-        y += -2.48963346E-01*pow(log(T),2);
-        y += 1.04422565E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[6]*fg_rcp_molar_mass[6]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.99528263E+00*pow(log(T),0);
-        y += 2.61101361E+00*pow(log(T),1);
-        y += -2.48963346E-01*pow(log(T),2);
-        y += 1.04422565E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[7]*fg_rcp_molar_mass[7]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.58457945E+00*pow(log(T),0);
-        y += 1.95209379E+00*pow(log(T),1);
-        y += -1.67953942E-01*pow(log(T),2);
-        y += 7.13901813E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[8]*fg_rcp_molar_mass[8]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.65757510E+00*pow(log(T),0);
-        y += 2.12264682E+00*pow(log(T),1);
-        y += -1.88841114E-01*pow(log(T),2);
-        y += 7.98461151E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[9]*fg_rcp_molar_mass[9]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.80675503E+00*pow(log(T),0);
-        y += 3.00503691E+00*pow(log(T),1);
-        y += -2.94179224E-01*pow(log(T),2);
-        y += 1.21608377E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[10]*fg_rcp_molar_mass[10]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.80675503E+00*pow(log(T),0);
-        y += 3.00503691E+00*pow(log(T),1);
-        y += -2.94179224E-01*pow(log(T),2);
-        y += 1.21608377E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[11]*fg_rcp_molar_mass[11]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.77205786E+00*pow(log(T),0);
-        y += 3.00503691E+00*pow(log(T),1);
-        y += -2.94179224E-01*pow(log(T),2);
-        y += 1.21608377E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[12]*fg_rcp_molar_mass[12]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.64450741E+00*pow(log(T),0);
-        y += 2.98369903E+00*pow(log(T),1);
-        y += -2.91817315E-01*pow(log(T),2);
-        y += 1.20742582E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[13]*fg_rcp_molar_mass[13]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.78156836E+00*pow(log(T),0);
-        y += 2.46207854E+00*pow(log(T),1);
-        y += -2.30787570E-01*pow(log(T),2);
-        y += 9.70475145E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[14]*fg_rcp_molar_mass[14]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.00303609E+01*pow(log(T),0);
-        y += 3.13643925E+00*pow(log(T),1);
-        y += -2.94361604E-01*pow(log(T),2);
-        y += 1.15720699E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[15]*fg_rcp_molar_mass[15]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.69529540E+00*pow(log(T),0);
-        y += 1.35348240E+00*pow(log(T),1);
-        y += -2.35990724E-02*pow(log(T),2);
-        y += -1.37612344E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[16]*fg_rcp_molar_mass[16]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.67822253E+00*pow(log(T),0);
-        y += 1.35348240E+00*pow(log(T),1);
-        y += -2.35990724E-02*pow(log(T),2);
-        y += -1.37612344E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[17]*fg_rcp_molar_mass[17]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.83803382E+01*pow(log(T),0);
-        y += -1.79114017E-01*pow(log(T),1);
-        y += 1.19956644E-01*pow(log(T),2);
-        y += 1.32237421E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[18]*fg_rcp_molar_mass[18]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.83803382E+01*pow(log(T),0);
-        y += -1.79114017E-01*pow(log(T),1);
-        y += 1.19956644E-01*pow(log(T),2);
-        y += 1.32237421E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[19]*fg_rcp_molar_mass[19]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.92212039E+00*pow(log(T),0);
-        y += 1.47601604E+00*pow(log(T),1);
-        y += -4.14295803E-02*pow(log(T),2);
-        y += -5.49306658E-04*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[20]*fg_rcp_molar_mass[20]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.05357450E+01*pow(log(T),0);
-        y += 3.22466861E+00*pow(log(T),1);
-        y += -3.12075224E-01*pow(log(T),2);
-        y += 1.25530523E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[21]*fg_rcp_molar_mass[21]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.05160048E+01*pow(log(T),0);
-        y += 3.22466861E+00*pow(log(T),1);
-        y += -3.12075224E-01*pow(log(T),2);
-        y += 1.25530523E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[22]*fg_rcp_molar_mass[22]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.04970145E+01*pow(log(T),0);
-        y += 3.22466861E+00*pow(log(T),1);
-        y += -3.12075224E-01*pow(log(T),2);
-        y += 1.25530523E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[23]*fg_rcp_molar_mass[23]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01076977E+01*pow(log(T),0);
-        y += 2.96549697E+00*pow(log(T),1);
-        y += -2.65598293E-01*pow(log(T),2);
-        y += 1.01078060E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[24]*fg_rcp_molar_mass[24]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.04695916E+01*pow(log(T),0);
-        y += 3.10685124E+00*pow(log(T),1);
-        y += -2.89094741E-01*pow(log(T),2);
-        y += 1.12960359E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[25]*fg_rcp_molar_mass[25]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.04525440E+01*pow(log(T),0);
-        y += 3.10685124E+00*pow(log(T),1);
-        y += -2.89094741E-01*pow(log(T),2);
-        y += 1.12960359E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[26]*fg_rcp_molar_mass[26]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.58125232E+00*pow(log(T),0);
-        y += 3.05252516E+00*pow(log(T),1);
-        y += -2.99417953E-01*pow(log(T),2);
-        y += 1.23523856E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[27]*fg_rcp_molar_mass[27]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.72585031E+00*pow(log(T),0);
-        y += 1.84129322E+00*pow(log(T),1);
-        y += -9.48947433E-02*pow(log(T),2);
-        y += 1.94177402E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[28]*fg_rcp_molar_mass[28]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.72585031E+00*pow(log(T),0);
-        y += 1.84129322E+00*pow(log(T),1);
-        y += -9.48947433E-02*pow(log(T),2);
-        y += 1.94177402E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[29]*fg_rcp_molar_mass[29]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.50772925E+00*pow(log(T),0);
-        y += 1.95209379E+00*pow(log(T),1);
-        y += -1.67953942E-01*pow(log(T),2);
-        y += 7.13901813E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[30]*fg_rcp_molar_mass[30]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.51218821E+00*pow(log(T),0);
-        y += 2.12264682E+00*pow(log(T),1);
-        y += -1.88841114E-01*pow(log(T),2);
-        y += 7.98461151E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[31]*fg_rcp_molar_mass[31]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.47970072E+00*pow(log(T),0);
-        y += 2.12264682E+00*pow(log(T),1);
-        y += -1.88841114E-01*pow(log(T),2);
-        y += 7.98461151E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[32]*fg_rcp_molar_mass[32]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.00028672E+02*pow(log(T),0);
-        y += 5.27375745E-01*pow(log(T),1);
-        y += 1.12200577E-02*pow(log(T),2);
-        y += 6.47291932E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[33]*fg_rcp_molar_mass[33]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.42579769E+00*pow(log(T),0);
-        y += 1.95209379E+00*pow(log(T),1);
-        y += -1.67953942E-01*pow(log(T),2);
-        y += 7.13901813E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[34]*fg_rcp_molar_mass[34]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.70422967E+00*pow(log(T),0);
-        y += 2.45230654E+00*pow(log(T),1);
-        y += -2.29571642E-01*pow(log(T),2);
-        y += 9.65439757E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[35]*fg_rcp_molar_mass[35]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -9.87849773E+00*pow(log(T),0);
-        y += 3.22830037E+00*pow(log(T),1);
-        y += -3.14197826E-01*pow(log(T),2);
-        y += 1.27028905E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[36]*fg_rcp_molar_mass[36]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01084220E+01*pow(log(T),0);
-        y += 3.17574329E+00*pow(log(T),1);
-        y += -3.01500475E-01*pow(log(T),2);
-        y += 1.19500006E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[37]*fg_rcp_molar_mass[37]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.46056875E+00*pow(log(T),0);
-        y += 2.75293104E+00*pow(log(T),1);
-        y += -2.66250598E-01*pow(log(T),2);
-        y += 1.11426583E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[38]*fg_rcp_molar_mass[38]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -6.72127353E+00*pow(log(T),0);
-        y += 2.02762417E+00*pow(log(T),1);
-        y += -1.77212991E-01*pow(log(T),2);
-        y += 7.51388048E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[39]*fg_rcp_molar_mass[39]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -5.85767339E+00*pow(log(T),0);
-        y += 9.10567584E-01*pow(log(T),1);
-        y += 4.18834261E-02*pow(log(T),2);
-        y += -4.43896498E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[40]*fg_rcp_molar_mass[40]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -5.83936446E+00*pow(log(T),0);
-        y += 9.10567584E-01*pow(log(T),1);
-        y += 4.18834261E-02*pow(log(T),2);
-        y += -4.43896498E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[41]*fg_rcp_molar_mass[41]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.58121759E+00*pow(log(T),0);
-        y += 3.05252516E+00*pow(log(T),1);
-        y += -2.99417953E-01*pow(log(T),2);
-        y += 1.23523856E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[42]*fg_rcp_molar_mass[42]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01197690E+01*pow(log(T),0);
-        y += 3.17574329E+00*pow(log(T),1);
-        y += -3.01500475E-01*pow(log(T),2);
-        y += 1.19500006E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[43]*fg_rcp_molar_mass[43]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01197690E+01*pow(log(T),0);
-        y += 3.17574329E+00*pow(log(T),1);
-        y += -3.01500475E-01*pow(log(T),2);
-        y += 1.19500006E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[44]*fg_rcp_molar_mass[44]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01197690E+01*pow(log(T),0);
-        y += 3.17574329E+00*pow(log(T),1);
-        y += -3.01500475E-01*pow(log(T),2);
-        y += 1.19500006E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[45]*fg_rcp_molar_mass[45]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.01316221E+01*pow(log(T),0);
-        y += 3.17574329E+00*pow(log(T),1);
-        y += -3.01500475E-01*pow(log(T),2);
-        y += 1.19500006E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[46]*fg_rcp_molar_mass[46]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.73858853E+00*pow(log(T),0);
-        y += 2.45230654E+00*pow(log(T),1);
-        y += -2.29571642E-01*pow(log(T),2);
-        y += 9.65439757E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[47]*fg_rcp_molar_mass[47]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -8.82511576E+00*pow(log(T),0);
-        y += 2.94246086E+00*pow(log(T),1);
-        y += -2.87232357E-01*pow(log(T),2);
-        y += 1.19056724E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[48]*fg_rcp_molar_mass[48]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.04666248E+01*pow(log(T),0);
-        y += 3.03910443E+00*pow(log(T),1);
-        y += -2.77622778E-01*pow(log(T),2);
-        y += 1.07098971E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[49]*fg_rcp_molar_mass[49]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -1.04550632E+01*pow(log(T),0);
-        y += 3.03910443E+00*pow(log(T),1);
-        y += -2.77622778E-01*pow(log(T),2);
-        y += 1.07098971E-02*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[50]*fg_rcp_molar_mass[50]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.71400288E+00*pow(log(T),0);
-        y += 1.84129322E+00*pow(log(T),1);
-        y += -9.48947433E-02*pow(log(T),2);
-        y += 1.94177402E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[51]*fg_rcp_molar_mass[51]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    {
-        dfloat y = 0.;
-        y += -7.70242970E+00*pow(log(T),0);
-        y += 1.84129322E+00*pow(log(T),1);
-        y += -9.48947433E-02*pow(log(T),2);
-        y += 1.94177402E-03*pow(log(T),3);
-        dfloat viscosity_i = exp(y);
-        dfloat mole_fraction = mass_fractions[52]*fg_rcp_molar_mass[52]/mean_rcp_molar_mass;
-        sum += mole_fraction * pow(viscosity_i, 6);
-    }
-    viscosity = pow(sum, 1./6.);
 }
 
 /* version */
 /* $Id$ */
 
-/* Generated automatically by CPickler on Wed May 12 07:24:46 2021 */
+/* Generated automatically by CPickler on Wed May 12 07:43:34 2021 */
 
 /* End of file  */

@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
 
     auto reference_mass_fractions = new double[n_species];
-    for(int k=0; k<n_species; k++) { 
+    for(int k=0; k<n_species; k++) {
       reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;
     }
     const double reference_length = 1.;
@@ -75,10 +75,10 @@ int main(int argc, char **argv) {
     const double reference_pressure = pressure_Pa;
     const double reference_temperature = temperature_K;
 
-    nekRK::set_reference_parameters(reference_pressure, 
-                            reference_temperature, 
-                    reference_length, 
-                    reference_velocity, 
+    nekRK::set_reference_parameters(reference_pressure,
+                            reference_temperature,
+                    reference_length,
+                    reference_velocity,
                     reference_mass_fractions);
 
     // populdate states
@@ -100,22 +100,22 @@ int main(int argc, char **argv) {
     auto o_heat_release_rate = device.malloc<double>(n_states);
 
     // warm up
-    nekRK::production_rates(n_states, 
-                            pressure, 
-                    o_temperature, 
-                    o_mass_fractions, 
-                    o_rates, 
+    nekRK::production_rates(n_states,
+                            pressure,
+                    o_temperature,
+                    o_mass_fractions,
+                    o_rates,
                     o_heat_release_rate);
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto startTime = MPI_Wtime();
     for(int i=0; i<nRep; i++) {
-        nekRK::production_rates(n_states, 
-                    pressure, 
-                o_temperature, 
-                o_mass_fractions, 
-                o_rates, 
+        nekRK::production_rates(n_states,
+                    pressure,
+                o_temperature,
+                o_mass_fractions,
+                o_rates,
                 o_heat_release_rate);
     }
     device.finish();
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
     // print results
     for (int k=0; k<n_species; k++) {
         double mass_production_rate = rates[k*n_states+0];
-        if(rank==0 && argc > 5) printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
+        if(rank==0 && argc > 5) printf("species %5d wdot=%.15e\n", k+1, mass_production_rate);
     }
     /*double concentration = reference_pressure / R / reference_temperature;
     double density = concentration * molar_mass;

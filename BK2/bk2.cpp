@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
     const double pressure = pressure_Pa / reference_pressure;
 
     auto o_viscosity = device.malloc<double>(n_states);
+    auto o_thermal_conductivity = device.malloc<double>(n_states);
     auto o_density_times_mixture_diffusion_coefficients = device.malloc<double>(n_species*n_states);
 
     // warm up
@@ -105,6 +106,7 @@ int main(int argc, char **argv) {
                     o_temperature,
                     o_mass_fractions,
                     o_viscosity,
+                    o_thermal_conductivity,
                     o_density_times_mixture_diffusion_coefficients);
 
     device.finish();
@@ -116,6 +118,7 @@ int main(int argc, char **argv) {
                                                  o_temperature,
                                                  o_mass_fractions,
                                                  o_viscosity,
+                                                 o_thermal_conductivity,
                                                  o_density_times_mixture_diffusion_coefficients);
     }
     device.finish();

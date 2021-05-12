@@ -619,7 +619,7 @@ class CPickler(CMill):
                 #viscosities coefs (4 per spec)
                 ln_viscosity = OrderedDict()
                 #conductivities coefs (4 per spec)
-                coflam = OrderedDict()
+                ln_thermal_conductivity = OrderedDict()
                 for transport_specie in speciesTransport:
                         spvisc = []
                         spcond = []
@@ -673,34 +673,65 @@ class CPickler(CMill):
                                 spcond.append(np.log(cond))
 
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
-                        coflam[transport_specie.id] = np.polyfit(tlog, spcond, 3)
+                        ln_thermal_conductivity[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat* density_times_mixture_diffusion_coefficients) {')
+                self._write('void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity, dfloat* density_times_mixture_diffusion_coefficients) {')
                 self._indent()
                 self._write('dfloat mean_rcp_molar_mass = 0.;')
                 for spec in self.species: #i|
                         i = spec.id
                         self._write('mean_rcp_molar_mass += mass_fractions[%d]*fg_rcp_molar_mass[%d];' %(i, i))
+                self._write('dfloat mole_fractions[n_species];')
+                for spec in self.species: #i|
+                        i = spec.id
+                        self._write('mole_fractions[%d] = mass_fractions[%d]*fg_rcp_molar_mass[%d]/mean_rcp_molar_mass;' %(i,i,i))
+
+                def evaluate_polynomial(P, x):
+                    self._write('dfloat y = 0.;')
+                    for i in range(4):
+                            self._write('y += %.8E*pow(%s,%d);' % (P[3-i], x, i)) #?
+                ln_T = "log(T)"
+
+                # Viscosity
+                self._write('{')
+                self._indent()
                 self._write('dfloat sum = 0.;')
                 for spec in self.species: #i|
                         i = spec.id
                         self._write('{')
                         self._indent()
                         #{
-                        def evaluate_polynomial(P, x):
-                            self._write('dfloat y = 0.;')
-                            for i in range(4):
-                                    self._write('y += %.8E*pow(%s,%d);' % (P[3-i], x, i)) #?
-                        ln_T = "log(T)"
-                        y = evaluate_polynomial(ln_viscosity[i], ln_T)
+                        y = evaluate_polynomial(ln_thermal_conductivity[i], ln_T)
                         self._write('dfloat viscosity_i = exp(y);')
-                        self._write('dfloat mole_fraction = mass_fractions[%d]*fg_rcp_molar_mass[%d]/mean_rcp_molar_mass;' %(i,i))
-                        self._write('sum += mole_fraction * pow(viscosity_i, 6);')
+                        self._write('sum += mole_fractions[%d] * pow(viscosity_i, 6.);'%(i))
                         #}
                         self._outdent()
                         self._write('}')
                 #}
                 self._write('viscosity = pow(sum, 1./6.);')
+                self._outdent()
+                self._write('}')
+
+                # Thermal conductivity
+                self._write('{')
+                self._indent()
+                self._write('dfloat sum = 0.;')
+                for spec in self.species: #i|
+                        i = spec.id
+                        self._write('{')
+                        self._indent()
+                        #{
+                        y = evaluate_polynomial(ln_thermal_conductivity[i], ln_T)
+                        self._write('dfloat thermal_conductivity_i = exp(y);')
+                        self._write('sum += mole_fractions[%d] * pow(thermal_conductivity_i, 4.);'%(i)) #?
+                        #}
+                        self._outdent()
+                        self._write('}')
+                #}
+                self._write('thermal_conductivity = pow(sum, 1./4.);') #?
+                self._outdent()
+                self._write('}')
+
                 self._outdent()
                 self._write('}')
 
