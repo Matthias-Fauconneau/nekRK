@@ -677,10 +677,11 @@ class CPickler(CMill):
                 for spec in self.species: #i|
                         i = spec.id
                         self._write('mean_rcp_molar_mass += mass_fractions[%d]*fg_rcp_molar_mass[%d];' %(i, i))
+                self._write('dfloat mean_molar_mass = 1./mean_rcp_molar_mass;')
                 self._write('dfloat mole_fractions[n_species];')
                 for spec in self.species: #i|
                         i = spec.id
-                        self._write('mole_fractions[%d] = mass_fractions[%d]*fg_rcp_molar_mass[%d]/mean_rcp_molar_mass;' %(i,i,i))
+                        self._write('mole_fractions[%d] = mass_fractions[%d]*fg_rcp_molar_mass[%d]*mean_molar_mass;' %(i,i,i))
 
                 def evaluate_polynomial(P, x):
                     self._write('dfloat y = 0.;')
