@@ -1,6 +1,5 @@
 #define NUM_SPECIES n_species
-// No idea what this code does
-void Pele_binary_diffusion_coefficients_Ddiag(
+void Pele_Ddiag(
     const dfloat wbar,
     const dfloat Xloc[NUM_SPECIES],
     const dfloat Yloc[NUM_SPECIES],
@@ -8,27 +7,11 @@ void Pele_binary_diffusion_coefficients_Ddiag(
     dfloat rholoc,
     dfloat Tloc,
     dfloat* Ddiag,
-    dfloat trans_fitdbin[NUM_SPECIES*NUM_SPECIES*4],
-    const dfloat trans_wt[NUM_SPECIES] // What is this ?
 ) {
-    for (int i = 0; i < NUM_SPECIES; ++i) {
-        dfloat term1 = 0.0;
-        dfloat term2 = 0.0;
-        for (int j = 0; j < NUM_SPECIES; ++j) {
-            if (i != j) {
-                dfloat dbintemp =
-                    trans_fitdbin[4 * (i + NUM_SPECIES * j)] +
-                    trans_fitdbin[1 + 4 * (i + NUM_SPECIES * j)] * logT[0] +
-                    trans_fitdbin[2 + 4 * (i + NUM_SPECIES * j)] * logT[1] +
-                    trans_fitdbin[3 + 4 * (i + NUM_SPECIES * j)] * logT[2];
-                term1 = term1 + Yloc[j];
-                term2 = term2 + Xloc[j] / exp(dbintemp);
-            }
-        }
-        Ddiag[i] = trans_wt[i] * term1 / term2 / wbar;
-    }
+    fg_Pele_Ddiag(wbr, Xloc, Yloc, logT, Ddiag);
     // Call CKRP ?
     const dfloat atmospheric_pressure = 101325.;
+    // No idea what this code does
     const dfloat RU = 8.31447e7; // R . e7 ?
     const dfloat pscale = atmospheric_pressure * wbar / (RU * Tloc * rholoc);
     for (int i = 0; i < NUM_SPECIES; ++i) {

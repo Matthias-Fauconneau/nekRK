@@ -793,21 +793,27 @@ class CPickler(CMill):
                 #    for j,spec2 in enumerate(specOrdered[i+1:]):
                 #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
-                self._write(self.line('Poly fits for the diffusion coefficients, dim NO*KK*KK'))
-                self._write('const dfloat fg_binary_diffusion_coefficients[n_species*n_species*4] = {')
+                # No idea what this code does
+                self._write('void fg_Pele_Ddiag(const dfloat wbar, const dfloat Xloc[n_species], const dfloat Yloc[n_species], dfloat logT[3], dfloat* Ddiag) {')
                 self._indent()
                 for i,spec1 in enumerate(specOrdered):
-                        #for j,spec2 in enumerate(specOrdered): # Why is this split ?
-                        for j,spec2 in enumerate(specOrdered[0:i+1]):
-                                for k in range(4):
-                                        #self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, binary_diffusion_coefficients[j][i][3-k]))
-                                        self._write('%.8E,' % (binary_diffusion_coefficients[i][j][3-k])) # Why is the coefficient order being reversed here ?
-                        for j,spec2 in enumerate(specOrdered[i+1:]):
-                                for k in range(4):
-                                        self._write('%.8E,' % (binary_diffusion_coefficients[j+i+1][i][3-k])) # Why is the coefficient order being reversed here ?
-
+                    self._write('{')
+                    self._indent()
+                    self._write('dfloat term1 = 0.0, term2 = 0.0;')
+                    for j,spec2 in enumerate(specOrdered[0:i]):
+                        self._write('{')
+                        self._indent()
+                        self._write('dfloat dbintemp = %.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2];' % (# Why is the coefficient order being reversed here ?
+                            binary_diffusion_coefficients[i][j][3], binary_diffusion_coefficients[i][j][2], binary_diffusion_coefficients[i][j][1], binary_diffusion_coefficients[i][j][0]))
+                        self._write('term1 += Yloc[j];');
+                        self._write('term2 += Xloc[j] / exp(dbintemp);')
+                        self._write('}')
+                        self._outdent()
+                    self._write('Ddiag[%d] = fg_molar_mass[%d] * term1 / term2 / wbar;' % (i,i))
+                    self._write('}')
+                    self._outdent()
                 self._outdent()
-                self._write('};')
+                self._write('}')
                 return
 
         def astar(self, tslog):
