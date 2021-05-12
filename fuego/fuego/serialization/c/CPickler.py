@@ -687,7 +687,7 @@ class CPickler(CMill):
                     self._write('dfloat y = 0.;')
                     for i in range(4):
                             self._write('y += %.8E*pow(%s,%d);' % (P[3-i], x, i)) #?
-                ln_T = "log(T)"
+                self._write('dfloat ln_T = log(T);')
 
                 # Viscosity
                 self._write('{')
@@ -698,7 +698,7 @@ class CPickler(CMill):
                         self._write('{')
                         self._indent()
                         #{
-                        y = evaluate_polynomial(ln_thermal_conductivity[i], ln_T)
+                        y = evaluate_polynomial(ln_thermal_conductivity[i], "ln_T")
                         self._write('dfloat viscosity_i = exp(y);')
                         self._write('sum += mole_fractions[%d] * pow(viscosity_i, 6.);'%(i))
                         #}
@@ -718,7 +718,7 @@ class CPickler(CMill):
                         self._write('{')
                         self._indent()
                         #{
-                        y = evaluate_polynomial(ln_thermal_conductivity[i], ln_T)
+                        y = evaluate_polynomial(ln_thermal_conductivity[i], "ln_T")
                         self._write('dfloat thermal_conductivity_i = exp(y);')
                         self._write('sum += mole_fractions[%d] * pow(thermal_conductivity_i, 4.);'%(i)) #?
                         #}
