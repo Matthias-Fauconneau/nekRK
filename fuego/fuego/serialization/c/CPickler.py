@@ -805,8 +805,8 @@ class CPickler(CMill):
                         self._indent()
                         self._write('dfloat dbintemp = %.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2];' % (# Why is the coefficient order being reversed here ?
                             binary_diffusion_coefficients[i][j][3], binary_diffusion_coefficients[i][j][2], binary_diffusion_coefficients[i][j][1], binary_diffusion_coefficients[i][j][0]))
-                        self._write('term1 += Yloc[j];');
-                        self._write('term2 += Xloc[j] / exp(dbintemp);')
+                        self._write('term1 += Yloc[%d];'%( j));
+                        self._write('term2 += Xloc[%d] / exp(dbintemp);' % (j))
                         self._write('}')
                         self._outdent()
                     self._write('Ddiag[%d] = fg_molar_mass[%d] * term1 / term2 / wbar;' % (i,i))

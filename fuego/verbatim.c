@@ -6,9 +6,9 @@ void Pele_Ddiag(
     dfloat logT[3],
     dfloat rholoc,
     dfloat Tloc,
-    dfloat* Ddiag,
+    dfloat* Ddiag
 ) {
-    fg_Pele_Ddiag(wbr, Xloc, Yloc, logT, Ddiag);
+    fg_Pele_Ddiag(wbar, Xloc, Yloc, logT, Ddiag);
     // Call CKRP ?
     const dfloat atmospheric_pressure = 101325.;
     // No idea what this code does
@@ -38,15 +38,13 @@ void fg_rho_Di(dfloat pressure, dfloat T, const dfloat mass_fractions[], /*->*/ 
     dfloat logT[3] = {log(T), pow(log(T), 2), pow(log(T), 3)};
     dfloat rholoc = density;
     dfloat Tloc = T;
-    Pele_binary_diffusion_coefficients_Ddiag(
+    Pele_Ddiag(
         wbar,
         /*Xloc:*/mole_fractions,
         /*Yloc:*/mass_fractions,
         logT,
         rholoc,
         Tloc,
-        /*Ddiag:*/ rho_Di, // Is "Ddiag" <=> "rho_Di" ?
-        /*trans_fitdbin:*/fg_binary_diffusion_coefficients,
-        /*trans_wt:*/fg_molar_mass
+        /*Ddiag:*/ rho_Di // Is "Ddiag" <=> "rho_Di" ?
     );
 }
