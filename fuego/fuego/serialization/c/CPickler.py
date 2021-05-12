@@ -675,17 +675,18 @@ class CPickler(CMill):
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
                         coflam[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void fg_transport(dfloat p, dfloat T, dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& density_times_mixture_diffusion_coefficients) {')
+                self._write('void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat* density_times_mixture_diffusion_coefficients) {')
                 self._indent()
-                """mixture_viscosity = Σ(i| mole . viscosity / Σ(mole . sq(1 + √(viscosity[i]/viscosity * √(molar_mass/molar_mass[i]))) / (√8 * √(1 + molar_mass[i]/molar_mass))))"""
-                self._write('viscosity = 0.;')
+                self._write('dfloat mean_rcp_molar_mass = 0.;')
+                for spec in self.species: #i|
+                        i = spec.id
+                        self._write('mean_rcp_molar_mass += mass_fractions[%d]*fg_rcp_molar_mass[%d];' %(i, i))
+                self._write('dfloat sum = 0.;')
                 for spec in self.species: #i|
                         i = spec.id
                         self._write('{')
                         self._indent()
                         #{
-                        self._write('int i = %d;' % (i))
-                        self._write('dfloat mole_ratio = mass_fraction*fg_rcp_molar_mass[i];')
                         def evaluate_polynomial(P, x):
                             self._write('dfloat y = 0.;')
                             for i in range(4):
@@ -693,25 +694,13 @@ class CPickler(CMill):
                         ln_T = "log(T)"
                         y = evaluate_polynomial(ln_viscosity[i], ln_T)
                         self._write('dfloat viscosity_i = exp(y);')
-                        self._write('dfloat denominator = 0.;') #Σ(mole . sq(1 + √(viscosity[i]/viscosity * √(molar_mass/molar_mass[i]))) / (√8 * √(1 + molar_mass[i]/molar_mass)))
-                        for spec in self.species: #j|
-                            j = spec.id
-                            self._write('{')
-                            self._indent()
-                            self._write('int j = %d;' % (j))
-                            self._write('dfloat mole_ratio = mass_fraction*fg_rcp_molar_mass[j];')
-                            y = evaluate_polynomial(ln_viscosity[j], ln_T) # ln
-                            self._write('dfloat viscosity_j = exp(y);')
-                            self._write('dfloat sq = ::sq(1. + sqrt(viscosity_i/viscosity_j * sqrt(fg_molar_mass[j]*fg_rcp_molar_mass[i])));')
-                            self._write('denominator += mole_ratio * sq / (sqrt(8.) * sqrt(1. + fg_molar_mass[i]*fg_rcp_molar_mass[j]));')
-                            self._outdent()
-                            self._write('}')
-                        #}
-                        self._write('viscosity += mole_ratio * viscosity_i / denominator;') #Σi
+                        self._write('dfloat mole_fraction = mass_fractions[%d]*fg_rcp_molar_mass[%d]/mean_rcp_molar_mass;' %(i,i))
+                        self._write('sum += mole_fraction * pow(viscosity_i, 6);')
                         #}
                         self._outdent()
                         self._write('}')
                 #}
+                self._write('viscosity = pow(sum, 1./6.);')
                 self._outdent()
                 self._write('}')
 

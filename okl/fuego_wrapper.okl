@@ -59,12 +59,16 @@
 )
 {
     for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
-        const dfloat T = reference_temperature * temperature[id];
+        const dfloat T = temperature[id];
         dfloat mass_fraction[n_species];
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
         }
-        fg_transport(pressure, T, mass_fractions, viscosity, density_times_mixture_diffusion_coefficients);
+        dfloat density_times_mixture_diffusion_coefficients_[n_species];
+        fg_transport(pressure, T, mass_fractions, viscosity[id], density_times_mixture_diffusion_coefficients_);
+        for(int k=0;k<n_species;k++) {
+            density_times_mixture_diffusion_coefficients[k*n_states + id] = density_times_mixture_diffusion_coefficients_[k];
+        }
     }
 }
 
