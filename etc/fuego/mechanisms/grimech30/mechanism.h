@@ -7695,7 +7695,7 @@ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat* mole_fractions)
     return result;
 }
 /* Transport function declarations  */
-void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity, dfloat* density_times_mixture_diffusion_coefficients) {
+void fg_transport(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {
     dfloat mean_rcp_molar_mass = 0.;
     mean_rcp_molar_mass += mass_fractions[0]*fg_rcp_molar_mass[0];
     mean_rcp_molar_mass += mass_fractions[1]*fg_rcp_molar_mass[1];
@@ -8771,6 +8771,6 @@ void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dflo
 /* version */
 /* $Id$ */
 
-/* Generated automatically by CPickler on Wed May 12 07:43:34 2021 */
+/* Generated automatically by CPickler on Wed May 12 08:27:02 2021 */
 
 /* End of file  */

@@ -675,7 +675,7 @@ class CPickler(CMill):
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
                         ln_thermal_conductivity[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void fg_transport(dfloat p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity, dfloat* density_times_mixture_diffusion_coefficients) {')
+                self._write('void fg_transport(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
                 self._indent()
                 self._write('dfloat mean_rcp_molar_mass = 0.;')
                 for spec in self.species: #i|
@@ -751,9 +751,9 @@ class CPickler(CMill):
                 #temperature increment
                 dt = (self.highT-self.lowT) / (NTFit-1)
                 #diff coefs (4 per spec pair)
-                cofd = []
+                binary_diffusion_coefficients = []
                 for i, transport_specie_i in enumerate(specOrdered):
-                        cofd.append([])
+                        binary_diffusion_coefficients.append([])
                         if (i != transport_specie_i.id):
                                 print "Problem in _diffcoefs computation"
                                 stop
@@ -787,136 +787,27 @@ class CPickler(CMill):
                                     tlog.append(np.log(t))
                                     spdiffcoef.append(np.log(difcoeff))
 
-                                cofd[i].append(np.polyfit(tlog, spdiffcoef, 3))
+                                binary_diffusion_coefficients[i].append(np.polyfit(tlog, spdiffcoef, 3))
 
                 #use the symmetry for upper triangular terms
                 #note: starting with this would be preferable (only one bigger loop)
                 #note2: or write stuff differently !
                 #for i,spec1 in enumerate(specOrdered):
                 #    for j,spec2 in enumerate(specOrdered[i+1:]):
-                #        cofd[i].append(cofd[spec2.id][spec1.id])
+                #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
-                #header for diffusion coefs
-                self._write()
-                self._write()
                 self._write(self.line('Poly fits for the diffusion coefficients, dim NO*KK*KK'))
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetCOFD EGTRANSETCOFD')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetCOFD egtransetcofd')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetCOFD egtransetcofd_')
-                        self._write('#endif')
-
-                #coefs
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void egtransetCOFD(amrex::Real* COFD) {')
-
+                self._write('dfloat fg_binary_diffusion_coefficients[n_species*n_species*4] = {')
                 self._indent()
-
                 for i,spec1 in enumerate(specOrdered):
-                        #for j,spec2 in enumerate(specOrdered):
+                        #for j,spec2 in enumerate(specOrdered): # Why is this split ?
                         for j,spec2 in enumerate(specOrdered[0:i+1]):
                                 for k in range(4):
-                                        #self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, cofd[j][i][3-k]))
-                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, cofd[i][j][3-k]))
+                                        #self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+j*4+k, binary_diffusion_coefficients[j][i][3-k]))
+                                        self._write('%.8E,' % (binary_diffusion_coefficients[i][j][3-k])) # Why is the coefficient order being reversed here ?
                         for j,spec2 in enumerate(specOrdered[i+1:]):
                                 for k in range(4):
-                                        self._write('%s[%d] = %.8E;' % ('COFD', i*self.n_species*4+(j+i+1)*4+k, cofd[j+i+1][i][3-k]))
-
-                self._outdent()
-                self._write('};')
-                return
-
-        def _thermaldiffratios(self, speciesTransport, lightSpecList, do_declarations, NTFit):
-                # This is an overhaul of CHEMKIN version III
-                #REORDERING OF SPECS
-                specOrdered = []
-                for i in range(self.n_species):
-                        for spec in speciesTransport:
-                                if spec.id == i:
-                                        specOrdered.append(spec)
-                                        break
-
-                #compute single constants in g/cm/s
-                kb = 1.3806503e-16
-                #conversion coefs
-                DEBYEtoCGS = 1.0e-18
-                AtoCM = 1.0e-8
-                #temperature increment
-                dt = (self.highT-self.lowT) / (NTFit-1)
-                #diff ratios (4 per spec pair involving light species)
-                coftd = []
-                k = -1
-                for i,spec1 in enumerate(specOrdered):
-                        if (i != spec1.id):
-                                print "Problem in _thermaldiffratios computation"
-                                stop
-                        if spec1.id in lightSpecList:
-                                k = k + 1
-                                if (lightSpecList[k] != spec1.id):
-                                        print "Problem in  _thermaldiffratios computation"
-                                        stop
-                                coftd.append([])
-                                epsi = float(speciesTransport[spec1][1]) * kb
-                                sigi = float(speciesTransport[spec1][2]) * AtoCM
-                                poli = float(speciesTransport[spec1][4]) * AtoCM * AtoCM * AtoCM
-                                #eq. (12)
-                                poliRed = poli / sigi**3
-                                for j,spec2 in enumerate(specOrdered):
-                                        if (j != spec2.id):
-                                                print "Problem in _thermaldiffratios computation"
-                                                stop
-                                        #eq. (53)
-                                        Wji = (spec2.weight - spec1.weight) / \
-                                                        (spec1.weight + spec2.weight)
-                                        epsj = float(speciesTransport[spec2][1]) * kb
-                                        sigj = float(speciesTransport[spec2][2]) * AtoCM
-                                        dipj = float(speciesTransport[spec2][3]) * DEBYEtoCGS
-                                        #eq. (13)
-                                        dipjRed = dipj / np.sqrt(epsj*sigj**3)
-                                        epsRatio = epsj / epsi
-                                        tse = 1.0 + 0.25*poliRed*dipjRed**2*np.sqrt(epsRatio)
-                                        eok = tse**2 * np.sqrt(float(speciesTransport[spec1][1]) * float(speciesTransport[spec2][1]))
-                                        #enter the loop on temperature
-                                        spthdiffcoef = []
-                                        tTab = []
-                                        for n in range(NTFit):
-                                            t = self.lowT + dt*n
-                                            tslog = np.log(t) - np.log(eok)
-                                            #eq. (53)
-                                            thdifcoeff = 15.0 / 2.0 * Wji * (2.0 * self.astar(tslog) + 5.0) * (6.0 * self.cstar(tslog) - 5.0) / \
-                                                            (self.astar(tslog) * (16.0 * self.astar(tslog) - 12.0 * self.bstar(tslog) + 55.0))
-
-                                            #log transformation for polyfit
-                                            tTab.append(t)
-                                            spthdiffcoef.append(thdifcoeff)
-
-                                        coftd[k].append(np.polyfit(tTab, spthdiffcoef, 3))
-
-                #header for thermal diff ratios
-                self._write()
-                self._write()
-                self._write(self.line('Poly fits for thermal diff ratios, dim NO*NLITE*KK'))
-                if (do_declarations):
-                        self._write('#if defined(BL_FORT_USE_UPPERCASE)')
-                        self._write('#define egtransetCOFTD EGTRANSETCOFTD')
-                        self._write('#elif defined(BL_FORT_USE_LOWERCASE)')
-                        self._write('#define egtransetCOFTD egtransetcoftd')
-                        self._write('#elif defined(BL_FORT_USE_UNDERSCORE)')
-                        self._write('#define egtransetCOFTD egtransetcoftd_')
-                        self._write('#endif')
-
-                #visco coefs
-                self._write('AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE')
-                self._write('void egtransetCOFTD(amrex::Real* COFTD) {')
-                self._indent()
-
-                for i in range(len(coftd)):
-                        for j in range(self.n_species):
-                                for k in range(4):
-                                        self._write('%s[%d] = %.8E;' % ('COFTD', i*4*self.n_species+j*4+k, coftd[i][j][3-k]))
+                                        self._write('%.8E,' % (binary_diffusion_coefficients[j+i+1][i][3-k])) # Why is the coefficient order being reversed here ?
 
                 self._outdent()
                 self._write('};')

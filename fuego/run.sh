@@ -9,4 +9,5 @@ echo $1 "->" $output
 cd $1
 PYTHONPATH=$fuego:$fuego/fuego:$fuego/pyre:$fuego/journal:$fuego/weaver python2 $fuego/applications/fmc.py -mechanism=mechanism.inp -thermo=therm.dat -name=$output &&\
 sed -i 's/+ -/-/g' $output
+sed -i 's/,}/}/g' $output
 cat $fuego/verbatim.c >> $output

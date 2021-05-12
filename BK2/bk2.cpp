@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 
     auto o_viscosity = device.malloc<double>(n_states);
     auto o_thermal_conductivity = device.malloc<double>(n_states);
-    auto o_density_times_mixture_diffusion_coefficients = device.malloc<double>(n_species*n_states);
+    auto o_rho_Di = device.malloc<double>(n_species*n_states);
 
     // warm up
     nekRK::transportCoeffs(n_states,
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
                     o_mass_fractions,
                     o_viscosity,
                     o_thermal_conductivity,
-                    o_density_times_mixture_diffusion_coefficients);
+                    o_rho_Di);
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
                                                  o_mass_fractions,
                                                  o_viscosity,
                                                  o_thermal_conductivity,
-                                                 o_density_times_mixture_diffusion_coefficients);
+                                                 o_rho_Di);
     }
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
