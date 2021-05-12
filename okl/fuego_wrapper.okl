@@ -65,7 +65,7 @@
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
         }
-        fg_transport(pressure, T, mass_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
+        fg_viscosity_and_thermal_conductivity(pressure, T, mass_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
 
         dfloat rho_Di_[n_species];
         fg_rho_Di(pressure, T, mass_fractions, /*->*/ rho_Di_);

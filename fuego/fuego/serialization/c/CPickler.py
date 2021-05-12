@@ -81,7 +81,9 @@ class CPickler(CMill):
                 #self._write('void rates(dfloat * sc, dfloat T, dfloat* gibbs0_RT, dfloat * wdot) {}') # Dummy placeholder because OCCA takes forever to parse the real thing
                 self.mean_specific_heat_at_CP_R(mechanism)
                 #self.concentrations(mechanism)
-                self._transport(mechanism)
+                speciesTransport = self._analyzeTransport(mechanism)
+                self.viscosity_and_thermal_conductivity(mechanism, speciesTransport, False, NTFit=50)
+                self.binary_diffusion_coefficients(speciesTransport, False, NTFit=50)
 
         def names(self, mechanism):
                 self._write('const char* species[] = {')
@@ -564,12 +566,6 @@ class CPickler(CMill):
                 self._outdent()
                 self._write('}')
 
-        def _transport(self, mechanism):
-                self._write(self.line(' Transport function declarations '))
-                speciesTransport = self._analyzeTransport(mechanism)
-                self._viscosity(mechanism, speciesTransport, False, NTFit=50)
-                #self._diffcoefs(speciesTransport, False, NTFit=50)
-
         def _analyzeTransport(self, mechanism):
                 transdata = OrderedDict()
                 for specie in mechanism.species():
@@ -590,7 +586,7 @@ class CPickler(CMill):
                         transdata[specie] = [lin, eps, sig, dip, pol, zrot]
                 return transdata
 
-        def _viscosity(self, mechanism, speciesTransport, do_declarations, NTFit):
+        def viscosity_and_thermal_conductivity(self, mechanism, speciesTransport, do_declarations, NTFit):
                 #compute single constants in g/cm/s
                 kb = 1.3806503e-16
                 Na = 6.02214199e23
@@ -675,7 +671,7 @@ class CPickler(CMill):
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
                         ln_thermal_conductivity[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void fg_transport(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
+                self._write('void fg_viscosity_and_thermal_conductivity(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
                 self._indent()
                 self._write('dfloat mean_rcp_molar_mass = 0.;')
                 for spec in self.species: #i|
@@ -735,7 +731,7 @@ class CPickler(CMill):
                 self._outdent()
                 self._write('}')
 
-        def _diffcoefs(self, speciesTransport, do_declarations, NTFit) :
+        def binary_diffusion_coefficients(self, speciesTransport, do_declarations, NTFit) :
                 #REORDERING OF SPECS
                 specOrdered = []
                 for i in range(self.n_species):
