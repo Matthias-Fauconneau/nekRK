@@ -802,15 +802,11 @@ class CPickler(CMill):
                 self._write('}')
 
                 for i,spec1 in enumerate(specOrdered):
-                    self._write('{')
-                    self._indent()
-                    self._write('dfloat term2 = 0.0;')
+                    self._write('Ddiag[%d] = fg_molar_mass[%d] * term1 / ( 0.' % (i,i))
                     for j,spec2 in enumerate(specOrdered[0:i]):
-                        self._write('term2 += Xloc[%d] * exp(-(%.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2]));' # Why is the coefficient order being reversed here ?
+                        self._write('+ Xloc[%d] * exp(-(%.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2]))' # Why is the coefficient order being reversed here ?
                             % (j, binary_diffusion_coefficients[i][j][3], binary_diffusion_coefficients[i][j][2], binary_diffusion_coefficients[i][j][1], binary_diffusion_coefficients[i][j][0]))
-                    self._write('Ddiag[%d] = fg_molar_mass[%d] * term1 / term2 / wbar;' % (i,i))
-                    self._write('}')
-                    self._outdent()
+                    self._write(') / wbar;')
                 self._outdent()
                 self._write('}')
                 return
