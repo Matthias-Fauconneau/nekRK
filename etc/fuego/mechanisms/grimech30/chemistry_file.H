@@ -8661,7 +8661,6 @@ void fg_viscosity_and_thermal_conductivity(dfloat T, const dfloat mole_fractions
 }
 void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {
     Ddiag[0] = (1 - mass_fractions[0]) * mole_fractions[0] / ( 0.
-    + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
     + mole_fractions[1] * exp(-(-4.58374347E+00 + 4.01424666E+00 * logT[0] + -2.76575061E-01 * logT[1] + 1.07949083E-02 * logT[2]))
     + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
@@ -8713,10 +8712,10 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[1] = (1 - mass_fractions[1]) * mole_fractions[1] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
-    + mole_fractions[1] * exp(-(-4.58374347E+00 + 4.01424666E+00 * logT[0] + -2.76575061E-01 * logT[1] + 1.07949083E-02 * logT[2]))
     + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
@@ -8767,11 +8766,11 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[2] = (1 - mass_fractions[2]) * mole_fractions[2] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
     + mole_fractions[1] * exp(-(-4.58374347E+00 + 4.01424666E+00 * logT[0] + -2.76575061E-01 * logT[1] + 1.07949083E-02 * logT[2]))
-    + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
@@ -8821,12 +8820,12 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[3] = (1 - mass_fractions[3]) * mole_fractions[3] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
     + mole_fractions[1] * exp(-(-4.58374347E+00 + 4.01424666E+00 * logT[0] + -2.76575061E-01 * logT[1] + 1.07949083E-02 * logT[2]))
     + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
-    + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
@@ -8875,13 +8874,13 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[4] = (1 - mass_fractions[4]) * mole_fractions[4] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
     + mole_fractions[1] * exp(-(-4.58374347E+00 + 4.01424666E+00 * logT[0] + -2.76575061E-01 * logT[1] + 1.07949083E-02 * logT[2]))
     + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
-    + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
@@ -8929,6 +8928,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[5] = (1 - mass_fractions[5]) * mole_fractions[5] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -8936,7 +8936,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[2] * exp(-(-5.73181880E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
-    + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
@@ -8983,6 +8982,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[6] = (1 - mass_fractions[6]) * mole_fractions[6] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -8991,7 +8991,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[3] * exp(-(-6.40472955E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
-    + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
@@ -9037,6 +9036,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[7] = (1 - mass_fractions[7]) * mole_fractions[7] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9046,7 +9046,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[4] * exp(-(-5.75404389E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
-    + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
@@ -9091,6 +9090,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[8] = (1 - mass_fractions[8]) * mole_fractions[8] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9101,7 +9101,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[5] * exp(-(-3.82355312E+00 + 2.76290611E+00 * logT[0] + -8.03015717E-02 * logT[1] + 1.24513183E-03 * logT[2]))
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
-    + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
@@ -9145,6 +9144,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[9] = (1 - mass_fractions[9]) * mole_fractions[9] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9156,7 +9156,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[6] * exp(-(-6.41365341E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
-    + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
@@ -9199,6 +9198,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[10] = (1 - mass_fractions[10]) * mole_fractions[10] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9211,7 +9211,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[7] * exp(-(-6.42219632E+00 + 4.05001483E+00 * logT[0] + -2.86723763E-01 * logT[1] + 1.14217293E-02 * logT[2]))
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
-    + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
@@ -9253,6 +9252,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[11] = (1 - mass_fractions[11]) * mole_fractions[11] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9266,7 +9266,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[8] * exp(-(-5.63834509E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
-    + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
@@ -9307,6 +9306,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[12] = (1 - mass_fractions[12]) * mole_fractions[12] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9321,7 +9321,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[9] * exp(-(-5.65420335E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
-    + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
@@ -9361,6 +9360,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[13] = (1 - mass_fractions[13]) * mole_fractions[13] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9376,7 +9376,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[10] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
-    + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
@@ -9415,6 +9414,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[14] = (1 - mass_fractions[14]) * mole_fractions[14] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9431,7 +9431,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[11] * exp(-(-6.28103990E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
-    + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
@@ -9469,6 +9468,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[15] = (1 - mass_fractions[15]) * mole_fractions[15] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9486,7 +9486,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[12] * exp(-(-6.30713418E+00 + 4.01464146E+00 * logT[0] + -2.76755477E-01 * logT[1] + 1.08071248E-02 * logT[2]))
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
-    + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
@@ -9523,6 +9522,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[16] = (1 - mass_fractions[16]) * mole_fractions[16] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9541,7 +9541,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[13] * exp(-(-6.31517616E+00 + 4.01767422E+00 * logT[0] + -2.77487825E-01 * logT[1] + 1.08502637E-02 * logT[2]))
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
-    + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
@@ -9577,6 +9576,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[17] = (1 - mass_fractions[17]) * mole_fractions[17] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9596,7 +9596,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[14] * exp(-(-6.35131949E+00 + 4.04196957E+00 * logT[0] + -2.87223734E-01 * logT[1] + 1.14973273E-02 * logT[2]))
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
-    + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
@@ -9631,6 +9630,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[18] = (1 - mass_fractions[18]) * mole_fractions[18] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9651,7 +9651,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[15] * exp(-(-6.27614400E+00 + 3.74325265E+00 * logT[0] + -2.29773804E-01 * logT[1] + 8.38849725E-03 * logT[2]))
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
-    + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
@@ -9685,6 +9684,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[19] = (1 - mass_fractions[19]) * mole_fractions[19] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9706,7 +9706,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[16] * exp(-(-4.67441963E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
-    + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
@@ -9739,6 +9738,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[20] = (1 - mass_fractions[20]) * mole_fractions[20] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9761,7 +9761,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[17] * exp(-(-4.68464255E+00 + 2.96845830E+00 * logT[0] + -1.10655634E-01 * logT[1] + 2.66434804E-03 * logT[2]))
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
-    + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
@@ -9793,6 +9792,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[21] = (1 - mass_fractions[21]) * mole_fractions[21] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9816,7 +9816,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[18] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
-    + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
@@ -9847,6 +9846,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[22] = (1 - mass_fractions[22]) * mole_fractions[22] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9871,7 +9871,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[19] * exp(-(-5.21638243E+00 + 3.21835061E+00 * logT[0] + -1.47938042E-01 * logT[1] + 4.42082658E-03 * logT[2]))
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
-    + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
@@ -9901,6 +9900,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[23] = (1 - mass_fractions[23]) * mole_fractions[23] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9926,7 +9926,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[20] * exp(-(-4.81054104E+00 + 3.01698901E+00 * logT[0] + -1.17853159E-01 * logT[1] + 3.00200352E-03 * logT[2]))
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
-    + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
@@ -9955,6 +9954,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[24] = (1 - mass_fractions[24]) * mole_fractions[24] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -9981,7 +9981,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[21] * exp(-(-6.39168491E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
-    + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
@@ -10009,6 +10008,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[25] = (1 - mass_fractions[25]) * mole_fractions[25] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10036,7 +10036,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[22] * exp(-(-6.40418252E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
-    + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
@@ -10063,6 +10062,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[26] = (1 - mass_fractions[26]) * mole_fractions[26] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10091,7 +10091,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[23] * exp(-(-6.41603371E+00 + 3.85887829E+00 * logT[0] + -2.48432282E-01 * logT[1] + 9.31281372E-03 * logT[2]))
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
-    + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
@@ -10117,6 +10116,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[27] = (1 - mass_fractions[27]) * mole_fractions[27] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10146,7 +10146,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[24] * exp(-(-6.03555493E+00 + 3.63903335E+00 * logT[0] + -2.12823199E-01 * logT[1] + 7.54552776E-03 * logT[2]))
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
-    + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
@@ -10171,6 +10170,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[28] = (1 - mass_fractions[28]) * mole_fractions[28] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10201,7 +10201,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[25] * exp(-(-6.24874374E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
-    + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
@@ -10225,6 +10224,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[29] = (1 - mass_fractions[29]) * mole_fractions[29] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10256,7 +10256,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[26] * exp(-(-6.25894552E+00 + 3.71555914E+00 * logT[0] + -2.25372571E-01 * logT[1] + 8.17236644E-03 * logT[2]))
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
-    + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
@@ -10279,6 +10278,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[30] = (1 - mass_fractions[30]) * mole_fractions[30] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10311,7 +10311,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[27] * exp(-(-6.26418352E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
-    + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
@@ -10333,6 +10332,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[31] = (1 - mass_fractions[31]) * mole_fractions[31] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10366,7 +10366,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[28] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
-    + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
@@ -10387,6 +10386,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[32] = (1 - mass_fractions[32]) * mole_fractions[32] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10421,7 +10421,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[29] * exp(-(-5.25780031E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
-    + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
@@ -10441,6 +10440,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[33] = (1 - mass_fractions[33]) * mole_fractions[33] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10476,7 +10476,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[30] * exp(-(-5.69770786E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
-    + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
@@ -10495,6 +10494,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[34] = (1 - mass_fractions[34]) * mole_fractions[34] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10531,7 +10531,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[31] * exp(-(-5.67833829E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
-    + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
@@ -10549,6 +10548,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[35] = (1 - mass_fractions[35]) * mole_fractions[35] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10586,7 +10586,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[32] * exp(-(-5.70236552E+00 + 4.00818201E+00 * logT[0] + -2.86035467E-01 * logT[1] + 1.15580589E-02 * logT[2]))
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
-    + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
@@ -10603,6 +10602,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[36] = (1 - mass_fractions[36]) * mole_fractions[36] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10641,7 +10641,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[33] * exp(-(-4.41418301E+00 + 3.01943235E+00 * logT[0] + -1.18215719E-01 * logT[1] + 3.01901825E-03 * logT[2]))
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
-    + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
@@ -10657,6 +10656,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[37] = (1 - mass_fractions[37]) * mole_fractions[37] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10696,7 +10696,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[34] * exp(-(-6.08001743E+00 + 3.97057778E+00 * logT[0] + -2.82661195E-01 * logT[1] + 1.14654559E-02 * logT[2]))
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
-    + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
@@ -10711,6 +10710,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[38] = (1 - mass_fractions[38]) * mole_fractions[38] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10751,7 +10751,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[35] * exp(-(-6.35983338E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
-    + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
@@ -10765,6 +10764,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[39] = (1 - mass_fractions[39]) * mole_fractions[39] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10806,7 +10806,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[36] * exp(-(-6.44640547E+00 + 3.88445582E+00 * logT[0] + -2.52725652E-01 * logT[1] + 9.53020341E-03 * logT[2]))
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
-    + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
@@ -10819,6 +10818,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[40] = (1 - mass_fractions[40]) * mole_fractions[40] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10861,7 +10861,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[37] * exp(-(-6.36005271E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
-    + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
@@ -10873,6 +10872,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[41] = (1 - mass_fractions[41]) * mole_fractions[41] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10916,7 +10916,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[38] * exp(-(-6.43905366E+00 + 4.04660404E+00 * logT[0] + -2.84774820E-01 * logT[1] + 1.12854916E-02 * logT[2]))
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
-    + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
@@ -10927,6 +10926,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[42] = (1 - mass_fractions[42]) * mole_fractions[42] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -10971,7 +10971,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[39] * exp(-(-6.12695758E+00 + 3.98877280E+00 * logT[0] + -2.84382717E-01 * logT[1] + 1.15171190E-02 * logT[2]))
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
-    + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
@@ -10981,6 +10980,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[43] = (1 - mass_fractions[43]) * mole_fractions[43] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11026,7 +11026,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[40] * exp(-(-4.26666496E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
-    + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
@@ -11035,6 +11034,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[44] = (1 - mass_fractions[44]) * mole_fractions[44] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11081,7 +11081,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[41] * exp(-(-4.27793324E+00 + 2.77194268E+00 * logT[0] + -8.16315614E-02 * logT[1] + 1.30717426E-03 * logT[2]))
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
-    + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
@@ -11089,6 +11088,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[45] = (1 - mass_fractions[45]) * mole_fractions[45] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11136,13 +11136,13 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[42] * exp(-(-6.26420150E+00 + 4.00665402E+00 * logT[0] + -2.74868441E-01 * logT[1] + 1.06965989E-02 * logT[2]))
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
-    + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[46] = (1 - mass_fractions[46]) * mole_fractions[46] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11191,12 +11191,12 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[43] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
-    + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[47] = (1 - mass_fractions[47]) * mole_fractions[47] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11246,11 +11246,11 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[44] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
-    + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[48] = (1 - mass_fractions[48]) * mole_fractions[48] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11301,10 +11301,10 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[45] * exp(-(-6.35434439E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
-    + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[49] = (1 - mass_fractions[49]) * mole_fractions[49] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11356,9 +11356,9 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[46] * exp(-(-6.34831273E+00 + 3.78264706E+00 * logT[0] + -2.36058946E-01 * logT[1] + 8.69783793E-03 * logT[2]))
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
-    + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[50] = (1 - mass_fractions[50]) * mole_fractions[50] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11411,8 +11411,8 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[47] * exp(-(-6.33911217E+00 + 4.04128569E+00 * logT[0] + -2.87235549E-01 * logT[1] + 1.15013773E-02 * logT[2]))
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
-    + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[51] = (1 - mass_fractions[51]) * mole_fractions[51] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11466,7 +11466,7 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
     + mole_fractions[48] * exp(-(-6.49209799E+00 + 4.02468157E+00 * logT[0] + -2.79051944E-01 * logT[1] + 1.09400172E-02 * logT[2]))
     + mole_fractions[49] * exp(-(-6.45313483E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
     + mole_fractions[50] * exp(-(-6.45894619E+00 + 3.67568075E+00 * logT[0] + -2.18822753E-01 * logT[1] + 7.84480513E-03 * logT[2]))
-    + mole_fractions[51] * exp(-(-5.26382765E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
+    + mole_fractions[52] * exp(-(-5.26964773E+00 + 3.16011098E+00 * logT[0] + -1.39182593E-01 * logT[1] + 4.00618275E-03 * logT[2]))
     );
     Ddiag[52] = (1 - mass_fractions[52]) * mole_fractions[52] / ( 0.
     + mole_fractions[0] * exp(-(-3.74024324E+00 + 3.66751142E+00 * logT[0] + -2.50815735E-01 * logT[1] + 1.03677193E-02 * logT[2]))
@@ -11527,6 +11527,6 @@ void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloa
 /* version */
 /* $Id$ */
 
-/* Generated automatically by CPickler on Tue Jun  1 08:23:46 2021 */
+/* Generated automatically by CPickler on Tue Jun  1 08:27:50 2021 */
 
 /* End of file  */
