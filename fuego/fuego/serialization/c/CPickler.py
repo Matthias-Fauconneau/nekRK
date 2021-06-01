@@ -671,17 +671,8 @@ class CPickler(CMill):
                         ln_viscosity[transport_specie.id] = np.polyfit(tlog, spvisc, 3) # log viscosity = P(log T)
                         ln_thermal_conductivity[transport_specie.id] = np.polyfit(tlog, spcond, 3)
 
-                self._write('void fg_viscosity_and_thermal_conductivity(dfloat _p, dfloat T, const dfloat mass_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
+                self._write('void fg_viscosity_and_thermal_conductivity(dfloat T, const dfloat mole_fractions[], /*->*/ dfloat& viscosity, dfloat& thermal_conductivity) {')
                 self._indent()
-                self._write('dfloat mean_rcp_molar_mass = 0.;')
-                self._write('for(int i=0; i<n_species; i++) {')
-                self._write('mean_rcp_molar_mass += mass_fractions[i]*fg_rcp_molar_mass[i];')
-                self._write('}')
-                self._write('dfloat mean_molar_mass = 1./mean_rcp_molar_mass;')
-                self._write('dfloat mole_fractions[n_species];')
-                self._write('for(int i=0; i<n_species; i++) {')
-                self._write('mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;')
-                self._write('}')
 
                 def evaluate_polynomial(P, x):
                     self._write('dfloat y = 0.;')
@@ -794,22 +785,16 @@ class CPickler(CMill):
                 #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
                 # No idea what this code does
-                self._write('void fg_Pele_Ddiag(const dfloat wbar, const dfloat Xloc[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {')
+                self._write('void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {')
                 self._indent()
-                self._write('dfloat rcp_wbar = 1./wbar;')
-                self._write('dfloat term1 = 0.0;')
-                self._write('for(int i=0; i<n_species; i++) {')
-                self._write('term1 += mass_fractions[i];')
-                self._write('}')
-
-                for i,spec1 in enumerate(specOrdered):
-                    self._write('Ddiag[%d] = fg_molar_mass[%d] * term1 / ( 0.' % (i,i))
+                for k,spec1 in enumerate(specOrdered):
+                    self._write('Ddiag[%d] = (1 - mass_fractions[%d]) * mole_fractions[%d] / ( 0.' % (k,k,k))
                     for j,spec2 in enumerate(specOrdered[0:i]+specOrdered[i+1:]):
                         a = max(i, j)
                         b = min(i, j)
-                        self._write('+ Xloc[%d] * exp(-(%.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2]))' # Why is the coefficient order being reversed here ?
+                        self._write('+ mole_fractions[%d] * exp(-(%.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2]))' # Why is the coefficient order being reversed here ?
                             % (j, binary_diffusion_coefficients[a][b][3], binary_diffusion_coefficients[a][b][2], binary_diffusion_coefficients[a][b][1], binary_diffusion_coefficients[a][b][0]))
-                    self._write(') * rcp_wbar;')
+                    self._write(');')
                 self._outdent()
                 self._write('}')
                 return

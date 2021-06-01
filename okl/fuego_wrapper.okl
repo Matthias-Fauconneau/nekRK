@@ -65,10 +65,20 @@
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
         }
-        fg_viscosity_and_thermal_conductivity(pressure, T, mass_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
+        dfloat mean_rcp_molar_mass = 0.;
+        for(int i=0; i<n_species; i++) {
+            mean_rcp_molar_mass += mass_fractions[i]*fg_rcp_molar_mass[i];
+        }
+        dfloat mean_molar_mass = 1./mean_rcp_molar_mass;
+        dfloat mole_fractions[n_species];
+        for(int i=0; i<n_species; i++) {
+            mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;
+        }
+
+        fg_viscosity_and_thermal_conductivity(T, mole_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
 
         dfloat rho_Di_[n_species];
-        fg_rho_Di(pressure, T, mass_fractions, /*->*/ rho_Di_);
+        fg_rho_Di(pressure, T, mole_fractions, mass_fractions, mean_rcp_molar_mass, mean_molar_mass, /*->*/ rho_Di_);
         for(int k=0;k<n_species;k++) {
             rho_Di[k*n_states + id] = rho_Di_[k];
         }
