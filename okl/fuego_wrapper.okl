@@ -78,7 +78,7 @@
         fg_viscosity_and_thermal_conductivity(T, mole_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
 
         dfloat rho_Di_[n_species];
-        fg_rho_Di(pressure, T, mole_fractions, mass_fractions, mean_rcp_molar_mass, mean_molar_mass, /*->*/ rho_Di_);
+        fg_rho_Di(pressure, T, mole_fractions, mass_fractions, mean_molar_mass, /*->*/ rho_Di_);
         for(int k=0;k<n_species;k++) {
             rho_Di[k*n_states + id] = rho_Di_[k];
         }

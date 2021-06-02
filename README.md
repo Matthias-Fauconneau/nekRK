@@ -6,7 +6,7 @@ nekRK is a software package for [nekRS](https://github.com/Nek5000/nekRS) to com
 Dependencies:
 - CMake-3.11
 - MPI
-- [OCCA](https://github.com/libocca/occa)
+- [OCCA](https://github.com/libocca/occa) (/!\ The occa source directory needs to stay available at the same path as it is used by the OCCA installation)
 - Python2
 - Numpy for Python2: This old version might have been renamed to integrate with modern systems e.g numpy-python2
 
@@ -57,3 +57,4 @@ Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]
 ### BP1: Ignition 0D-reactor
 
 TODO
+

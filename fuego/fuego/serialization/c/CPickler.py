@@ -785,7 +785,7 @@ class CPickler(CMill):
                 #        binary_diffusion_coefficients[i].append(binary_diffusion_coefficients[spec2.id][spec1.id])
 
                 # No idea what this code does
-                self._write('void fg_mixture_diffusion_coefficients(const dfloat mean_molar_mass, const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {')
+                self._write('void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat logT[3], dfloat* Ddiag) {')
                 self._indent()
                 for k,spec1 in enumerate(specOrdered):
                     self._write('Ddiag[%d] = (1 - mass_fractions[%d]) * mole_fractions[%d] / ( 0.' % (k,k,k))

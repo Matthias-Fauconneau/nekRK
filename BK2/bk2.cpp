@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     const int n_states = std::stoi(argv[2])/size;
     const int blockSize = std::stoi(argv[3]);
     const int nRep = std::stoi(argv[4]);
-    std::string mech("grimech30");
+    std::string mech("LiDryer");
     if(argc > 5) mech.assign(argv[5]);
 
     char deviceConfig[BUFSIZ];
