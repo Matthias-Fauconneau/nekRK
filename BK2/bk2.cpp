@@ -14,7 +14,6 @@ using namespace std;
 #include "occa.hpp"
 #include <nekrk.h>
 
-
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
     int rank, size;
@@ -124,30 +123,22 @@ int main(int argc, char **argv) {
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
-    if(rank==0)
-      printf("avg throughput: %.3f GDOF/s\n",
-        (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
-#if 0
+    if(rank==0) printf("avg throughput: %.3f GDOF/s\n", (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
     // get results from device
-    auto rates = new double[n_species*n_states];
-    o_rates.copyTo(rates);
-    auto heat_release_rate = new double[n_states];
-    o_heat_release_rate.copyTo(heat_release_rate);
-
+    auto rho_Di = new double[n_species*n_states];
+    o_rho_Di.copyTo(rho_Di);
     // print results
-    for (int k=0; k<n_species; k++) {
-        double mass_production_rate = rates[k*n_states+0];
-        if(rank==0 && argc > 5) printf("species %5zu wdot=%.15e\n", k+1, mass_production_rate);
-    }
-    /*double concentration = reference_pressure / R / reference_temperature;
+    const float K = 1.380649e-23; // J / K
+    const float NA = 6.02214076e23;
+    const float R = K*NA;
+    double concentration = reference_pressure / R / reference_temperature;
     double density = concentration * molar_mass;
-    double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
-    const double time = length / velocity;
-    const double energy_rate = (molar_heat_capacity_R * reference_pressure) / time;
-    printf("%5s    %.15e\n", "HRR", heat_release_rate[0] * energy_rate);
-    printf("%5s    %.15e\n", "HRR0", energy_rate);
-    printf("%5s    %.15e\n", "HRR/HRR0", heat_release_rate[0]);*/
-#endif
+    for (int k=0; k<n_species; k++) {
+        double density_times_diffusion_coefficient = rho_Di[k*n_states+0];
+        //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
+        printf("%f ", density_times_diffusion_coefficient/density*10);
+    }
+
     MPI_Finalize();
     exit(EXIT_SUCCESS);
 }

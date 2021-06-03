@@ -791,8 +791,8 @@ class CPickler(CMill):
                     self._write('Ddiag[%d] = (1 - mass_fractions[%d]) * mole_fractions[%d] / ( 0.' % (k,k,k))
                     for j,spec2 in enumerate(specOrdered):
                         if k != j:
-                            a = max(i, j)
-                            b = min(i, j)
+                            a = max(k, j)
+                            b = min(k, j)
                             self._write('+ mole_fractions[%d] * exp(-(%.8E + %.8E * logT[0] + %.8E * logT[1] + %.8E * logT[2]))' # Why is the coefficient order being reversed here ?
                                 % (j, binary_diffusion_coefficients[a][b][3], binary_diffusion_coefficients[a][b][2], binary_diffusion_coefficients[a][b][1], binary_diffusion_coefficients[a][b][0]))
                     self._write(');')
