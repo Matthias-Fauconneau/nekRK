@@ -1,9 +1,8 @@
 void fg_rho_Di(dfloat pressure, dfloat T, const dfloat mole_fractions[], const dfloat mass_fractions[], const dfloat mean_molar_mass, dfloat* rho_Di) {
-    dfloat logT[3] = {log(T), pow(log(T), 2), pow(log(T), 3)};
     fg_mixture_diffusion_coefficients(
         mole_fractions,
         mass_fractions,
-        logT,
+        T,
         rho_Di
     );
     const dfloat K = 1.380649e-23; // J / K
