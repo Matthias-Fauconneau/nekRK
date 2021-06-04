@@ -14,14 +14,14 @@
     dfloat molar_rates[n_species] = {0};
 
     const dfloat T = reference_temperature * temperature[id];
-    //dfloat tc[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
-    dfloat tc[6];
-    tc[0] = log(T);
-    tc[1] = T;
-    tc[2] = T*T;
-    tc[3] = T*T*T;
-    tc[4] = T*T*T*T;
-    tc[5] = 1./T;
+    //dfloat Ts[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
+    dfloat Ts[6];
+    Ts[0] = log(T);
+    Ts[1] = T;
+    Ts[2] = T*T;
+    Ts[3] = T*T*T;
+    Ts[4] = T*T*T*T;
+    Ts[5] = 1./T;
 
     dfloat sum_active_mass_fractions = 0.;
     dfloat mean_rcp_molar_mass = 0.;
@@ -35,10 +35,10 @@
     }
     wrk[inert_specie] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[inert_specie];
     mean_rcp_molar_mass += wrk[inert_specie];
-    for(int k=0;k<n_species;k++) wrk[k] *= pressure_R * tc[5] / mean_rcp_molar_mass;
+    for(int k=0;k<n_species;k++) wrk[k] *= pressure_R * Ts[5] / mean_rcp_molar_mass;
 
-    fg_rates(wrk, tc, molar_rates);
-    fg_speciesEnthalpy_RT(wrk, tc);
+    fg_rates(/*concentrations*/wrk, Ts, molar_rates);
+    fg_enthalpy_RT(Ts, /*enthalpies*/wrk);
 
     dfloat energy_rate_RT = 0.0;
     for(int k=0;k<n_species;k++) {
@@ -75,7 +75,8 @@
             mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;
         }
 
-        fg_viscosity_and_thermal_conductivity(T, mole_fractions, /*->*/ viscosity[id], thermal_conductivity[id]);
+        viscosity[id] = fg_viscosity(T, mole_fractions);
+        thermal_conductivity[id] = fg_thermal_conductivity(T, mole_fractions);
 
         dfloat rho_Di_[n_species];
         fg_rho_Di(pressure, T, mole_fractions, mass_fractions, mean_molar_mass, /*->*/ rho_Di_);

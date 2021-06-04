@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2003 All Rights Reserved
-# 
+#
 #  <LicenseText>
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 
 
 from Indenter import Indenter
@@ -31,7 +31,7 @@ class Mill(Stationery, Indenter):
 
     def initialize(self, options=None):
         import weaver.config.unpickle
-         
+
         self._debug.line("reading user configuration")
         userOptions = weaver.config.unpickle.readUserConfiguration()
 
@@ -71,16 +71,10 @@ class Mill(Stationery, Indenter):
 
 
     def _begin(self):
-        #self._rep = self.header()
-        return
-
+            pass
 
     def _end(self):
-        self._versionId()
-        self._rep += ['', self.line(self._timestamp())]
-        self._rep += self.footer()
-        return
-
+            pass
 
     def _separator(self):
         self._rep.append(self.line(self.separator()))
@@ -117,11 +111,7 @@ class Mill(Stationery, Indenter):
 
     # properties
     class Inventory(Stationery.Inventory):
-
-
         import pyre.properties
-
-
         inventory = (
             pyre.properties.property(
                 "timestampLine", default=" Generated automatically by %s on %s"),
@@ -132,4 +122,4 @@ class Mill(Stationery, Indenter):
 # version
 __id__ = "$Id$"
 
-#  End of file 
+#  End of file
