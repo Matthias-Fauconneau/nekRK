@@ -199,7 +199,7 @@ class CPickler(CMill):
     def thermal_conductivity_function(self, thermal_conductivity_T12):
         self._write('dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {')
         self._indent()
-        self._write('dfloat T_12 = sqrt(T)')
+        self._write('dfloat T_12 = sqrt(T);')
         self._write('dfloat ln_T = log(T);')
         self._write('dfloat ln_T_2 = ln_T*ln_T; ')
         self._write('dfloat ln_T_3 = ln_T_2*ln_T; ')
@@ -214,7 +214,7 @@ class CPickler(CMill):
     def mixture_diffusion_coefficients_function(self, binary_thermal_diffusion_coefficients_T32):
         self._write('void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat T, dfloat* Ddiag) {')
         self._indent()
-        self._write('dfloat T_12 = sqrt(T)')
+        self._write('dfloat T_12 = sqrt(T);')
         self._write('dfloat ln_T = log(T);')
         self._write('dfloat ln_T_2 = ln_T*ln_T; ')
         self._write('dfloat ln_T_3 = ln_T_2*ln_T; ')

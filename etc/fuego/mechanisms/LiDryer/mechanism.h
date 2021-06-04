@@ -106,7 +106,7 @@ dfloat fg_viscosity(dfloat T, const dfloat mole_fractions[]) {
     , 1./6.);
 }
 dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {
-    dfloat T_12 = sqrt(T)
+    dfloat T_12 = sqrt(T);
     dfloat ln_T = log(T);
     dfloat ln_T_2 = ln_T*ln_T; 
     dfloat ln_T_3 = ln_T_2*ln_T; 
@@ -123,7 +123,7 @@ dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {
     , 1./4.);
 }
 void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat T, dfloat* Ddiag) {
-    dfloat T_12 = sqrt(T)
+    dfloat T_12 = sqrt(T);
     dfloat ln_T = log(T);
     dfloat ln_T_2 = ln_T*ln_T; 
     dfloat ln_T_3 = ln_T_2*ln_T; 

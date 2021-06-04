@@ -106,7 +106,7 @@ dfloat fg_viscosity(dfloat T, const dfloat mole_fractions[]) {
     , 1./6.);
 }
 dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {
-    dfloat T_12 = sqrt(T)
+    dfloat T_12 = sqrt(T);
     dfloat ln_T = log(T);
     dfloat ln_T_2 = ln_T*ln_T; 
     dfloat ln_T_3 = ln_T_2*ln_T; 
@@ -123,7 +123,7 @@ dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {
     , 1./4.);
 }
 void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat T, dfloat* Ddiag) {
-    dfloat T_12 = sqrt(T)
+    dfloat T_12 = sqrt(T);
     dfloat ln_T = log(T);
     dfloat ln_T_2 = ln_T*ln_T; 
     dfloat ln_T_3 = ln_T_2*ln_T; 
@@ -546,10 +546,10 @@ const int inert_specie= 8;
 dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat* mole_fractions) {
     dfloat Ts[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
     dfloat Cp_R[n_species];
-    molar_heat_capacity_at_constant_pressure_R(Ts, Cp_R);
+    fg_molar_heat_capacity_at_constant_pressure_R(Ts, Cp_R);
     dfloat sum = 0;
     for (int i = 0; i < n_species; i++) {
-        sum += Cp_R[i]*mole_fractions[i]
+        sum += Cp_R[i]*mole_fractions[i];
     }
 }
 
