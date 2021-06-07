@@ -129,6 +129,7 @@ class CPickler(CMill):
         return permanent_dipole_moment[a]*permanent_dipole_moment[b] / (8. * pi * epsilon_0 * sqrt(well_depth_J[a]*well_depth_J[b]) * cb((diameter[a] + diameter[b])/2.))
 
     def collision_integral(self, table, a, b, T):
+        print(header_T_star, a, b, T, self.T_star(a, b, T))
         ln_T_star = ln(self.T_star(a, b, T))
         delta_star = self.reduced_dipole_moment(a, b)
         header_ln_T_star = map(ln, header_T_star)
@@ -149,7 +150,7 @@ class CPickler(CMill):
     def transport_polynomials(self):
         N = 50
         (temperature_min, temperature_max) = (300., 3000.)
-        T = map(lambda n: temperature_min + n / (N-1) * (temperature_max-temperature_min), range(N))
+        T = map(lambda n: temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min), range(N))
         class TransportPolynomials:
             pass
         transport_polynomials = TransportPolynomials()
@@ -162,7 +163,9 @@ class CPickler(CMill):
     def thermodynamic_function(self, name, expression):
         temperature_splits = {}
         for index, specie in enumerate(self.thermodynamics):
-                temperature_splits.setdefault(specie[0].highT, []).append(index)
+            [high, low] = specie
+            assert(low.highT == high.lowT)
+            temperature_splits.setdefault(low.highT, []).append(index)
 
         self._write('void %s(const dfloat Ts[], dfloat* species) {' % name)
         self._indent()
@@ -236,20 +239,33 @@ class CPickler(CMill):
         self.species = species
         import pyre.handbook
         molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight, s.composition)), species)
+        f = open("binary_diffusion_coefficients", "w")
+        to_string = lambda x: '%s'%x
+        #f.write("molar_mass: "+ to_string(molar_mass) +"\n")
         self.internal_degrees_of_freedom = map(lambda s: [0., 1., 3./2.][s.trans[0].parameters[0]], species) #transport.geometry { Atom => 0., Linear{..} => 1., Nonlinear{..} => 3./2. }
+        #f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
         self.heat_capacity_ratio = map(lambda s: 1. + 2./[3., 5., 6.][s.trans[0].parameters[0]], species) #1. + 2. / match s.transport.geometry { Atom => 3., Linear{..} => 5., Nonlinear{..} => 6. };
-        self.well_depth_J = map(lambda s: float(s.trans[0].eps), species)
-        self.diameter = map(lambda s: float(s.trans[0].sig), species)
-        self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip), species) #*Cm_per_Debye ?
-        self.polarizability = map(lambda s: float(s.trans[0].pol), species) # polarizability_Å3*1e-30 ?
+        #f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
+        self.well_depth_J = map(lambda s: float(s.trans[0].eps)*K, species) #well_depth_K * K
+        #f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
+        self.diameter = map(lambda s: float(s.trans[0].sig)*1e-10, species) #diameter_Å*1e-10
+        #f.write("diameter: "+ to_string(self.diameter) +"\n")
+        Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
+        self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, species)
+        #f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
+        self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, species) # polarizability_Å3*1e-30
+        #f.write("polarizability: "+ to_string(polarizability) +"\n")
         self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
+        #f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
         self.thermodynamics = map(lambda s: s.thermo, species)
+        #f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
+        f.write(to_string(self))
+        f.close()
         names = map(lambda s: s.symbol, species)
         self.names = names
 
         # Species
         self._write('#define n_species %d' % (len(species)))
-        to_string = lambda x: '%s'%x
         self._write('const dfloat fg_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, molar_mass))))
         self._write('const dfloat fg_rcp_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, map(lambda w: 1./w, molar_mass)))))
 
@@ -264,11 +280,11 @@ class CPickler(CMill):
         self.thermodynamic_function("fg_gibbs_RT", gibbs_RT_expression)
 
         self.molar_mass = molar_mass
-        transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
-        print(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
-        self.viscosity_function(transport_polynomials.sqrt_viscosity_T14)
-        self.thermal_conductivity_function(transport_polynomials.thermal_conductivity_T12)
-        self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
+        #transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
+        #f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
+        #self.viscosity_function(transport_polynomials.sqrt_viscosity_T14)
+        #self.thermal_conductivity_function(transport_polynomials.thermal_conductivity_T12)
+        #self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
 
         # Reactions
         self.reactions = mechanism.reaction()

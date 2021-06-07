@@ -6,8 +6,10 @@ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat* mole_fractions) {
     for (int i = 0; i < n_species; i++) {
         sum += Cp_R[i]*mole_fractions[i];
     }
+    return sum;
 }
 
+#if CFG_FEATURE_TRANSPORT
 void fg_rho_Di(dfloat pressure, dfloat T, const dfloat mole_fractions[], const dfloat mass_fractions[], const dfloat mean_molar_mass, dfloat* rho_Di) {
     fg_mixture_diffusion_coefficients(
         mole_fractions,
@@ -24,3 +26,4 @@ void fg_rho_Di(dfloat pressure, dfloat T, const dfloat mole_fractions[], const d
         rho_Di[i] *= density;
     }
 }
+#endif

@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     const int n_states = std::stoi(argv[2])/size;
     const int blockSize = std::stoi(argv[3]);
     const int nRep = std::stoi(argv[4]);
-    std::string mech("grimech30");
+    std::string mech("LiDryer");
     if(argc > 5) mech.assign(argv[5]);
 
     char deviceConfig[BUFSIZ];
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     device.setup(deviceConfigString);
     if(rank == 0) std::cout << "active occa mode: " << device.mode() << '\n';
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, false);
     const int n_species = nekRK::number_of_species();
 
     // setup reference quantities
@@ -136,14 +136,20 @@ int main(int argc, char **argv) {
         double mass_production_rate = rates[k*n_states+0];
         if(rank==0 && argc > 5) printf("species %5d wdot=%.15e\n", k+1, mass_production_rate);
     }
-    /*double concentration = reference_pressure / R / reference_temperature;
-    double density = concentration * molar_mass;
-    double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
-    const double time = length / velocity;
-    const double energy_rate = (molar_heat_capacity_R * reference_pressure) / time;
-    printf("%5s    %.15e\n", "HRR", heat_release_rate[0] * energy_rate);
-    printf("%5s    %.15e\n", "HRR0", energy_rate);
-    printf("%5s    %.15e\n", "HRR/HRR0", heat_release_rate[0]);*/
+
+    #if 1//CFG_FEATURE_VALIDATION
+        double K = 1.380649e-23; // J/kelvin
+        double NA = 6.02214076e23; // /mole
+        double R = K*NA;
+        double concentration = reference_pressure / R / reference_temperature;
+        double density = concentration * molar_mass;
+        double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
+        double length = 1.;
+        double velocity = 1.;
+        const double time = length / velocity;
+        const double energy_rate = (molar_heat_capacity_R * reference_pressure) / time;
+        printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
+    #endif
 
     MPI_Finalize();
     exit(EXIT_SUCCESS);

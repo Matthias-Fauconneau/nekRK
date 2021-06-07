@@ -1,2 +1,3 @@
 build
-*.comparison
+*.reference
+etc/fuego/mechanisms/LiDryer/binary_diffusion_coefficients

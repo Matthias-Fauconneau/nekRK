@@ -49,6 +49,7 @@
   }
 }
 
+#if CFG_FEATURE_TRANSPORT
 @kernel void transport(
     const int n_states,
     const dfloat pressure,
@@ -85,6 +86,7 @@
         }
     }
 }
+#endif
 
 @kernel void number_of_species(@restrict int* nSpecies)
 {

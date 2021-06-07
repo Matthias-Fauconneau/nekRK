@@ -11,7 +11,8 @@ namespace nekRK {
         occa::device device,
         occa::properties kernel_properties,
         int blockSize,
-        MPI_Comm comm
+        MPI_Comm comm,
+        bool transport
     );
 
     int number_of_species();

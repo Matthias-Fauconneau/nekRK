@@ -44,7 +44,7 @@ void set_molar_mass()
 }
 
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties,
-       const int group_size, MPI_Comm _comm)
+       const int group_size, MPI_Comm _comm, bool transport)
 {
     comm   = _comm;
     device = _device;
@@ -64,12 +64,17 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 
     string okl_path = string(getenv("NEKRK_PATH") ?: ".")+"/okl/fuego_wrapper.okl";
 
+    // ?
     int rank;
     MPI_Comm_rank(comm, &rank);
     for (int r = 0; r < 2; r++) {
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
-            printf("transport\n");
-            transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
+            if (transport) {
+                kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
+                printf("transport\n");
+                transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
+            }
+            kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
             printf("production_rates\n");
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
             number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
@@ -93,9 +98,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 /* API */
 
 void nekRK::init(const char* model_path, occa::device device,
-      occa::properties kernel_properties, int group_size, MPI_Comm comm)
+      occa::properties kernel_properties, int group_size, MPI_Comm comm, bool transport)
 {
-  setup(model_path, device, kernel_properties, group_size, comm);
+  setup(model_path, device, kernel_properties, group_size, comm, transport);
 }
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
