@@ -239,27 +239,27 @@ class CPickler(CMill):
         self.species = species
         import pyre.handbook
         molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight, s.composition)), species)
-        f = open("binary_diffusion_coefficients", "w")
+        f = open("species", "w")
         to_string = lambda x: '%s'%x
-        #f.write("molar_mass: "+ to_string(molar_mass) +"\n")
+        f.write("molar_mass: "+ to_string(molar_mass) +"\n")
         self.internal_degrees_of_freedom = map(lambda s: [0., 1., 3./2.][s.trans[0].parameters[0]], species) #transport.geometry { Atom => 0., Linear{..} => 1., Nonlinear{..} => 3./2. }
-        #f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
+        f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
         self.heat_capacity_ratio = map(lambda s: 1. + 2./[3., 5., 6.][s.trans[0].parameters[0]], species) #1. + 2. / match s.transport.geometry { Atom => 3., Linear{..} => 5., Nonlinear{..} => 6. };
-        #f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
+        f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
         self.well_depth_J = map(lambda s: float(s.trans[0].eps)*K, species) #well_depth_K * K
-        #f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
+        f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
         self.diameter = map(lambda s: float(s.trans[0].sig)*1e-10, species) #diameter_Å*1e-10
-        #f.write("diameter: "+ to_string(self.diameter) +"\n")
+        f.write("diameter: "+ to_string(self.diameter) +"\n")
         Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
         self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, species)
-        #f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
+        f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
         self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, species) # polarizability_Å3*1e-30
-        #f.write("polarizability: "+ to_string(polarizability) +"\n")
+        f.write("polarizability: "+ to_string(polarizability) +"\n")
         self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
-        #f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
+        f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
         self.thermodynamics = map(lambda s: s.thermo, species)
-        #f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
-        f.write(to_string(self))
+        f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
+        #f.write(to_string(self))
         f.close()
         names = map(lambda s: s.symbol, species)
         self.names = names
