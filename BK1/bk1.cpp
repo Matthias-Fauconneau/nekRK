@@ -1,3 +1,4 @@
+#include <fenv.h>
 #include <cstddef>
 #include <string>
 using namespace std;
@@ -16,6 +17,7 @@ using namespace std;
 
 
 int main(int argc, char **argv) {
+    feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
     MPI_Init(&argc, &argv);
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -131,25 +133,25 @@ int main(int argc, char **argv) {
     auto heat_release_rate = new double[n_states];
     o_heat_release_rate.copyTo(heat_release_rate);
 
+    double K = 1.380649e-23; // J/kelvin
+    double NA = 6.02214076e23; // /mole
+    double R = K*NA;
+    double concentration = reference_pressure / R / reference_temperature;
+    double reference_density = concentration * molar_mass;
+    const double reference_time = reference_length / reference_velocity;
+
     // print results
     for (int k=0; k<n_species; k++) {
         double mass_production_rate = rates[k*n_states+0];
-        if(rank==0 && argc > 5) printf("species %5d wdot=%.15e\n", k+1, mass_production_rate);
+        // mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
+        double reference_mass_rate = reference_density / reference_time;
+        double rcp_mass_rate = 1./reference_mass_rate;
+        double molar_rate = mass_production_rate / (rcp_mass_rate * molar_mass_species[k]);
+        if(rank==0 && argc > 5) printf("species %5d wdot=%.15e\n", k+1, molar_rate);
     }
-
-    #if 1//CFG_FEATURE_VALIDATION
-        double K = 1.380649e-23; // J/kelvin
-        double NA = 6.02214076e23; // /mole
-        double R = K*NA;
-        double concentration = reference_pressure / R / reference_temperature;
-        double density = concentration * molar_mass;
-        double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
-        double length = 1.;
-        double velocity = 1.;
-        const double time = length / velocity;
-        const double energy_rate = (molar_heat_capacity_R * reference_pressure) / time;
-        printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
-    #endif
+    double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
+    const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
+    printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
 
     MPI_Finalize();
     exit(EXIT_SUCCESS);

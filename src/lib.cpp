@@ -55,9 +55,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
     kernel_properties["defines/dfloat"] = "double";
-    kernel_properties["defines/fgexp"] = "exp"; // "__expf"
+    kernel_properties["defines/fg_exp"] = "exp"; // "__expf"
     kernel_properties["defines/p_blockSize"] = to_string(group_size);
-    kernel_properties["flags"].asObject();
+    kernel_properties["flags"].asObject(); // ?
     //kernel_properties["compiler_flags"] += " --prec-div=false --prec-sqrt=false";
     //kernel_properties["compiler_flags"] += " --use_fast_math";
     //kernel_properties["okl/enabled"] = false;

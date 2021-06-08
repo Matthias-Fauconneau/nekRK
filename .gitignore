@@ -1,3 +1,5 @@
 build
 LiDryer
 etc/fuego/mechanisms/LiDryer/species
+*.0
+*.c

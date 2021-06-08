@@ -25,10 +25,12 @@ from numpy import sqrt
 from numpy import log as ln
 from numpy import polyfit as polynomial_regression
 
-piece = lambda nasa7, T: nasa7[0 if T < nasa7[0].highT else 1].parameters
-def molar_heat_capacity_at_constant_pressure_R(nasa7, T):
-    a = piece(nasa7, T)
-    return a[0]+a[1]*T+a[2]*T*T+a[3]*T*T*T+a[4]*T*T*T*T
+class NASA7:
+    def piece(self, T):
+        return self.pieces[0 if T < self.temperature_split else 1]
+    def molar_heat_capacity_at_constant_pressure_R(self, T):
+        a = self.piece(T)
+        return a[0]+a[1]*T+a[2]*T*T+a[3]*T*T*T+a[4]*T*T*T*T
 
 import sys
 header_T_star = [sys.float_info.epsilon, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 50., 75., 100., 500.]
@@ -163,22 +165,20 @@ class CPickler(CMill):
     def thermodynamic_function(self, name, expression):
         temperature_splits = {}
         for index, specie in enumerate(self.thermodynamics):
-            [high, low] = specie
-            assert(low.highT == high.lowT)
-            temperature_splits.setdefault(low.highT, []).append(index)
+            temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
-        self._write('void %s(const dfloat Ts[], dfloat* species) {' % name)
+        self._write('void %s(const dfloat ln_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* species) {' % name)
         self._indent()
         for temperature_split, species in temperature_splits.items():
-            self._write('if (Ts[1] < %s) {' % temperature_split)
+            self._write('if (T < %s) {' % temperature_split)
             self._indent()
             for specie in species:
-                    self._write('species[%d] = %s;' % (specie, expression(self.thermodynamics[specie][0].parameters)))
+                    self._write('species[%d] = %s;' % (specie, expression(self.thermodynamics[specie].pieces[0])))
             self._outdent()
             self._write('} else {')
             self._indent()
             for specie in species:
-                    self._write('species[%d] = %s;' % (specie, expression(self.thermodynamics[specie][1].parameters)))
+                    self._write('species[%d] = %s;' % (specie, expression(self.thermodynamics[specie].pieces[1])))
             self._outdent()
             self._write('}')
         self._outdent()
@@ -254,10 +254,17 @@ class CPickler(CMill):
         self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, species)
         f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
         self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, species) # polarizability_Å3*1e-30
-        f.write("polarizability: "+ to_string(polarizability) +"\n")
+        f.write("polarizability: "+ to_string(self.polarizability) +"\n")
         self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
         f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
-        self.thermodynamics = map(lambda s: s.thermo, species)
+        def block_expr(s):
+            self = NASA7()
+            [high, low] = s.thermo # /!\ Reverse order
+            assert(low.highT == high.lowT)
+            self.temperature_split = low.highT
+            self.pieces = [low.parameters, high.parameters]
+            return self
+        self.thermodynamics = map(block_expr, species)
         f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
         #f.write(to_string(self))
         f.close()
@@ -270,14 +277,14 @@ class CPickler(CMill):
         self._write('const dfloat fg_rcp_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, map(lambda w: 1./w, molar_mass)))))
 
         def molar_heat_capacity_at_constant_pressure_R_expression(a):
-            return '%+15.8e %+15.8e * Ts[1] %+15.8e * Ts[2] %+15.8e * Ts[3] %+15.8e * Ts[4]' % (a[0], a[1], a[2], a[3], a[4])
+            return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4' % (a[0], a[1], a[2], a[3], a[4])
         self.thermodynamic_function("fg_molar_heat_capacity_at_constant_pressure_R", molar_heat_capacity_at_constant_pressure_R_expression)
         def enthalpy_RT_expression(a):
-            return '%+15.8e %+15.8e * Ts[1] %+15.8e * Ts[2] %+15.8e * Ts[3] %+15.8e * Ts[4] %+15.8e * Ts[5]' % (a[0], a[1]/2, a[2]/3, a[3]/4, a[4]/5, a[5])
+            return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4 %+15.8e * rcp_T' % (a[0], a[1]/2, a[2]/3, a[3]/4, a[4]/5, a[5])
         self.thermodynamic_function("fg_enthalpy_RT", enthalpy_RT_expression)
         def gibbs_RT_expression(a):
-            return '%+15.8e * Ts[5] %+15.8e %+15.8e * Ts[0] %+15.8e * Ts[1] %+15.8e * Ts[2] %+15.8e * Ts[3] %+15.8e * Ts[4]' % (a[5], a[0] - a[6], -a[0], a[1]/2, -a[2]/6, -a[3]/12, -a[4]/20)
-        self.thermodynamic_function("fg_gibbs_RT", gibbs_RT_expression)
+            return '%+15.8e * rcp_T %+15.8e %+15.8e * ln_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4' % (a[5], a[0] - a[6], -a[0], a[1]/2, -a[2]/6, -a[3]/12, -a[4]/20)
+        self.thermodynamic_function("fg_Gibbs_RT", gibbs_RT_expression)
 
         self.molar_mass = molar_mass
         #transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
@@ -326,18 +333,18 @@ class CPickler(CMill):
         if sri:
                 self._write("dfloat logPred = log10(redP);")
                 self._write("dfloat X = 1.0 / (1.0 + logPred*logPred);")
-                SRI = "fgexp(X * log(%e*fgexp(%e*Ts[5]) + fgexp(T*%e))" % (sri[0], -sri[1], 1./-sri[2])
+                SRI = "fg_exp(X * log(%e*fg_exp(%e*rcp_T) + fg_exp(T*%e))" % (sri[0], -sri[1], 1./-sri[2])
                 if len(sri) > 3:
-                        SRI += " * %e * fgexp(%e*Ts[0])" % (sri[3], sri[4])
+                        SRI += " * %e * fg_exp(%e*ln_T)" % (sri[3], sri[4])
                 self._write("dfloat F_sri = %s;" % SRI)
                 self._write("F *= Ftroe;")
         elif troe:
                 self._write("dfloat logPred = log10(redP);")
                 logF_cent = "dfloat logFcent = log10("
-                logF_cent += "(%e*fgexp(T*(%e)))" % (1-troe[0], 1./-troe[1])
-                logF_cent += "+ (%e*fgexp(T*(%e)))" % (troe[0], 1./-troe[2])
+                logF_cent += "(%e*fg_exp(T*(%e)))" % (1-troe[0], 1./-troe[1])
+                logF_cent += "+ (%e*fg_exp(T*(%e)))" % (troe[0], 1./-troe[2])
                 if len(troe) == 4:
-                        logF_cent += "+ (fgexp(%e*Ts[5]))" % (-troe[3])
+                        logF_cent += "+ (fg_exp(%e*rcp_T))" % (-troe[3])
                 logF_cent += ');'
                 self._write(logF_cent)
                 d = .14
@@ -372,16 +379,8 @@ class CPickler(CMill):
         self._write("dfloat q_r = phi_r * k_r;")
 
     def rates(self):
-        self._write('void fg_rates(dfloat * concentrations, dfloat Ts[], dfloat * wdot) {') # dfloat Ts[] = { log(T), T, T*T, T*T*T, T*T*T*T, 1./T };
+        self._write('void fg_rates(dfloat concentration, const dfloat ln_T, const dfloat rcp_T, const dfloat concentrations[], dfloat * wdot) {')
         self._indent()
-        reference_pressure = 101325. / (K*NA)
-        self._write('const dfloat rcp_P0_RT = %.16e * Ts[1];' % (1./reference_pressure)) # TODO: CSE P0_RT^-Σnet
-        self._write('const dfloat P0_RT = %.16e * Ts[5];' % (reference_pressure))
-        self._write('const dfloat T = Ts[1];')
-        self._write('dfloat sum_concentrations = 0.0;')
-        self._write('for (int i = 0; i < %d; i++) { sum_concentrations += concentrations[i]; }' % len(self.species))
-        self._write('dfloat gibbs0_RT[%d];' % len(self.species))
-        self._write('fg_gibbs_RT(gibbs0_RT, Ts);')
         for reaction in self.reactions:
             reaction.reactants = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.reactants)
             reaction.products = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.products)
@@ -413,13 +412,13 @@ class CPickler(CMill):
         expr = "%e" % A
         if beta == 0 and activation_energy_cal == 0:
                 return expr
-        expr +="*fgexp("
+        expr +="*fg_exp("
         if beta != 0:
-                expr += "%e*Ts[0]" % beta
+                expr += "%e*ln_T" % beta
         if activation_energy_cal != 0:
                 J_per_cal = 4.184
                 activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
-                expr += "%+e*Ts[5]" % (- activation_temperature)
+                expr += "%+e*rcp_T" % (- activation_temperature)
         expr += ')'
         return expr
 
@@ -459,9 +458,9 @@ class CPickler(CMill):
         efficiencies = reaction.efficiencies
         if not efficiencies:
                 if specie == "<mixture>":
-                        return "sum_concentrations"
+                        return "concentration"
                 return "concentrations[%d]" % specie
-        alpha = ["sum_concentrations"]
+        alpha = ["concentration"]
         for specie, efficiency in efficiencies:
                 factor = efficiency - 1
                 conc = "concentrations[%d]" % specie
@@ -493,7 +492,7 @@ class CPickler(CMill):
                 terms.append("%sgibbs0_RT[%d]" % (factor, specie))
                 sum_net += coefficient
         dG += ' - (' + ' + '.join(terms) + ')'
-        rcp_Kp = 'fgexp(-(' + dG + '))'
+        rcp_Kp = 'fg_exp(-(' + dG + '))'
         if sum_net == 0:
                 conversion = ""
         elif sum_net > 0:
