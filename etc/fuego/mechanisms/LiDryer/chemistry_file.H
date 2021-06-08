@@ -73,7 +73,7 @@ void fg_exp_Gibbs_RT(const dfloat ln_T, const dfloat T, const dfloat T_2, const 
     }
 }
 
-void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat exp_Gibbs0_RT[], const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat concentrations[], dfloat* molar_rates) {
+void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {
     dfloat cR[21];
     cR[0] = 3.547000e+15*fg_exp2(-5.857342e-01*log_T-8.352941e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[1]*concentrations[3] - exp_Gibbs0_RT[1]*exp_Gibbs0_RT[3]/(exp_Gibbs0_RT[4]*exp_Gibbs0_RT[5]) * concentrations[4]*concentrations[5];
     cR[1] = 5.080000e+04*fg_exp2(3.851996e+00*log_T-3.165251e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[0]*concentrations[4] - exp_Gibbs0_RT[0]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[3]*exp_Gibbs0_RT[5]) * concentrations[3]*concentrations[5];

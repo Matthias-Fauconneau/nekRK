@@ -185,7 +185,7 @@ def rates(reactions):
             else: return "%d*cR[%d]"%(net, specie)
         rate = '+'.join(map(expr, filter(lambda (_, net): net != 0, enumerate(map(lambda reaction: reaction.net[specie], reactions)))))
         return "molar_rates[%d] = %s"%(specie, rate)
-    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat exp_Gibbs0_RT[], const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat concentrations[], dfloat* molar_rates) {\n    %s;\n}\n"%(
+    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {\n    %s;\n}\n"%(
     ";\n    ".join(
         ["dfloat cR[%d]"%(len(reactions))] +
         #map(lambda reaction_index, reaction: expr0(reaction_index, reaction), enumerate(reactions)) +
