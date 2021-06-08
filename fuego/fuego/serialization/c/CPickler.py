@@ -118,6 +118,81 @@ A_star = [
 [1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187],
 ]
 
+def arrhenius(rate_constant):
+        A, beta, activation_energy_cal = rate_constant
+        if A == 0:
+                return "0."
+        expr = "%e" % A
+        if beta == 0 and activation_energy_cal == 0:
+                return expr
+        expr +="*fg_exp2("
+        if beta != 0:
+                expr += "%e*log_T" % (beta/ln(2))
+        if activation_energy_cal != 0:
+                J_per_cal = 4.184
+                activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
+                expr += "%+e*rcp_T" % (- activation_temperature)
+        expr += ')'
+        return expr
+
+def rates(reactions):
+    species_len = len(reactions[0].reactants)
+    def reaction((reaction_index, reaction)):
+        reactants, products, net, sum_net, rate_constant, efficiencies = \
+            reaction.reactants, reaction.products, reaction.net, reaction.sum_net, reaction.rate_constant, reaction.efficiencies
+        def dot((specie, efficiency)):
+            if efficiency == 1.: return "concentrations[%d]" % (specie)
+            else: return "%e*concentrations[%d]" % (efficiency, specie)
+        c = "%s * (%s)"%(arrhenius(rate_constant), " + ".join(map(dot, enumerate(efficiencies))))
+
+        def product_of_exponentiations(c, v):
+            #from itertools import partition
+            def partition(pred, iterable):
+                evaluations = ((pred(x), x) for x in iterable)
+                from itertools import tee
+                t1, t2 = tee(evaluations)
+                return (
+                        (x for (cond, x) in t1 if cond),
+                        (x for (cond, x) in t2 if not cond),
+                )
+            (num, div) = partition(lambda (_,c): c>0, filter(lambda (_,c): c!=0, enumerate(c)))
+            from itertools import repeat, chain
+            num = '*'.join(chain(*map(lambda (i,c): repeat("%s[%d]"%(v,i),max(0,c)), num)))
+            div = '*'.join(chain(*map(lambda (i,c): repeat("%s[%d]"%(v,i),max(0,-c)), div)))
+            if (num=='') and (div==''): return '1.'
+            elif div=='': return num
+            elif num=='': return '1./(%s)'%(div)
+            else: return '%s/(%s)'%(num, div)
+        #}
+
+        Rf = product_of_exponentiations(reactants, 'concentrations')
+        if reaction.reversible:
+            rcp_equilibrium_constant = product_of_exponentiations(net, "exp_Gibbs0_RT");
+            from sys import exit
+            if sum_net == 0: pass
+            elif sum_net == 1: rcp_equilibrium_constant += "+ P0_RT"
+            elif sum_net == -1: rcp_equilibrium_constant += "+ rcp_P0_RT"
+            else: exit("Σnet %d"%sum_net)
+            Rr = "%s * %s"%(rcp_equilibrium_constant, product_of_exponentiations(products, "concentrations"))
+            R = "%s - %s"%(Rf, Rr)
+        else:
+            R = "%s /*irreversible*/"%(Rf)
+        return "cR[%d] = %s * %s"%(reaction_index, c, R)
+    def specie(specie):
+        def expr((specie, net)):
+            if net == 1: return "cR[%d]"%(specie)
+            elif net == -1: return "-cR[%d]"%(specie)
+            else: return "%d*cR[%d]"%(net, specie)
+        rate = '+'.join(map(expr, filter(lambda (_, net): net != 0, enumerate(map(lambda reaction: reaction.net[specie], reactions)))))
+        return "molar_rates[%d] = %s"%(specie, rate)
+    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat exp_Gibbs0_RT[], const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat concentrations[], dfloat* molar_rates) {\n    %s;\n}\n"%(
+    ";\n    ".join(
+        ["dfloat cR[%d]"%(len(reactions))] +
+        #map(lambda reaction_index, reaction: expr0(reaction_index, reaction), enumerate(reactions)) +
+        map(reaction, enumerate(reactions)) +
+        map(specie, range(species_len-1))
+    ))
+
 class CPickler(CMill):
     def interaction_well_depth(self, a, b):
         well_depth_J = self.well_depth_J
@@ -182,7 +257,7 @@ class CPickler(CMill):
             self._outdent()
             self._write('}')
         self._outdent()
-        self._write('}')
+        self._write('}\n')
 
     def viscosity_function(self, sqrt_viscosity_T14):
         self._write('dfloat fg_viscosity(dfloat T, const dfloat mole_fractions[]) {')
@@ -268,9 +343,27 @@ class CPickler(CMill):
         f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
         #f.write(to_string(self))
         f.close()
-        names = map(lambda s: s.symbol, species)
-        self.names = names
+        species_names = map(lambda s: s.symbol, species)
+        self.species_names = species_names
 
+        def from_fuego(species_names, reaction):
+            reaction.rate_constant = reaction.arrhenius
+            reaction.reactants = map(lambda specie: dict(reaction.reactants).get(specie, 0), species_names)
+            reaction.products = map(lambda specie: dict(reaction.products).get(specie, 0), species_names)
+            reaction.net = map(lambda (a, b): a - b, zip(reaction.reactants, reaction.products))
+            reaction.sum_net = sum(reaction.net)
+            if reaction.thirdBody:
+                specie, coefficient = reaction.thirdBody
+                if not reaction.efficiencies:
+                        assert(specie != "<mixture>")
+                        reaction.efficiencies = {specie: coefficient}
+            else:
+                    assert(not reaction.efficiencies)
+            #reaction.efficiencies = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.efficiencies)
+            reaction.efficiencies = map(lambda specie: dict(reaction.efficiencies).get(specie, 1.), species_names)
+            return reaction
+
+        self.reactions = map(lambda reaction: from_fuego(species_names, reaction), mechanism.reaction())
         # Species
         self._write('#define n_species %d' % (len(species)))
         self._write('const dfloat fg_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, molar_mass))))
@@ -282,9 +375,9 @@ class CPickler(CMill):
         def enthalpy_RT_expression(a):
             return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4 %+15.8e * rcp_T' % (a[0], a[1]/2, a[2]/3, a[3]/4, a[4]/5, a[5])
         self.thermodynamic_function("fg_enthalpy_RT", enthalpy_RT_expression)
-        def gibbs_RT_expression(a):
-            return '%+15.8e * rcp_T %+15.8e %+15.8e * ln_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4' % (a[5], a[0] - a[6], -a[0], a[1]/2, -a[2]/6, -a[3]/12, -a[4]/20)
-        self.thermodynamic_function("fg_Gibbs_RT", gibbs_RT_expression)
+        def exp_Gibbs_RT_expression(a):
+            return 'exp2(%+15.8e * rcp_T %+15.8e %+15.8e * ln_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4)' % (a[5], a[0] - a[6], -a[0], a[1]/2, -a[2]/6, -a[3]/12, -a[4]/20)
+        self.thermodynamic_function("fg_exp_Gibbs_RT", exp_Gibbs_RT_expression)
 
         self.molar_mass = molar_mass
         #transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
@@ -294,212 +387,7 @@ class CPickler(CMill):
         #self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
 
         # Reactions
-        self.reactions = mechanism.reaction()
-        self.rates()
-
-        # Define an inert specie index. FIXME: fix ChemKin input to have the last definition as the inert specie
-        inert_specie = next((i for i,s in enumerate(names) if s =='AR'), -1)
-        if inert_specie == -1:
-            inert_specie = next((i for i,s in enumerate(names) if s =='N2'), -1)
-        self._write('const int inert_specie= %d;' % inert_specie)
-
-    def forward_rates(self, reaction):
-        dim = self.phaseSpaceUnits(reaction.reactants)
-        phi_f = self.phaseSpace(reaction.reactants)
-        self._write("dfloat phi_f = %s;" % phi_f)
-        arrhenius = self.arrhenius(reaction, reaction.arrhenius)
-        thirdBody = reaction.thirdBody
-        if not thirdBody:
-                uc = self.prefactorUnits(reaction.units["prefactor"], 1-dim)
-                self._write("dfloat k_f = %e * %s;" % (uc.value, arrhenius))
-                self._write("dfloat q_f = phi_f * k_f;")
-                return
-        alpha = self.enhancement(reaction)
-        self._write("dfloat alpha = %s;" % alpha)
-        sri = reaction.sri
-        low = reaction.low
-        troe = reaction.troe
-        if not low:
-                uc = self.prefactorUnits(reaction.units["prefactor"], -dim)
-                self._write("dfloat k_f = %e * alpha * %s;" % (uc.value, arrhenius))
-                self._write("dfloat q_f = phi_f * k_f;")
-                return
-        uc = self.prefactorUnits(reaction.units["prefactor"], 1-dim)
-        self._write("dfloat k_f = %e * %s;" % (uc.value, arrhenius))
-        k_0 = self.arrhenius(reaction, reaction.low)
-        redP = "alpha / k_f * " + k_0
-        self._write("dfloat redP = 1.0e-12 * %s;" % redP)
-        self._write("dfloat F = redP / (1 + redP);")
-        if sri:
-                self._write("dfloat logPred = log10(redP);")
-                self._write("dfloat X = 1.0 / (1.0 + logPred*logPred);")
-                SRI = "fg_exp(X * log(%e*fg_exp(%e*rcp_T) + fg_exp(T*%e))" % (sri[0], -sri[1], 1./-sri[2])
-                if len(sri) > 3:
-                        SRI += " * %e * fg_exp(%e*ln_T)" % (sri[3], sri[4])
-                self._write("dfloat F_sri = %s;" % SRI)
-                self._write("F *= Ftroe;")
-        elif troe:
-                self._write("dfloat logPred = log10(redP);")
-                logF_cent = "dfloat logFcent = log10("
-                logF_cent += "(%e*fg_exp(T*(%e)))" % (1-troe[0], 1./-troe[1])
-                logF_cent += "+ (%e*fg_exp(T*(%e)))" % (troe[0], 1./-troe[2])
-                if len(troe) == 4:
-                        logF_cent += "+ (fg_exp(%e*rcp_T))" % (-troe[3])
-                logF_cent += ');'
-                self._write(logF_cent)
-                d = .14
-                self._write("dfloat troe_c = -.4 - .67 * logFcent;")
-                self._write("dfloat troe_n = .75 - 1.27 * logFcent;")
-                self._write("dfloat troe = (troe_c + logPred) / (troe_n - .14*(troe_c + logPred));")
-                self._write("dfloat F_troe = pow(10, logFcent / (1.0 + troe*troe));")
-                self._write("F *= F_troe;")
-        self._write("k_f *= F;")
-        self._write("dfloat q_f = phi_f * k_f;")
-
-    def reverse_rates(self, reaction):
-        if not reaction.reversible:
-                self._write("dfloat q_r = 0.0;")
-                return
-        phi_r = self.phaseSpace(reaction.products)
-        self._write("dfloat phi_r = %s;" % phi_r)
-        if reaction.rev:
-                arrhenius = self.arrhenius(reaction, reaction.rev)
-                thirdBody = reaction.thirdBody
-                if thirdBody:
-                        uc = self.prefactorUnits(reaction.units["prefactor"], -dim)
-                        self._write("dfloat k_r = %e * alpha * %s;" % (uc.value, arrhenius))
-                else:
-                        uc = self.prefactorUnits(reaction.units["prefactor"], 1-dim)
-                        self._write("dfloat k_r = %e * %s;" % (uc.value, arrhenius))
-                self._write("dflota q_f = phi_r * k_r;")
-                return
-        rcp_Kc = self.rcp_Kc(reaction)
-        self._write("dfloat rcp_Kc = %s;" % rcp_Kc)
-        self._write("dfloat k_r = k_f * rcp_Kc;")
-        self._write("dfloat q_r = phi_r * k_r;")
-
-    def rates(self):
-        self._write('void fg_rates(dfloat concentration, const dfloat ln_T, const dfloat rcp_T, const dfloat concentrations[], dfloat * wdot) {')
-        self._indent()
-        for reaction in self.reactions:
-            reaction.reactants = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.reactants)
-            reaction.products = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.products)
-            reaction.efficiencies = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.efficiencies)
-            self._write("{")
-            self.forward_rates(reaction)
-            self.reverse_rates(reaction)
-            self._write("dfloat qdot = q_f - q_r;")
-            for specie, coefficient in reaction.reactants:
-                    if coefficient==1:
-                            self._write("wdot[%d] -= qdot;" % (specie))
-                    else:
-                            self._write("wdot[%d] -= %d * qdot;" % (specie, coefficient))
-            for specie, coefficient in reaction.products:
-                    if coefficient==1:
-                            self._write("wdot[%d] += qdot;" % (specie))
-                    else:
-                            self._write("wdot[%d] += %d * qdot;" % (specie, coefficient))
-            self._write("}")
-        self._outdent()
-        self._write('}')
-
-    def arrhenius(self, reaction, parameters):
-        if reaction.units["activation"] != "cal/mole":
-            journal.firewall("fuego").log("unknown activation energy units '%s'" % code)
-        A, beta, activation_energy_cal = parameters
-        if A == 0:
-                return "0.0"
-        expr = "%e" % A
-        if beta == 0 and activation_energy_cal == 0:
-                return expr
-        expr +="*fg_exp("
-        if beta != 0:
-                expr += "%e*ln_T" % beta
-        if activation_energy_cal != 0:
-                J_per_cal = 4.184
-                activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
-                expr += "%+e*rcp_T" % (- activation_temperature)
-        expr += ')'
-        return expr
-
-    def prefactorUnits(self, code, exponent):
-        if code == "mole/cm**3":
-                units = mole / cm**3
-        elif code == "moles":
-                units = mole / cm**3
-        elif code == "molecules":
-                from pyre.hadbook.constants.fundamental import avogadro
-                units = 1.0 / avogadro / cm**3
-        else:
-                journal.firewall("fuego").log("unknown prefactor units '%s'" % code)
-                return 1
-        return units ** exponent / second
-
-    def phaseSpace(self, reagents):
-        phi = []
-        for specie, coefficient in reagents:
-                conc = "concentrations[%d]" % (specie)
-                phi += [conc] * int(coefficient)
-        return "*".join(phi)
-
-    def phaseSpaceUnits(self, reagents):
-        dim = 0
-        for _, coefficient in reagents:
-                dim += coefficient
-        return dim
-
-    def enhancement(self, reaction):
-        thirdBody = reaction.thirdBody
-        if not thirdBody:
-                import journal
-                journal.firewall("fuego").log("enhancement called for a reaction without a third body")
-                return
-        specie, coefficient = thirdBody
-        efficiencies = reaction.efficiencies
-        if not efficiencies:
-                if specie == "<mixture>":
-                        return "concentration"
-                return "concentrations[%d]" % specie
-        alpha = ["concentration"]
-        for specie, efficiency in efficiencies:
-                factor = efficiency - 1
-                conc = "concentrations[%d]" % specie
-                if factor == 1:
-                        alpha.append(conc)
-                else:
-                        alpha.append("%e*%s" % (factor, conc))
-        return " + ".join(alpha)
-
-    def rcp_Kc(self, reaction):
-        sum_net = 0
-        dG = ""
-        terms = []
-        for specie, coefficient in reaction.reactants:
-                if coefficient == 1:
-                        factor = ""
-                else:
-                        factor = "%d * " % coefficient
-                terms.append("%sgibbs0_RT[%d]" % (factor, specie))
-                sum_net -= coefficient
-        dG += '(' + ' + '.join(terms) + ')'
-        # flip the signs
-        terms = []
-        for symbol, coefficient in reaction.products:
-                if coefficient == 1:
-                        factor = ""
-                else:
-                        factor = "%d * " % coefficient
-                terms.append("%sgibbs0_RT[%d]" % (factor, specie))
-                sum_net += coefficient
-        dG += ' - (' + ' + '.join(terms) + ')'
-        rcp_Kp = 'fg_exp(-(' + dG + '))'
-        if sum_net == 0:
-                conversion = ""
-        elif sum_net > 0:
-                conversion = "*".join(["rcp_P0_RT"] * abs(int(sum_net))) + ' * '
-        else:
-                conversion = "*".join(["P0_RT"] * abs(int(sum_net))) + ' * '
-        return conversion + rcp_Kp
+        self._write(rates(self.reactions))
 
     def viscosity(self, a, T):
         return 5./16. * sqrt(pi * self.molar_mass[a]/NA * K*T) / (self.omega_star_22(a, a, T) * pi * sq(self.diameter[a]))
@@ -537,42 +425,3 @@ class CPickler(CMill):
 
     def binary_thermal_diffusion_coefficient(self, a, b, T):
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(K*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.omega_star_11(a, b, T))
-
-    def astar(self, tslog):
-            aTab = [.1106910525E+01, -.7065517161E-02,-.1671975393E-01,
-                            .1188708609E-01,  .7569367323E-03,-.1313998345E-02,
-                            .1720853282E-03]
-
-            B = aTab[6]
-            for i in range(6):
-                    B = aTab[5-i] + B*tslog
-
-            return B
-
-    def bstar(self, tslog):
-            bTab = [.1199673577E+01, -.1140928763E+00,-.2147636665E-02,
-                            .2512965407E-01, -.3030372973E-02,-.1445009039E-02,
-                            .2492954809E-03]
-
-            B = bTab[6]
-            for i in range(6):
-                    B = bTab[5-i] + B*tslog
-
-            return B
-
-    def cstar(self, tslog):
-            cTab = [ .8386993788E+00,  .4748325276E-01, .3250097527E-01,
-                            -.1625859588E-01, -.2260153363E-02, .1844922811E-02,
-                            -.2115417788E-03]
-
-            B = cTab[6]
-            for i in range(6):
-                    B = cTab[5-i] + B*tslog
-
-            return B
-
-    def Fcorr(self, t, eps_k):
-            thtwo = 3.0 / 2.0
-            return 1 + np.pi**(thtwo) / 2.0 * np.sqrt(eps_k / t) + \
-                            (np.pi**2 / 4.0 + 2.0) * (eps_k / t) + \
-                            (np.pi * eps_k / t)**(thtwo)

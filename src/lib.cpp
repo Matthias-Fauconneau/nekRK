@@ -23,7 +23,7 @@ namespace {
     double reference_energy_rate;
 
     int n_species = -1;
-    double *m_molar;
+    double *m_molar = 0;
 
     MPI_Comm comm;
 };
@@ -55,7 +55,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
     kernel_properties["defines/dfloat"] = "double";
-    kernel_properties["defines/fg_exp"] = "exp"; // "__expf"
+    kernel_properties["defines/fg_exp2"] = "exp2"; // "__expf"
     kernel_properties["defines/p_blockSize"] = to_string(group_size);
     kernel_properties["flags"].asObject(); // ?
     //kernel_properties["compiler_flags"] += " --prec-div=false --prec-sqrt=false";
@@ -78,8 +78,8 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
             printf("production_rates\n");
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
             number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
-            mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
-            molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
+            mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties); // FIXME: Should always be host CPU
+            molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties); // FIXME: Should always be host CPU, used once as the interface to get molar_mass
       }
       MPI_Barrier(comm);
     }
@@ -105,12 +105,13 @@ void nekRK::init(const char* model_path, occa::device device,
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
 {
-  auto tmp = new double[1];
-  auto o_tmp = device.malloc<double>(1);
+    auto mcp = new double[1];
+    auto o_mcp = device.malloc<double>(1);
   auto o_mole_fractions = device.malloc<double>(n_species, mole_fractions);
-  mean_specific_heat_at_CP_R_kernel(T, o_mole_fractions, o_tmp);
-  o_tmp.copyTo(tmp);
-  return tmp[0];
+    // This is not a kernel, just to interface a single call to fg_molar_heat_capacity_at_constant_pressure_R on CPU
+    mean_specific_heat_at_CP_R_kernel(T, o_mole_fractions, o_mcp);
+    o_mcp.copyTo(mcp);
+    return mcp[0];
 }
 
 void nekRK::set_reference_parameters(

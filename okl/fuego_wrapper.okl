@@ -13,16 +13,14 @@
     dfloat wrk[n_species];
     dfloat sum_active_mass_fractions = 0.;
     dfloat mean_rcp_molar_mass = 0.;
-    for(int k=0;k<n_species;k++) {
-      if (k != inert_specie) {
-            const dfloat mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
-            wrk[k] = mass_fraction*fg_rcp_molar_mass[k];
-            sum_active_mass_fractions += mass_fraction;
-            mean_rcp_molar_mass += wrk[k];
-      }
+    for(int k=0;k<n_species-1;k++) {
+        const dfloat mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
+        wrk[k] = mass_fraction*fg_rcp_molar_mass[k];
+        sum_active_mass_fractions += mass_fraction;
+        mean_rcp_molar_mass += wrk[k];
     }
-    wrk[inert_specie] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[inert_specie];
-    mean_rcp_molar_mass += wrk[inert_specie];
+    wrk[n_species-1] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[n_species-1];
+    mean_rcp_molar_mass += wrk[n_species-1];
 
     const dfloat T = reference_temperature * temperature[id];
     const dfloat rcp_T = 1./T;
@@ -30,23 +28,23 @@
     for(int k=0; k < n_species; k++) wrk[k] *= concentration / mean_rcp_molar_mass;
 
     const dfloat log_T = log2(T);
-    const dfloat T_2 = T*T;
-    const dfloat T_3 = T*T_2;
-    const dfloat T_4 = T*T_3;
+    const dfloat T2 = T*T;
+    const dfloat T3 = T*T2;
+    const dfloat T4 = T*T3;
     const dfloat rcp_T2 = rcp_T*rcp_T;
     dfloat exp_Gibbs0_RT[n_species];
-    fg_exp_Gibbs_RT(log_T,T,T_2,T_3,T_4,rcp_T, /*->*/ exp_Gibbs0_RT);
-    const dfloat K = K = 1.380649e-23; // J/kelvin
+    fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
+    const dfloat K = 1.380649e-23; // J/kelvin
     const dfloat NA = 6.02214076e23; // /mole
     const dfloat reference_pressure = 101325. / (K*NA);
     const dfloat P0_RT = reference_pressure * rcp_T;
     const dfloat rcp_P0_RT = (1./reference_pressure) * T;
     dfloat molar_rates[n_species];
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2, exp_Gibbs0_RT, P0_RT,rcp_P0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
-    fg_enthalpy_RT(log_T,T,T_2,T_3,T_4,rcp_T, /*-> enthalpy_RT*/wrk);
+    fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
     dfloat energy_rate_RT = 0.;
-    for(int k=0; k < n_species; k++) {
+    for(int k=0; k < n_species-1; k++) {
         mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
         energy_rate_RT += molar_rates[k] * wrk[k];
     }
@@ -84,10 +82,15 @@
         viscosity[id] = fg_viscosity(T, mole_fractions);
         thermal_conductivity[id] = fg_thermal_conductivity(T, mole_fractions);
 
-        dfloat rho_Di_[n_species];
-        fg_rho_Di(pressure, T, mole_fractions, mass_fractions, mean_molar_mass, /*->*/ rho_Di_);
+        dfloat Di[n_species];
+        fg_mixture_diffusion_coefficients(mole_fractions, mass_fractions, T, /*-> Di*/ Di);
+        const dfloat K = 1.380649e-23; // J / K
+        const dfloat NA = 6.02214076e23;
+        const dfloat R = K*NA;
+        dfloat concentration = pressure/R/T;
+        dfloat density = concentration * mean_molar_mass;
         for(int k=0;k<n_species;k++) {
-            rho_Di[k*n_states + id] = rho_Di_[k];
+            rho_Di[k*n_states + id] = density * Di[k];
         }
     }
 }
@@ -100,18 +103,30 @@
     }
 }
 
-@kernel void mean_specific_heat_at_CP_R(const dfloat T,
-                                        @restrict const dfloat* mole_fractions,
-                                        @restrict dfloat* mcp)
+@kernel void mean_specific_heat_at_CP_R(
+    const dfloat T,
+    @restrict const dfloat* mole_fractions,
+    @restrict dfloat* mcp) // Single value output
 {
-    for(int id=0;id<1;++id;@tile(p_blockSize,@outer,@inner)) {
-      mcp[0] = fg_mean_specific_heat_at_CP_R(T, mole_fractions);
+    for(int _=0;_<1;++_;@tile(p_blockSize,@outer,@inner)) { // Dummy loop. This subroutine is only used to interface with Fuego (CPU only)
+        const dfloat log_T = log2(T);
+        const dfloat T2 = T*T;
+        const dfloat T3 = T*T2;
+        const dfloat T4 = T*T3;
+        const dfloat rcp_T = 1./T;
+        dfloat Cp_R[n_species];
+        fg_molar_heat_capacity_at_constant_pressure_R(log_T,T,T2,T3,T4,rcp_T, /*->*/ Cp_R);
+        dfloat sum = 0;
+        for(int k=0; k<n_species; k++) {
+            sum += Cp_R[k] * mole_fractions[k];
+        }
+        mcp[0] = sum;
     }
 }
 
-@kernel void molar_mass(@restrict dfloat* mm)
+@kernel void molar_mass(@restrict dfloat* mm) // [n_species]
 {
-    for(int id=0;id<1;++id;@tile(p_blockSize,@outer,@inner)) {
+    for(int _=0;_<1;++_;@tile(p_blockSize,@outer,@inner)) { // Dummy loop. This subroutine is only used to interface with Fuego (CPU only)
       for(int i=0;i<n_species;i++) mm[i] = fg_molar_mass[i];
     }
 }

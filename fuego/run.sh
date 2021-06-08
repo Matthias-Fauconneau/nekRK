@@ -8,6 +8,7 @@ echo $1 "->" $output
 # There MUST be a therm.dat file in the same folder (It is not optional) (/!\ The flag is thermo but the file is therm)
 cd $1
 PYTHONPATH=$fuego:$fuego/fuego:$fuego/pyre:$fuego/journal:$fuego/weaver python2 $fuego/applications/fmc.py -mechanism=mechanism.inp -thermo=therm.dat -name=$output &&\
+sed -i 's/+-/-/g' $output
 sed -i 's/+ -/-/g' $output
 sed -i 's/,}/}/g' $output
 cat $fuego/verbatim.c >> $output
