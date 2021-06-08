@@ -23,6 +23,7 @@ cb = lambda x: x*x*x
 from numpy import pi #π = pi
 from numpy import sqrt
 from numpy import log as ln
+from numpy import log2
 from numpy import polyfit as polynomial_regression
 
 class NASA7:
@@ -119,18 +120,16 @@ A_star = [
 ]
 
 def arrhenius(rate_constant):
-        A, beta, activation_energy_cal = rate_constant
+        A, temperature_exponent, activation_temperature = rate_constant.preexponential_factor, rate_constant.temperature_exponent, rate_constant.activation_temperature
         if A == 0:
                 return "0."
         expr = "%e" % A
-        if beta == 0 and activation_energy_cal == 0:
+        if temperature_exponent == 0 and activation_temperature == 0:
                 return expr
         expr +="*fg_exp2("
-        if beta != 0:
-                expr += "%e*log_T" % (beta/ln(2))
-        if activation_energy_cal != 0:
-                J_per_cal = 4.184
-                activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
+        if temperature_exponent != 0:
+                expr += "%e*log_T" % (temperature_exponent/ln(2))
+        if activation_temperature != 0:
                 expr += "%+e*rcp_T" % (- activation_temperature)
         expr += ')'
         return expr
@@ -169,9 +168,9 @@ def rates(reactions):
         if reaction.reversible:
             rcp_equilibrium_constant = product_of_exponentiations(net, "exp_Gibbs0_RT");
             from sys import exit
-            if sum_net == 0: pass
-            elif sum_net == 1: rcp_equilibrium_constant += "+ P0_RT"
-            elif sum_net == -1: rcp_equilibrium_constant += "+ rcp_P0_RT"
+            if -sum_net == 0: pass
+            elif -sum_net == 1: rcp_equilibrium_constant += "* P0_RT"
+            elif -sum_net == -1: rcp_equilibrium_constant += "* rcp_P0_RT"
             else: exit("Σnet %d"%sum_net)
             Rr = "%s * %s"%(rcp_equilibrium_constant, product_of_exponentiations(products, "concentrations"))
             R = "%s - %s"%(Rf, Rr)
@@ -242,7 +241,7 @@ class CPickler(CMill):
         for index, specie in enumerate(self.thermodynamics):
             temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
-        self._write('void %s(const dfloat ln_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* species) {' % name)
+        self._write('void %s(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* species) {' % name)
         self._indent()
         for temperature_split, species in temperature_splits.items():
             self._write('if (T < %s) {' % temperature_split)
@@ -347,7 +346,14 @@ class CPickler(CMill):
         self.species_names = species_names
 
         def from_fuego(species_names, reaction):
-            reaction.rate_constant = reaction.arrhenius
+            print(reaction.arrhenius)
+            preexponential_factor, temperature_exponent, activation_energy_cal = reaction.arrhenius
+            class RateConstant(): pass
+            reaction.rate_constant = RateConstant()
+            reaction.rate_constant.preexponential_factor = preexponential_factor * 100
+            reaction.rate_constant.temperature_exponent = temperature_exponent
+            J_per_cal = 4.184
+            reaction.rate_constant.activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
             reaction.reactants = map(lambda specie: dict(reaction.reactants).get(specie, 0), species_names)
             reaction.products = map(lambda specie: dict(reaction.products).get(specie, 0), species_names)
             reaction.net = map(lambda (a, b): a - b, zip(reaction.reactants, reaction.products))
@@ -376,7 +382,7 @@ class CPickler(CMill):
             return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4 %+15.8e * rcp_T' % (a[0], a[1]/2, a[2]/3, a[3]/4, a[4]/5, a[5])
         self.thermodynamic_function("fg_enthalpy_RT", enthalpy_RT_expression)
         def exp_Gibbs_RT_expression(a):
-            return 'exp2(%+15.8e * rcp_T %+15.8e %+15.8e * ln_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4)' % (a[5], a[0] - a[6], -a[0], a[1]/2, -a[2]/6, -a[3]/12, -a[4]/20)
+            return 'exp2(%+15.8e * rcp_T %+15.8e %+15.8e * log_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4)' % (a[5]/ln(2), (a[0] - a[6])/ln(2), -a[0]/ln(2), -a[1]/2/ln(2), (1./3.-1./2.)*a[2]/ln(2), (1./4.-1./3.)*a[3]/ln(2), (1./5.-1./4.)*a[4]/ln(2))
         self.thermodynamic_function("fg_exp_Gibbs_RT", exp_Gibbs_RT_expression)
 
         self.molar_mass = molar_mass
