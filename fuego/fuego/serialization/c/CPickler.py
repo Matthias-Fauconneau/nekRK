@@ -143,11 +143,11 @@ A_star = [
 
 def arrhenius(rate_constant):
     A, temperature_exponent, activation_temperature = rate_constant.preexponential_factor, rate_constant.temperature_exponent, rate_constant.activation_temperature
-    return "exp2(%e * rcp_T + %e * log_T + %e)"%(-activation_temperature/ln(2), temperature_exponent, log2(A))
+    return "exp2(%g * rcp_T + %g * log_T + %g)"%(-activation_temperature/ln(2), temperature_exponent, log2(A))
 
 def rcp_arrhenius(rate_constant):
     A, temperature_exponent, activation_temperature = rate_constant.preexponential_factor, rate_constant.temperature_exponent, rate_constant.activation_temperature
-    return "exp2(%e * rcp_T - %e * log_T - %e)"%(activation_temperature/ln(2), temperature_exponent, log2(A))
+    return "exp2(%g * rcp_T - %g * log_T - %g)"%(activation_temperature/ln(2), temperature_exponent, log2(A))
 
 def rates(reactions):
     species_len = len(reactions[0].reactants)
@@ -156,21 +156,21 @@ def rates(reactions):
             reaction.reactants, reaction.products, reaction.net, reaction.sum_net, reaction.rate_constant, reaction.efficiencies
         def dot((specie, efficiency)):
             if efficiency == 1.: return "concentrations[%d]" % (specie)
-            else: return "%e*concentrations[%d]" % (efficiency, specie)
+            else: return "%g*concentrations[%d]" % (efficiency, specie)
         if reaction.type == "Elementary":
-            c = "const dfloat c = %s"%(arrhenius(rate_constant))
+            c = "c = %s"%(arrhenius(rate_constant))
         elif reaction.type == "ThreeBody":
-            c = "const dfloat c = %s * (%s)"%(arrhenius(rate_constant), " + ".join(map(dot, enumerate(efficiencies))))
+            c = "c = %s * (%s)"%(arrhenius(rate_constant), " + ".join(map(dot, enumerate(efficiencies))))
         elif reaction.type == "PressureModification":
-            c = "const dfloat Pr = %s * (%s);\n    "%(arrhenius(reaction.k0), " + ".join(map(dot, enumerate(efficiencies))))
-            c += "const dfloat c = Pr / (%s * Pr + 1.)"%(rcp_arrhenius(rate_constant))
+            c = "Pr = %s * (%s);\n    "%(arrhenius(reaction.k0), " + ".join(map(dot, enumerate(efficiencies))))
+            c += "c = Pr / (%s * Pr + 1.)"%(rcp_arrhenius(rate_constant))
         elif reaction.type == "Falloff":
-            c = "const dfloat Pr = %s * (%s);\n    "%(arrhenius(reaction.k0), " + ".join(map(dot, enumerate(efficiencies))))
+            c = "Pr = %s * (%s);\n    "%(arrhenius(reaction.k0), " + ".join(map(dot, enumerate(efficiencies))))
             A, T3, T1, T2 = reaction.troe.A, reaction.troe.T3, reaction.troe.T1, reaction.troe.T2
-            c += "const dfloat logFcent = log2(%e * exp2(%e*T) + %e * exp2(%e*T) + exp2(%e*rcp_T));\n    "%(1.-A, 1./(-ln(2)*T3), A, 1./(-ln(2)*T1), (-T2/ln(2)))
-            c += "const dfloat logPr_c = log2(Pr) - 0.67*logFcent - %e;\n    "%(0.4*log2(10))
-            c += "const dfloat f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-%e);\n    "%(0.75*log2(10.));
-            c += "const dfloat c = Pr / (%s * Pr + 1.) * exp2(logFcent/(f1*f1+1.))"%(rcp_arrhenius(rate_constant))
+            c += "logFcent = log2(%g * exp2(%g*T) + %g * exp2(%g*T) + exp2(%g*rcp_T));\n    "%(1.-A, 1./(-ln(2)*T3), A, 1./(-ln(2)*T1), (-T2/ln(2)))
+            c += "logPr_c = log2(Pr) - 0.67*logFcent - %g;\n    "%(0.4*log2(10))
+            c += "f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-%g);\n    "%(0.75*log2(10.));
+            c += "c = Pr / (%s * Pr + 1.) * exp2(logFcent/(f1*f1+1.))"%(rcp_arrhenius(rate_constant))
         else: exit(reaction.type)
 
         Rf = product_of_exponentiations(reactants, 'concentrations')
@@ -185,21 +185,19 @@ def rates(reactions):
             R = "%s - %s"%(Rf, Rr)
         else:
             R = "%s /*irreversible*/"%(Rf)
-        return "{%s;\n    cR[%d] = c * (%s);}"%(c, reaction_index, R)
+        return "%s;\n    const dfloat cR%d = c * (%s);"%(c, reaction_index, R)
+    #}
     def specie(specie):
         def expr((specie, net)):
-            if net == 1: return "cR[%d]"%(specie)
-            elif net == -1: return "-cR[%d]"%(specie)
-            else: return "%d*cR[%d]"%(net, specie)
+            if net == 1: return "cR%d"%(specie)
+            elif net == -1: return "-cR%d"%(specie)
+            else: return "%d*cR%d"%(net, specie)
         rate = '+'.join(map(expr, filter(lambda (_, net): net != 0, enumerate(map(lambda reaction: reaction.net[specie], reactions)))))
         return "molar_rates[%d] = %s;"%(specie, rate)
-    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {\n    %s\n}\n"%(
-    "\n    ".join(
-        ["dfloat cR[%d];"%(len(reactions))] +
-        #map(lambda reaction_index, reaction: expr0(reaction_index, reaction), enumerate(reactions)) +
-        map(reaction, enumerate(reactions)) +
-        map(specie, range(species_len-1))
-    ))
+    #}
+    statements = ["","dfloat c, Pr, logFcent, logPr_c, f1;"] + map(reaction, enumerate(reactions)) + map(specie, range(species_len-1))
+    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT,"\
+                                                                      "const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {"+"\n    ".join(statements)+"\n}\n"
 
 class CPickler(CMill):
     def interaction_well_depth(self, a, b):

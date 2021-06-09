@@ -12,4 +12,6 @@ sed -i 's/+-/-/g' $output
 sed -i 's/+ -/-/g' $output
 sed -i 's/- -/+/g' $output
 sed -i 's/,}/}/g' $output
+sed -i 's/concentrations/sc/g' $output
+sed -i 's/exp_Gibbs0_RT/e_gibbs0_RT/g' $output
 cat $fuego/verbatim.c >> $output
