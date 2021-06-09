@@ -26,7 +26,7 @@ class ChemkinParser(BaseParser):
         import journal
         from fuego.serialization.chemkin.unpickle.tokens.Token import Token
 
-        print "Hello Chemkin Parser !!"
+        #print "Hello Chemkin Parser !!"
 
         Token._constructed = 0
         Token._destructed = 0

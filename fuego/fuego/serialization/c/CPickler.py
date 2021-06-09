@@ -2,6 +2,7 @@
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2007 All Rights Reserved
+from __future__ import print_function
 
 def product_of_exponentiations(c, v):
     #from itertools import partition
@@ -184,7 +185,7 @@ def rates(reactions):
             R = "%s - %s"%(Rf, Rr)
         else:
             R = "%s /*irreversible*/"%(Rf)
-        return "{%s;\n    cR[%d] = c * %s;}"%(c, reaction_index, R)
+        return "{%s;\n    cR[%d] = c * (%s);}"%(c, reaction_index, R)
     def specie(specie):
         def expr((specie, net)):
             if net == 1: return "cR[%d]"%(specie)
@@ -354,33 +355,49 @@ class CPickler(CMill):
         self.species_names = species_names
 
         def from_fuego(species_names, reaction):
-            class RateConstant(): pass
-
+            assert(reaction.units["prefactor"]=='mole/cm**3')
+            assert(reaction.units["activation"]=='cal/mole')
             preexponential_factor, temperature_exponent, activation_energy_cal = reaction.arrhenius
-            reaction.rate_constant = RateConstant()
-            reactants = sum(map(lambda (_, n): n, reaction.reactants))
-            C_cm3_unit_conversion_factor_exponent = reactants
+
             reaction.type = "Elementary"
             if reaction.thirdBody:
                 reaction.type = "ThreeBody"
-                C_cm3_unit_conversion_factor_exponent += 1
-            reaction.rate_constant.preexponential_factor = preexponential_factor * pow(1e-6, C_cm3_unit_conversion_factor_exponent),
+            if reaction.low:
+                reaction.type = "PressureModification"
+            if reaction.troe:
+                reaction.type = "Falloff"
+
+            reaction.reactants = map(lambda specie: sum(map(lambda (_, coefficient): coefficient, filter(lambda (s, _): s == specie, reaction.reactants))), species_names)
+            reaction.products = map(lambda specie: sum(map(lambda (_, coefficient): coefficient, filter(lambda (s, _): s == specie, reaction.products))), species_names)
+            reaction.net = map(lambda (reactant, product): -reactant + product, zip(reaction.reactants, reaction.products))
+            reaction.sum_net = sum(reaction.net)
+
+            class RateConstant(): pass
+            reaction.rate_constant = RateConstant()
+            concentration_cm3_unit_conversion_factor_exponent = sum(reaction.reactants)
+            if reaction.type == "ThreeBody":
+                concentration_cm3_unit_conversion_factor_exponent += 1
+            reaction.rate_constant.preexponential_factor = preexponential_factor * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent-1)
             reaction.rate_constant.temperature_exponent = temperature_exponent
             J_per_cal = 4.184
             reaction.rate_constant.activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
 
+            if reaction.thirdBody:
+                specie, coefficient = reaction.thirdBody
+                if not reaction.efficiencies:
+                        assert(specie != "<mixture>")
+                        reaction.efficiencies = {specie: coefficient}
+            else:
+                    assert(not reaction.efficiencies)
+            reaction.efficiencies = map(lambda specie: dict(reaction.efficiencies).get(specie, 1.), species_names)
             if reaction.low:
-                reaction.type = "PressureModification"
                 preexponential_factor, temperature_exponent, activation_energy_cal = reaction.low
                 reaction.k0 = RateConstant()
-                reactants = sum(map(lambda (_, n): n, reaction.reactants))
-                reaction.k0.preexponential_factor = preexponential_factor * pow(1e-6, reactants),
+                reaction.k0.preexponential_factor = preexponential_factor * pow(1e-6, sum(reaction.reactants)-1+1),
                 reaction.k0.temperature_exponent = temperature_exponent
                 J_per_cal = 4.184
                 reaction.k0.activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
-
             if reaction.troe:
-                reaction.type = "Falloff"
                 A, T3, T1 = reaction.troe[0], reaction.troe[1], reaction.troe[2]
                 if len(reaction.troe) == 4: T2 = reaction.troe[3]
                 else: T2 = 0
@@ -390,20 +407,7 @@ class CPickler(CMill):
                 reaction.troe.T3 = T3
                 reaction.troe.T1 = T1
                 reaction.troe.T2 = T2
-
-            reaction.reactants = map(lambda specie: dict(reaction.reactants).get(specie, 0), species_names)
-            reaction.products = map(lambda specie: dict(reaction.products).get(specie, 0), species_names)
-            reaction.net = map(lambda (a, b): a - b, zip(reaction.reactants, reaction.products))
-            reaction.sum_net = sum(reaction.net)
-            if reaction.thirdBody:
-                specie, coefficient = reaction.thirdBody
-                if not reaction.efficiencies:
-                        assert(specie != "<mixture>")
-                        reaction.efficiencies = {specie: coefficient}
-            else:
-                    assert(not reaction.efficiencies)
-            #reaction.efficiencies = map(lambda (name, coefficient): (next(i for i,s in enumerate(self.names) if s == name), coefficient), reaction.efficiencies)
-            reaction.efficiencies = map(lambda specie: dict(reaction.efficiencies).get(specie, 1.), species_names)
+            #}
             return reaction
 
         self.reactions = map(lambda reaction: from_fuego(species_names, reaction), mechanism.reaction())
@@ -419,7 +423,8 @@ class CPickler(CMill):
             return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4 %+15.8e * rcp_T' % (a[0], a[1]/2, a[2]/3, a[3]/4, a[4]/5, a[5])
         self.thermodynamic_function("fg_enthalpy_RT", enthalpy_RT_expression)
         def exp_Gibbs_RT_expression(a):
-            return 'exp2(%+15.8e * rcp_T %+15.8e %+15.8e * log_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4)' % (a[5]/ln(2), (a[0] - a[6])/ln(2), -a[0]/ln(2), -a[1]/2/ln(2), (1./3.-1./2.)*a[2]/ln(2), (1./4.-1./3.)*a[3]/ln(2), (1./5.-1./4.)*a[4]/ln(2))
+            return 'exp2(%+15.8e * rcp_T %+15.8e %+15.8e * log_T %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4)' % \
+                              (a[5]/ln(2),             (a[0] - a[6])/ln(2), -a[0], -a[1]/2/ln(2), (1./3.-1./2.)*a[2]/ln(2), (1./4.-1./3.)*a[3]/ln(2), (1./5.-1./4.)*a[4]/ln(2))
         self.thermodynamic_function("fg_exp_Gibbs_RT", exp_Gibbs_RT_expression)
 
         self.molar_mass = molar_mass

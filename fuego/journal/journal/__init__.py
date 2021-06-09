@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2003 All Rights Reserved
-# 
+#
 #  <LicenseText>
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 
 # journal
 
@@ -17,7 +17,7 @@ def journal():
     global _theJournal
     if _theJournal is not None:
         return _theJournal
-    
+
     from Journal import Journal
     _theJournal = Journal("journal")
     return _theJournal
@@ -86,7 +86,7 @@ def remote(port, host="localhost", mode="udp"):
     else:
         from Console import Console
         device = Console()
-        
+
     journal().device = device
     return device
 
@@ -94,7 +94,7 @@ def remote(port, host="localhost", mode="udp"):
 def daemon():
     from JournalDaemon import JournalDaemon
     return JournalDaemon()
-    
+
 
 # misc
 
@@ -105,24 +105,7 @@ def copyright():
 # statics
 _theJournal = None
 
-
-# initialize
-try:
-    #print " ** __init__.py: importing _journal"
-    import _journal
-except ImportError:
-    err = error("journal")
-    err.line("could not import the C++ bindings for journal")
-    err.log("control of diagnostics from extension modules is unavailable")
-else:
-    #print " ** __init__.py: initializing C++ bindings"
-    _journal.initialize(
-        journal(),
-        firewallIndex(), debugIndex(),
-        infoIndex(), warningIndex(), errorIndex()
-        )
-        
 # version
 __id__ = "$Id$"
 
-#  End of file 
+#  End of file

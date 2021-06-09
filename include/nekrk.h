@@ -41,6 +41,7 @@ namespace nekRK {
     );
 
     void transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di);
+
 }
 
 #endif

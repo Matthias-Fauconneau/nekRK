@@ -53,9 +53,11 @@ int main(int argc, char **argv) {
     occa::device device;
     std::string deviceConfigString(deviceConfig);
     device.setup(deviceConfigString);
-    if(rank == 0 && verbose) std::cout << "active occa mode: " << device.mode() << '\n';
+    if(rank == 0 && verbose) {
+        std::cout << "active occa mode: " << device.mode() << '\n';
+    }
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, false);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, false/*, verbose*/);
     const int n_species = nekRK::number_of_species();
 
     // setup reference quantities
@@ -124,7 +126,7 @@ int main(int argc, char **argv) {
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
-    if(rank==0)
+    if(rank==0 && nRep>0)
       printf("avg throughput: %.3f GDOF/s\n",
         (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
 
@@ -148,11 +150,11 @@ int main(int argc, char **argv) {
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * molar_mass_species[k]);
-        if(rank==0 && argc > 5) printf("species %5d wdot=%.15e\n", k+1, molar_rate);
+        if(rank==0 && verbose) printf("%.2e\n", molar_rate);
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
-    printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
+    //printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
 
     MPI_Finalize();
     exit(EXIT_SUCCESS);

@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2003 All Rights Reserved
-# 
+#
 #  <LicenseText>
-# 
+#
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 
 
 # extract a mechanism from a file
@@ -25,8 +25,8 @@ def load(filename, format=None, mechanism=None):
 
     if not format:
         format = guessMechanismType(filename)
- 
-    print "***** Using format", format
+
+    #print "***** Using format", format
 
     factory = registrar().retrieve(format)
 
@@ -69,7 +69,7 @@ def loadThermoDatabase(filename, format="chemkin", mechanism=None):
     from chemkin.unpickle.parsers.ThermoDatabaseParser import ThermoDatabaseParser
     parser = ThermoDatabaseParser()
     parser.parse(mechanism, file)
-    
+
     return mechanism
 
 
@@ -100,9 +100,9 @@ def guessMechanismType(filename):
     factory = registrar().retrieve(ext)
     if factory:
         return factory.format()
-    
+
     return "chemkin"
-        
+
 
 # factory method
 
@@ -110,7 +110,7 @@ def unpickler(format="chemkin"):
     factory = registrar().retrieve(format)
     if factory:
         return factory()
-    
+
     return None
 
 
@@ -145,4 +145,4 @@ _registrar = None
 # version
 __id__ = "$Id$"
 
-#  End of file 
+#  End of file

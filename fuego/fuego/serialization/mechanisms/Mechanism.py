@@ -21,7 +21,7 @@ class Mechanism(object):
 
 
     # housekeeping
-    
+
     def name(self):
         return self._name
 
@@ -52,7 +52,7 @@ class Mechanism(object):
 
         if duplicate and element.locator:
             raise self.DuplicateElement(symbol)
-        
+
         return element
 
 
@@ -77,7 +77,7 @@ class Mechanism(object):
         return self._species.find(symbol)
 
     # qss species
-    
+
     def newQssSpecies(self, symbol, locator=None):
         duplicate = self._qss_species.find(symbol)
 
@@ -98,7 +98,7 @@ class Mechanism(object):
         if not flag:
             self._externalDb = self._readExternalThermoDb()
             self._thermoRange = self._externalDb.thermoRange()
-            
+
         return self._externalDb
 
 
@@ -126,7 +126,7 @@ class Mechanism(object):
             warning = journal.warning("fuego")
             warning.line("unresolved species in mechanism")
             warning.line("species: %s" % [ x.symbol for x in unresolvedSpecies])
-                
+
         return 0
 
 
@@ -144,7 +144,7 @@ class Mechanism(object):
 
     def reaction(self, species=None, id=None):
         if not self._sorted:
-            print '*** WARNING: reactions have not been sorted'
+            pass#print '*** WARNING: reactions have not been sorted'
         return self._reactions.find(species, id)
 
 
@@ -156,7 +156,7 @@ class Mechanism(object):
         # troe
         for r in rs_unsorted:
             if r not in rs:
-                if r.low and r.troe and not r.rev: 
+                if r.low and r.troe and not r.rev:
                     i+=1
                     r.orig_id = r.id
                     r.id = i
@@ -165,7 +165,7 @@ class Mechanism(object):
         # sri
         for r in rs_unsorted:
             if r not in rs:
-                if r.low and r.sri and not r.rev: 
+                if r.low and r.sri and not r.rev:
                     i+=1
                     r.orig_id = r.id
                     r.id = i
@@ -174,7 +174,7 @@ class Mechanism(object):
         # lindemann
         for r in rs_unsorted:
             if r not in rs:
-                if r.low and not r.rev: 
+                if r.low and not r.rev:
                     i+=1
                     r.orig_id = r.id
                     r.id = i
@@ -183,7 +183,7 @@ class Mechanism(object):
         # three-body:
         for r in rs_unsorted:
             if r not in rs:
-                if r.thirdBody and not r.low and not r.rev: 
+                if r.thirdBody and not r.low and not r.rev:
                     i+=1
                     r.orig_id = r.id
                     r.id = i
@@ -192,7 +192,7 @@ class Mechanism(object):
         # simplest case
         for r in rs_unsorted:
             if r not in rs:
-                if not r.rev and not r.low and not r.thirdBody: 
+                if not r.rev and not r.low and not r.thirdBody:
                     i+=1
                     r.orig_id = r.id
                     r.id = i
@@ -233,7 +233,7 @@ class Mechanism(object):
             for a in agents:
                 symbol, coefficient = a
                 reactionmat[i][self.species(symbol).id]=coefficient
-        
+
         new_to_old_map=self._tsp_solve(reactionmat,0.001)
         #new_to_old_map=self._cluster_solve(reactionmat)
 
@@ -247,7 +247,7 @@ class Mechanism(object):
         #Species ids, ie sp.id starts with 0
         #while reaction ids, ie reaction.id starts with 1
         #although when doing mechanism.reaction(id=i), i should be
-        #index starting with 0. this is because the "find()" function 
+        #index starting with 0. this is because the "find()" function
         #in reactionSet class queries within the entity array
         #------------------------------------------------------------
 
@@ -258,7 +258,7 @@ class Mechanism(object):
         itroe      = n[0:2]
         isri       = n[1:3]
         ilindemann = n[2:4]
-        i3body     = n[3:5] 
+        i3body     = n[3:5]
         isimple    = n[4:6]
         ispecial   = n[5:7]
 
@@ -288,7 +288,7 @@ class Mechanism(object):
         #Species ids, ie sp.id starts with 0
         #while reaction ids, ie reaction.id starts with 1
         #although when doing mechanism.reaction(id=i), i should be
-        #index starting with 0. this is because the "find()" function 
+        #index starting with 0. this is because the "find()" function
         #in reactionSet class queries within the entity array
         #------------------------------------------------------------
 
@@ -299,7 +299,7 @@ class Mechanism(object):
         itroe      = n[0:2]
         isri       = n[1:3]
         ilindemann = n[2:4]
-        i3body     = n[3:5] 
+        i3body     = n[3:5]
         isimple    = n[4:6]
         ispecial   = n[5:7]
 
@@ -331,7 +331,7 @@ class Mechanism(object):
             r = rs[new_to_old_map[i]]
             r.id = i+1 #id should start with 1
             rsnew.append(r)
-        
+
         for r in rsnew:
             self._reactions.replace2(r,r.id-1,r)
 
@@ -374,7 +374,7 @@ class Mechanism(object):
             for a in agents:
                 symbol, coefficient = a
                 reactionmat[i][self.species(symbol).id]=coefficient
-            
+
             for ii, eff in enumerate(efficiencies):
                 symbol, efficiency = eff
                 reactionmat[i][self.species(symbol).id]=1.0
@@ -472,7 +472,7 @@ class Mechanism(object):
     #===================================================================
 
 
-    # other methods  
+    # other methods
 
     def __init__(self, name=""):
         from ElementSet    import ElementSet
@@ -489,13 +489,13 @@ class Mechanism(object):
         self._species     = SpeciesSet()
         self._qss_species = QssSpeciesSet()
         self._reactions   = ReactionSet()
-        
+
         self._thermoRange = ()
 
         self._info = journal.debug("fuego.serialization")
 
         self._sorted = False
-        
+
         return
 
 
@@ -518,7 +518,7 @@ class Mechanism(object):
         print "---------"
         for element in self.element():
             print "%6s: %s" % (element.symbol, element)
-            
+
         print
         print "Species:"
         print "---------"

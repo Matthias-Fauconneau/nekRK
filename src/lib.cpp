@@ -26,6 +26,7 @@ namespace {
     double *m_molar = 0;
 
     MPI_Comm comm;
+
 };
 
 void set_number_of_species()
@@ -44,7 +45,7 @@ void set_molar_mass()
 }
 
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties,
-       const int group_size, MPI_Comm _comm, bool transport)
+       const int group_size, MPI_Comm _comm, bool transport, bool verbose)
 {
     comm   = _comm;
     device = _device;
@@ -75,7 +76,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
                 transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
             }
             kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
-            printf("production_rates\n");
+            //printf("production_rates\n");
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
             number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
             mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties); // FIXME: Should always be host CPU
@@ -86,7 +87,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     set_number_of_species();
     set_molar_mass();
 
-    if(rank==0) {
+    if(rank==0 && verbose) {
       printf("nekRK initialized successfully\n");
       printf("mechanism file: %s\n", mechFile.c_str());
       printf("nSpecies: %d\n", n_species);
@@ -100,7 +101,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 void nekRK::init(const char* model_path, occa::device device,
       occa::properties kernel_properties, int group_size, MPI_Comm comm, bool transport)
 {
-  setup(model_path, device, kernel_properties, group_size, comm, transport);
+  setup(model_path, device, kernel_properties, group_size, comm, transport, false);
 }
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)

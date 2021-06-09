@@ -39,10 +39,10 @@
     dfloat exp_Gibbs0_RT[n_species];
     printf("%f %f %f %f %f %f\n", log_T,T,T2,T3,T4,rcp_T);
     fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
-    for(int k=0; k < n_species-1; k++) { printf("%f ", exp_Gibbs0_RT[k]); } printf("\n");
     const dfloat rcp_T2 = rcp_T*rcp_T;
     dfloat molar_rates[n_species-1];
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
+    for(int k=0; k < n_species-1; k++) { printf("%e ", molar_rates[k]); } printf("\n");
     fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
     dfloat energy_rate_RT = 0.;

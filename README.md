@@ -11,7 +11,7 @@ Dependencies:
 - Numpy for Python2: This old version might have been renamed to integrate with modern systems e.g numpy-python2
 
 ```sh
-export OCCAR_DIR=$HOME/occa
+export OCCA_DIR=$HOME/occa
 export NEKRK_PATH=$HOME/.local/nekRK
 fuego/run.sh etc/fuego/mechanisms/grimech30 (only required if mechanisms does not exist in share/mechanism)
 cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH
