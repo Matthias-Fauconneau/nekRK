@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
     const int nRep = std::stoi(argv[4]);
     std::string mech("LiDryer");
     if(argc > 5) mech.assign(argv[5]);
+    const bool verbose = argc < 6;
 
     char deviceConfig[BUFSIZ];
     const int deviceId = 0;
@@ -52,7 +53,7 @@ int main(int argc, char **argv) {
     occa::device device;
     std::string deviceConfigString(deviceConfig);
     device.setup(deviceConfigString);
-    if(rank == 0) std::cout << "active occa mode: " << device.mode() << '\n';
+    if(rank == 0 && verbose) std::cout << "active occa mode: " << device.mode() << '\n';
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, false);
     const int n_species = nekRK::number_of_species();

@@ -31,15 +31,17 @@
     const dfloat T2 = T*T;
     const dfloat T3 = T*T2;
     const dfloat T4 = T*T3;
-    const dfloat rcp_T2 = rcp_T*rcp_T;
     const dfloat K = 1.380649e-23; // J/kelvin
     const dfloat NA = 6.02214076e23; // /mole
     const dfloat reference_pressure = 101325. / (K*NA);
     const dfloat P0_RT = reference_pressure * rcp_T;
     const dfloat rcp_P0_RT = (1./reference_pressure) * T;
     dfloat exp_Gibbs0_RT[n_species];
+    printf("%f %f %f %f %f %f\n", log_T,T,T2,T3,T4,rcp_T);
     fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
-    dfloat molar_rates[n_species];
+    for(int k=0; k < n_species-1; k++) { printf("%f ", exp_Gibbs0_RT[k]); } printf("\n");
+    const dfloat rcp_T2 = rcp_T*rcp_T;
+    dfloat molar_rates[n_species-1];
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
     fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
