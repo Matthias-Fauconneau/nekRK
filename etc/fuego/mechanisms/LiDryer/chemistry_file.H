@@ -1,6 +1,6 @@
 #define n_species 9
-const dfloat fg_molar_mass[9] = {2.01594, 31.9988, 18.01534, 1.00797, 15.9994, 17.00737, 33.00677, 34.01474, 28.0134};
-const dfloat fg_rcp_molar_mass[9] = {0.496046509321, 0.0312511719189, 0.0555082501912, 0.992093018641, 0.0625023438379, 0.0587980387326, 0.0302968148656, 0.0293990193663, 0.0356972020533};
+const dfloat fg_molar_mass[9] = {0.00201594, 0.0319988, 0.01801534, 0.00100797, 0.0159994, 0.01700737, 0.03300677, 0.03401474, 0.0280134};
+const dfloat fg_rcp_molar_mass[9] = {496.046509321, 31.2511719189, 55.5082501912, 992.093018641, 62.5023438379, 58.7980387326, 30.2968148656, 29.3990193663, 35.6972020533};
 void fg_molar_heat_capacity_at_constant_pressure_R(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* species) {
     if (T < 1000.0) {
         species[0] = +3.29812431e+00 +8.24944174e-04 * T -8.14301529e-07 * T_2 -9.47543433e-11 * T_3 +4.13487224e-13 * T_4;
@@ -75,27 +75,56 @@ void fg_exp_Gibbs_RT(const dfloat log_T, const dfloat T, const dfloat T_2, const
 
 void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {
     dfloat cR[21];
-    cR[0] = 3.547000e+17*fg_exp2(-5.857342e-01*log_T-8.352941e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[1]*concentrations[3] - exp_Gibbs0_RT[1]*exp_Gibbs0_RT[3]/(exp_Gibbs0_RT[4]*exp_Gibbs0_RT[5]) * concentrations[4]*concentrations[5];
-    cR[1] = 5.080000e+06*fg_exp2(3.851996e+00*log_T-3.165251e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[0]*concentrations[4] - exp_Gibbs0_RT[0]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[3]*exp_Gibbs0_RT[5]) * concentrations[3]*concentrations[5];
-    cR[2] = 2.160000e+10*fg_exp2(2.178470e+00*log_T-1.726043e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[0]*concentrations[5] - exp_Gibbs0_RT[0]*exp_Gibbs0_RT[5]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[3]) * concentrations[2]*concentrations[3];
-    cR[3] = 2.970000e+08*fg_exp2(2.914244e+00*log_T-6.743142e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[2]*concentrations[4] - exp_Gibbs0_RT[2]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];
-    cR[4] = 4.577000e+21*fg_exp2(-2.019773e+00*log_T-5.252605e+04*rcp_T) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[0] - exp_Gibbs0_RT[0]/(exp_Gibbs0_RT[3]) * concentrations[3];
-    cR[5] = 6.165000e+17*fg_exp2(-7.213475e-01*log_T) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[4] - exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[1]) * concentrations[1];
-    cR[6] = 4.714000e+20*fg_exp2(-1.442695e+00*log_T) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[4] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];
-    cR[7] = 3.800000e+24*fg_exp2(-2.885390e+00*log_T) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[5] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[5]/(exp_Gibbs0_RT[2])* rcp_P0_RT * concentrations[2];
-    cR[8] = 1.475000e+14*fg_exp2(8.656170e-01*log_T) * (2.000000e+00*concentrations[0] + 7.800000e-01*concentrations[1] + 1.100000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[1]*concentrations[3] - exp_Gibbs0_RT[1]*exp_Gibbs0_RT[3]/(exp_Gibbs0_RT[6])* rcp_P0_RT * concentrations[6];
-    cR[9] = 1.660000e+15*fg_exp2(-4.141497e+02*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[6] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[0]*exp_Gibbs0_RT[1]) * concentrations[0]*concentrations[1];
-    cR[10] = 7.079000e+15*fg_exp2(-1.484498e+02*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[6] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];
-    cR[11] = 3.250000e+15 * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[4]*concentrations[6] - exp_Gibbs0_RT[4]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[5]) * concentrations[1]*concentrations[5];
-    cR[12] = 2.890000e+15*fg_exp2(+2.501001e+02*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[5]*concentrations[6] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[2]) * concentrations[1]*concentrations[2];
-    cR[13] = 4.200000e+16*fg_exp2(-6.029576e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[6] - exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[7])* P0_RT * concentrations[1]*concentrations[7];
-    cR[14] = 1.300000e+13*fg_exp2(+8.198956e+02*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[6] - exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[7])* P0_RT * concentrations[1]*concentrations[7];
-    cR[15] = 2.951000e+16*fg_exp2(-2.437092e+04*rcp_T) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[7] - exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[5]) * concentrations[5];
-    cR[16] = 2.410000e+15*fg_exp2(-1.997782e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[7] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[5]) * concentrations[2]*concentrations[5];
-    cR[17] = 4.820000e+15*fg_exp2(-4.000595e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[3]*concentrations[7] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[0]*exp_Gibbs0_RT[6]) * concentrations[0]*concentrations[6];
-    cR[18] = 9.550000e+08*fg_exp2(2.885390e+00*log_T-1.997782e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[4]*concentrations[7] - exp_Gibbs0_RT[4]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[5]*exp_Gibbs0_RT[6]) * concentrations[5]*concentrations[6];
-    cR[19] = 1.000000e+14 * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[5]*concentrations[7] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[6]) * concentrations[2]*concentrations[6];
-    cR[20] = 5.800000e+16*fg_exp2(-4.809269e+03*rcp_T) * (concentrations[0] + concentrations[1] + concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]) * concentrations[5]*concentrations[7] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[6]) * concentrations[2]*concentrations[6];
+    {const dfloat c = exp2(-1.205075e+04 * rcp_T + -4.060000e-01 * log_T + 1.179238e+01);
+    cR[0] = c * concentrations[1]*concentrations[3] - exp_Gibbs0_RT[1]*exp_Gibbs0_RT[3]/(exp_Gibbs0_RT[4]*exp_Gibbs0_RT[5]) * concentrations[4]*concentrations[5];}
+    {const dfloat c = exp2(-4.566492e+03 * rcp_T + 2.670000e+00 * log_T + -2.423060e+01);
+    cR[1] = c * concentrations[0]*concentrations[4] - exp_Gibbs0_RT[0]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[3]*exp_Gibbs0_RT[5]) * concentrations[3]*concentrations[5];}
+    {const dfloat c = exp2(-2.490154e+03 * rcp_T + 1.510000e+00 * log_T + -1.217668e+01);
+    cR[2] = c * concentrations[0]*concentrations[5] - exp_Gibbs0_RT[0]*exp_Gibbs0_RT[5]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[3]) * concentrations[2]*concentrations[3];}
+    {const dfloat c = exp2(-9.728297e+03 * rcp_T + 2.020000e+00 * log_T + -1.836111e+01);
+    cR[3] = c * concentrations[2]*concentrations[4] - exp_Gibbs0_RT[2]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];}
+    {const dfloat c = exp2(-7.577908e+04 * rcp_T + -1.400000e+00 * log_T + 2.544790e+01) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    cR[4] = c * concentrations[0] - exp_Gibbs0_RT[0]/(exp_Gibbs0_RT[3]) * concentrations[3];}
+    {const dfloat c = exp2(-0.000000e+00 * rcp_T + -5.000000e-01 * log_T + -7.341683e+00) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    cR[5] = c * concentrations[4] - exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[1]) * concentrations[1];}
+    {const dfloat c = exp2(-0.000000e+00 * rcp_T + -1.000000e+00 * log_T + 2.236952e+00) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    cR[6] = c * concentrations[3]*concentrations[4] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[4]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];}
+    {const dfloat c = exp2(-0.000000e+00 * rcp_T + -2.000000e+00 * log_T + 1.521371e+01) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    cR[7] = c * concentrations[3]*concentrations[5] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[5]/(exp_Gibbs0_RT[2])* rcp_P0_RT * concentrations[2];}
+    {const dfloat Pr = exp2(-3.810008e+02 * rcp_T + -1.720000e+00 * log_T + 2.924581e+01) * (2.000000e+00*concentrations[0] + 7.800000e-01*concentrations[1] + 1.100000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    const dfloat logFcent = log2(2.000000e-01 * exp2(-1.442695e+30*T) + 8.000000e-01 * exp2(-1.442695e-30*T) + exp2(0.000000e+00*rcp_T));
+    const dfloat logPr_c = log2(Pr) - 0.67*logFcent - 1.328771e+00;
+    const dfloat f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-2.491446e+00);
+    const dfloat c = Pr / (exp2(0.000000e+00 * rcp_T - 6.000000e-01 * log_T - -1.937085e+01) * Pr + 1.) * exp2(logFcent/(f1*f1+1.));
+    cR[8] = c * concentrations[1]*concentrations[3] - exp_Gibbs0_RT[1]*exp_Gibbs0_RT[3]/(exp_Gibbs0_RT[6])* rcp_P0_RT * concentrations[6];}
+    {const dfloat c = exp2(-5.974917e+02 * rcp_T + 0.000000e+00 * log_T + 4.053111e+00);
+    cR[9] = c * concentrations[3]*concentrations[6] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[0]*exp_Gibbs0_RT[1]) * concentrations[0]*concentrations[1];}
+    {const dfloat c = exp2(-2.141677e+02 * rcp_T + 0.000000e+00 * log_T + 6.145474e+00);
+    cR[10] = c * concentrations[3]*concentrations[6] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[5])* rcp_P0_RT * concentrations[5];}
+    {const dfloat c = exp2(-0.000000e+00 * rcp_T + 0.000000e+00 * log_T + 5.022368e+00);
+    cR[11] = c * concentrations[4]*concentrations[6] - exp_Gibbs0_RT[4]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[5]) * concentrations[1]*concentrations[5];}
+    {const dfloat c = exp2(3.608182e+02 * rcp_T + 0.000000e+00 * log_T + 4.852998e+00);
+    cR[12] = c * concentrations[5]*concentrations[6] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[2]) * concentrations[1]*concentrations[2];}
+    {const dfloat c = exp2(-8.698840e+03 * rcp_T + 0.000000e+00 * log_T + 8.714246e+00);
+    cR[13] = c * concentrations[6] - exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[7])* P0_RT * concentrations[1]*concentrations[7];}
+    {const dfloat c = exp2(1.182859e+03 * rcp_T + 0.000000e+00 * log_T + -2.943416e+00);
+    cR[14] = c * concentrations[6] - exp_Gibbs0_RT[6]/(exp_Gibbs0_RT[1]*exp_Gibbs0_RT[7])* P0_RT * concentrations[1]*concentrations[7];}
+    {const dfloat Pr = exp2(-3.303265e+04 * rcp_T + 0.000000e+00 * log_T + 3.680665e+01) * (2.500000e+00*concentrations[0] + concentrations[1] + 1.200000e+01*concentrations[2] + concentrations[3] + concentrations[4] + concentrations[5] + concentrations[6] + concentrations[7] + concentrations[8]);
+    const dfloat logFcent = log2(5.000000e-01 * exp2(-1.442695e+30*T) + 5.000000e-01 * exp2(-1.442695e-30*T) + exp2(0.000000e+00*rcp_T));
+    const dfloat logPr_c = log2(Pr) - 0.67*logFcent - 1.328771e+00;
+    const dfloat f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-2.491446e+00);
+    const dfloat c = Pr / (exp2(3.515981e+04 * rcp_T - 0.000000e+00 * log_T - 8.205060e+00) * Pr + 1.) * exp2(logFcent/(f1*f1+1.));
+    cR[15] = c * concentrations[7] - exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[5]) * concentrations[5];}
+    {const dfloat c = exp2(-2.882190e+03 * rcp_T + 0.000000e+00 * log_T + 4.590961e+00);
+    cR[16] = c * concentrations[3]*concentrations[7] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[5]) * concentrations[2]*concentrations[5];}
+    {const dfloat c = exp2(-5.771639e+03 * rcp_T + 0.000000e+00 * log_T + 5.590961e+00);
+    cR[17] = c * concentrations[3]*concentrations[7] - exp_Gibbs0_RT[3]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[0]*exp_Gibbs0_RT[6]) * concentrations[0]*concentrations[6];}
+    {const dfloat c = exp2(-2.882190e+03 * rcp_T + 2.000000e+00 * log_T + -1.667607e+01);
+    cR[18] = c * concentrations[4]*concentrations[7] - exp_Gibbs0_RT[4]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[5]*exp_Gibbs0_RT[6]) * concentrations[5]*concentrations[6];}
+    {const dfloat c = exp2(-0.000000e+00 * rcp_T + 0.000000e+00 * log_T + 0.000000e+00);
+    cR[19] = c * concentrations[5]*concentrations[7] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[6]) * concentrations[2]*concentrations[6];}
+    {const dfloat c = exp2(-6.938309e+03 * rcp_T + 0.000000e+00 * log_T + 9.179909e+00);
+    cR[20] = c * concentrations[5]*concentrations[7] - exp_Gibbs0_RT[5]*exp_Gibbs0_RT[7]/(exp_Gibbs0_RT[2]*exp_Gibbs0_RT[6]) * concentrations[2]*concentrations[6];}
     molar_rates[0] = cR[1]+cR[2]+cR[4]+-cR[9]+-cR[17];
     molar_rates[1] = cR[0]+-cR[5]+cR[8]+-cR[9]+-cR[11]+-cR[12]+-cR[13]+-cR[14];
     molar_rates[2] = -cR[2]+cR[3]+-cR[7]+-cR[12]+-cR[16]+-cR[19]+-cR[20];
