@@ -338,15 +338,15 @@ class CPickler(CMill):
         f.write("polarizability: "+ to_string(self.polarizability) +"\n")
         self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
         f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
-        def block_expr(s):
+        def from_fuego(s):
             self = NASA7()
             [high, low] = s.thermo # /!\ Reverse order
             assert(low.highT == high.lowT)
             self.temperature_split = low.highT
             self.pieces = [low.parameters, high.parameters]
             return self
-        self.thermodynamics = map(block_expr, species)
-        f.write("thermodynamics: "+ to_string(self.thermodynamics) +"\n")
+        self.thermodynamics = map(from_fuego, species)
+        f.write("thermodynamics: "+ to_string(map(lambda s: (s.temperature_split, s.pieces), self.thermodynamics)) +"\n")
         #f.write(to_string(self))
         f.close()
         species_names = map(lambda s: s.symbol, species)
@@ -426,8 +426,8 @@ class CPickler(CMill):
         self.thermodynamic_function("fg_exp_Gibbs_RT", exp_Gibbs_RT_expression)
 
         self.molar_mass = molar_mass
-        #transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
-        #f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
+        transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
+        f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
         #self.viscosity_function(transport_polynomials.sqrt_viscosity_T14)
         #self.thermal_conductivity_function(transport_polynomials.thermal_conductivity_T12)
         #self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
