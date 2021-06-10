@@ -55,7 +55,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
-    kernel_properties["defines/dfloat"] = "double";
+    kernel_properties["defines/float"] = "double";
     kernel_properties["defines/fg_exp2"] = "exp2"; // "__expf"
     kernel_properties["defines/p_blockSize"] = to_string(group_size);
     kernel_properties["flags"].asObject(); // ?

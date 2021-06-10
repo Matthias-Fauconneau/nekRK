@@ -3,17 +3,19 @@
 #                        California Institute of Technology
 #                        (C) 1998-2007 All Rights Reserved
 from __future__ import print_function
-
+#from itertools import partition
+def partition(pred, iterable):
+    evaluations = ((pred(x), x) for x in iterable)
+    from itertools import tee
+    t1, t2 = tee(evaluations)
+    return (
+            (x for (cond, x) in t1 if cond),
+            (x for (cond, x) in t2 if not cond),
+    )
+#}
 def product_of_exponentiations(c, v):
-    #from itertools import partition
-    def partition(pred, iterable):
-        evaluations = ((pred(x), x) for x in iterable)
-        from itertools import tee
-        t1, t2 = tee(evaluations)
-        return (
-                (x for (cond, x) in t1 if cond),
-                (x for (cond, x) in t2 if not cond),
-        )
+    for _c in c: assert(_c == int(_c))
+    c = map(lambda c: int(c), c)
     (num, div) = partition(lambda (_,c): c>0, filter(lambda (_,c): c!=0, enumerate(c)))
     from itertools import repeat, chain
     num = '*'.join(chain(*map(lambda (i,c): repeat("%s[%d]"%(v,i),max(0,c)), num)))
@@ -23,7 +25,6 @@ def product_of_exponentiations(c, v):
     elif num=='': return '1./(%s)'%(div)
     else: return '%s/(%s)'%(num, div)
 #}
-
 import journal
 from weaver.mills.CMill import CMill
 from pyre.units.pressure import atm
@@ -185,7 +186,7 @@ def rates(reactions):
             R = "%s - %s"%(Rf, Rr)
         else:
             R = "%s /*irreversible*/"%(Rf)
-        return "%s;\n    const dfloat cR%d = c * (%s);"%(c, reaction_index, R)
+        return "%s;\n    const float cR%d = c * (%s);"%(c, reaction_index, R)
     #}
     def specie(specie):
         def expr((specie, net)):
@@ -195,9 +196,9 @@ def rates(reactions):
         rate = '+'.join(map(expr, filter(lambda (_, net): net != 0, enumerate(map(lambda reaction: reaction.net[specie], reactions)))))
         return "molar_rates[%d] = %s;"%(specie, rate)
     #}
-    statements = ["","dfloat c, Pr, logFcent, logPr_c, f1;"] + map(reaction, enumerate(reactions)) + map(specie, range(species_len-1))
-    return "void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT,"\
-                                                                      "const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {"+"\n    ".join(statements)+"\n}\n"
+    statements = ["","float c, Pr, logFcent, logPr_c, f1;"] + map(reaction, enumerate(reactions)) + map(specie, range(species_len-1))
+    return "void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT,"\
+                                                                      "const float exp_Gibbs0_RT[], const float concentrations[], float* molar_rates) {"+"\n    ".join(statements)+"\n}\n"
 
 class CPickler(CMill):
     def interaction_well_depth(self, a, b):
@@ -233,7 +234,7 @@ class CPickler(CMill):
             return self.omega_star_22(a, b, T)/self.collision_integral(A_star, a, b, T)
 
     def transport_polynomials(self):
-        N = 50
+        N = 3#50
         (temperature_min, temperature_max) = (300., 3000.)
         T = map(lambda n: temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min), range(N))
         #sys.exit("%s"%map(lambda T: self.T_star(0,0, T), T))
@@ -242,8 +243,12 @@ class CPickler(CMill):
         transport_polynomials = TransportPolynomials()
         transport_polynomials.sqrt_viscosity_T14 = map(lambda a: polynomial_regression(map(ln, T), map(lambda T: self.viscosity(a, T) / sqrt(sqrt(T)), T), 3), range(len(self.species)))
         transport_polynomials.thermal_conductivity_T12 = map(lambda a: polynomial_regression(map(ln, T), map(lambda T: self.thermal_conductivity(a, T) / sqrt(T), T), 3), range(len(self.species)))
+        print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)")
+        import time
+        start_time = time.time()
         transport_polynomials.binary_thermal_diffusion_coefficients_T32 = map(
             lambda a: map(lambda b: polynomial_regression(map(ln, T), map(lambda T: self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.), T), 3), range(len(self.species))), range(len(self.species)))
+        print("%ds"%(time.time() - start_time))
         return transport_polynomials
 
     def thermodynamic_function(self, name, expression):
@@ -251,7 +256,7 @@ class CPickler(CMill):
         for index, specie in enumerate(self.thermodynamics):
             temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
-        self._write('void %s(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* species) {' % name)
+        self._write('void %s(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* species) {' % name)
         self._indent()
         for temperature_split, species in temperature_splits.items():
             self._write('if (T < %s) {' % temperature_split)
@@ -269,12 +274,12 @@ class CPickler(CMill):
         self._write('}\n')
 
     def viscosity_function(self, sqrt_viscosity_T14):
-        self._write('dfloat fg_viscosity(dfloat T, const dfloat mole_fractions[]) {')
+        self._write('float fg_viscosity(float T, const float mole_fractions[]) {')
         self._indent()
-        self._write('dfloat T_14 =	sqrt(sqrt(T));')
-        self._write('dfloat ln_T = log(T);')
-        self._write('dfloat ln_T_2 = ln_T*ln_T; ')
-        self._write('dfloat ln_T_3 = ln_T_2*ln_T; ')
+        self._write('float T_14 =	sqrt(sqrt(T));')
+        self._write('float ln_T = log(T);')
+        self._write('float ln_T_2 = ln_T*ln_T; ')
+        self._write('float ln_T_3 = ln_T_2*ln_T; ')
         self._write('return pow(0.')
         for i in range(len(self.species)):
             P = sqrt_viscosity_T14[i]
@@ -284,12 +289,12 @@ class CPickler(CMill):
         self._write('}')
 
     def thermal_conductivity_function(self, thermal_conductivity_T12):
-        self._write('dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {')
+        self._write('float fg_thermal_conductivity(float T, const float mole_fractions[]) {')
         self._indent()
-        self._write('dfloat T_12 = sqrt(T);')
-        self._write('dfloat ln_T = log(T);')
-        self._write('dfloat ln_T_2 = ln_T*ln_T; ')
-        self._write('dfloat ln_T_3 = ln_T_2*ln_T; ')
+        self._write('float T_12 = sqrt(T);')
+        self._write('float ln_T = log(T);')
+        self._write('float ln_T_2 = ln_T*ln_T; ')
+        self._write('float ln_T_3 = ln_T_2*ln_T; ')
         self._write('return pow(0.')
         for i in range(len(self.species)):
             P = thermal_conductivity_T12[i]
@@ -299,13 +304,13 @@ class CPickler(CMill):
         self._write('}')
 
     def mixture_diffusion_coefficients_function(self, binary_thermal_diffusion_coefficients_T32):
-        self._write('void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat T, dfloat* Ddiag) {')
+        self._write('void fg_mixture_diffusion_coefficients(const float mole_fractions[n_species], const float mass_fractions[n_species], float T, float* Ddiag) {')
         self._indent()
-        self._write('dfloat T_12 = sqrt(T);')
-        self._write('dfloat ln_T = log(T);')
-        self._write('dfloat ln_T_2 = ln_T*ln_T; ')
-        self._write('dfloat ln_T_3 = ln_T_2*ln_T; ')
-        self._write('dfloat T_32 = T*T_12;')
+        self._write('float T_12 = sqrt(T);')
+        self._write('float ln_T = log(T);')
+        self._write('float ln_T_2 = ln_T*ln_T; ')
+        self._write('float ln_T_3 = ln_T_2*ln_T; ')
+        self._write('float T_32 = T*T_12;')
         for k in range(len(self.species)):
             self._write('Ddiag[%d] = (1. - mass_fractions[%d]) * mole_fractions[%d] / ( 0.' % (k,k,k))
             for j in range(len(self.species)):
@@ -319,27 +324,38 @@ class CPickler(CMill):
         self._write('}')
 
     def _renderDocument(self, mechanism, options=None):
-        species = mechanism.species()
-        self.species = species
+        self.species = mechanism.species()
+        for inert in ['AR','N2']:
+            def position(iterator, predicate):
+                for index, item in enumerate(iterator):
+                        if predicate(item):
+                            return index
+                return None
+            inert = position(self.species, lambda e: e.symbol==inert)
+            if inert:
+                self.species.append(self.species.pop(inert)) # Move inert specie to last index
+                break
+        else:
+            print("Missing inert specie", file=sys.stderr)
         import pyre.handbook
-        self.molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight/1e3, s.composition)), species)
+        self.molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight/1e3, s.composition)), self.species)
         #f = open("species", "w")
         #to_string = lambda x: '%s'%x
         #f.write("molar_mass: "+ to_string(self.molar_mass) +"\n")
-        self.internal_degrees_of_freedom = map(lambda s: [0., 1., 3./2.][s.trans[0].parameters[0]], species) #transport.geometry { Atom => 0., Linear{..} => 1., Nonlinear{..} => 3./2. }
+        self.internal_degrees_of_freedom = map(lambda s: [0., 1., 3./2.][s.trans[0].parameters[0]], self.species) #transport.geometry { Atom => 0., Linear{..} => 1., Nonlinear{..} => 3./2. }
         #f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
-        self.heat_capacity_ratio = map(lambda s: 1. + 2./[3., 5., 6.][s.trans[0].parameters[0]], species) #1. + 2. / match s.transport.geometry { Atom => 3., Linear{..} => 5., Nonlinear{..} => 6. };
+        self.heat_capacity_ratio = map(lambda s: 1. + 2./[3., 5., 6.][s.trans[0].parameters[0]], self.species) #1. + 2. / match s.transport.geometry { Atom => 3., Linear{..} => 5., Nonlinear{..} => 6. };
         #f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
-        self.well_depth_J = map(lambda s: float(s.trans[0].eps)*K, species) #well_depth_K * K
+        self.well_depth_J = map(lambda s: float(s.trans[0].eps)*K, self.species) #well_depth_K * K
         #f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
-        self.diameter = map(lambda s: float(s.trans[0].sig)*1e-10, species) #diameter_Å*1e-10
+        self.diameter = map(lambda s: float(s.trans[0].sig)*1e-10, self.species) #diameter_Å*1e-10
         #f.write("diameter: "+ to_string(self.diameter) +"\n")
         Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
-        self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, species)
+        self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, self.species)
         #f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
-        self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, species) # polarizability_Å3*1e-30
+        self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, self.species) # polarizability_Å3*1e-30
         #f.write("polarizability: "+ to_string(self.polarizability) +"\n")
-        self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
+        self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), self.species)
         #f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
         def from_fuego(s):
             self = NASA7()
@@ -348,9 +364,9 @@ class CPickler(CMill):
             self.temperature_split = low.highT
             self.pieces = [low.parameters, high.parameters]
             return self
-        self.thermodynamics = map(from_fuego, species)
+        self.thermodynamics = map(from_fuego, self.species)
         #f.write("thermodynamics: "+ to_string(map(lambda s: (s.temperature_split, s.pieces), self.thermodynamics)) +"\n")
-        species_names = map(lambda s: s.symbol, species)
+        species_names = map(lambda s: s.symbol, self.species)
         self.species_names = species_names
 
         def from_fuego(species_names, reaction):
@@ -415,9 +431,9 @@ class CPickler(CMill):
         #f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
 
         # Species
-        self._write('#define n_species %d' % (len(species)))
-        self._write('const dfloat fg_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, self.molar_mass))))
-        self._write('const dfloat fg_rcp_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, map(lambda w: 1./w, self.molar_mass)))))
+        self._write('#define n_species %d' % (len(self.species)))
+        self._write('const float fg_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, self.molar_mass))))
+        self._write('const float fg_rcp_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, map(lambda w: 1./w, self.molar_mass)))))
 
         def molar_heat_capacity_at_constant_pressure_R_expression(a):
             return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4' % (a[0], a[1], a[2], a[3], a[4])
