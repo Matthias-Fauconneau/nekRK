@@ -73,6 +73,137 @@ void fg_exp_Gibbs_RT(const dfloat log_T, const dfloat T, const dfloat T_2, const
     }
 }
 
+dfloat fg_viscosity(dfloat T, const dfloat mole_fractions[]) {
+    dfloat T_14 =	sqrt(sqrt(T));
+    dfloat ln_T = log(T);
+    dfloat ln_T_2 = ln_T*ln_T; 
+    dfloat ln_T_3 = ln_T_2*ln_T; 
+    return pow(0.
+    + mole_fractions[0] * pow((3.96729649E-08 + -5.49228488E-07 * ln_T + 3.29052645E-06 * ln_T_2 + -6.10092193E-06 * ln_T_3)*T_14, 12.)
+    + mole_fractions[1] * pow((1.33781415E-07 + -2.19383368E-06 * ln_T + 1.46168053E-05 * ln_T_2 + -3.18633978E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[2] * pow((-4.00891580E-09 + 1.49878970E-07 * ln_T + -1.23459035E-06 * ln_T_2 + 3.03914265E-06 * ln_T_3)*T_14, 12.)
+    + mole_fractions[3] * pow((6.74729606E-08 + -1.14565921E-06 * ln_T + 7.88485306E-06 * ln_T_2 + -1.79413191E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[4] * pow((1.41640059E-07 + -2.21121155E-06 * ln_T + 1.42544884E-05 * ln_T_2 + -2.96780713E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[5] * pow((1.46033613E-07 + -2.27980145E-06 * ln_T + 1.46966505E-05 * ln_T_2 + -3.05986599E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[6] * pow((1.35872151E-07 + -2.22811892E-06 * ln_T + 1.48452368E-05 * ln_T_2 + -3.23613591E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[7] * pow((1.37931200E-07 + -2.26188453E-06 * ln_T + 1.50702062E-05 * ln_T_2 + -3.28517733E-05 * ln_T_3)*T_14, 12.)
+    + mole_fractions[8] * pow((1.12591716E-07 + -1.81926405E-06 * ln_T + 1.19929798E-05 * ln_T_2 + -2.57678846E-05 * ln_T_3)*T_14, 12.)
+    , 1./6.);
+}
+dfloat fg_thermal_conductivity(dfloat T, const dfloat mole_fractions[]) {
+    dfloat T_12 = sqrt(T);
+    dfloat ln_T = log(T);
+    dfloat ln_T_2 = ln_T*ln_T; 
+    dfloat ln_T_3 = ln_T_2*ln_T; 
+    return pow(0.
+    + mole_fractions[0] * pow((1.72659622E-04 + -2.24461746E-03 * ln_T + 9.87640957E-03 * ln_T_2 + -4.39869825E-03 * ln_T_3)*T_12, 4.)
+    + mole_fractions[1] * pow((2.06263285E-05 + -3.92558038E-04 * ln_T + 3.15126308E-03 * ln_T_2 + -7.51806299E-03 * ln_T_3)*T_12, 4.)
+    + mole_fractions[2] * pow((-1.33297463E-04 + 3.47918009E-03 * ln_T + -2.70813974E-02 * ln_T_2 + 6.63710275E-02 * ln_T_3)*T_12, 4.)
+    + mole_fractions[3] * pow((2.70732991E-04 + -5.96292949E-03 * ln_T + 4.74329801E-02 * ln_T_2 + -1.09806368E-01 * ln_T_3)*T_12, 4.)
+    + mole_fractions[4] * pow((2.16721053E-05 + -4.03546198E-04 * ln_T + 2.94852134E-03 * ln_T_2 + -4.78408051E-03 * ln_T_3)*T_12, 4.)
+    + mole_fractions[5] * pow((-5.92728440E-05 + 1.60790704E-03 * ln_T + -1.24204961E-02 * ln_T_2 + 3.30129237E-02 * ln_T_3)*T_12, 4.)
+    + mole_fractions[6] * pow((1.66771525E-06 + 9.94426046E-05 * ln_T + -3.65902661E-04 * ln_T_2 + 2.36053379E-04 * ln_T_3)*T_12, 4.)
+    + mole_fractions[7] * pow((-9.59488373E-05 + 2.05216263E-03 * ln_T + -1.28581296E-02 * ln_T_2 + 2.65389544E-02 * ln_T_3)*T_12, 4.)
+    + mole_fractions[8] * pow((-7.13350511E-05 + 1.52694323E-03 * ln_T + -1.01926196E-02 * ln_T_2 + 2.32321507E-02 * ln_T_3)*T_12, 4.)
+    , 1./4.);
+}
+void fg_mixture_diffusion_coefficients(const dfloat mole_fractions[n_species], const dfloat mass_fractions[n_species], dfloat T, dfloat* Ddiag) {
+    dfloat T_12 = sqrt(T);
+    dfloat ln_T = log(T);
+    dfloat ln_T_2 = ln_T*ln_T; 
+    dfloat ln_T_3 = ln_T_2*ln_T; 
+    dfloat T_32 = T*T_12;
+    Ddiag[0] = (1. - mass_fractions[0]) * mole_fractions[0] / ( 0.
+    + mole_fractions[1] / ((8.62418622E-06 + -1.68915443E-04 * ln_T + 1.40824085E-03 * ln_T_2 + -2.56132655E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((2.17983369E-05 + -4.81332814E-04 * ln_T + 3.95481711E-03 * ln_T_2 + -9.22873381E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.80532870E-05 + -5.65916495E-04 * ln_T + 4.64888361E-03 * ln_T_2 + -9.09176434E-03 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((9.37178644E-06 + -1.76843510E-04 * ln_T + 1.50978537E-03 * ln_T_2 + -2.48211304E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((9.34065782E-06 + -1.76256120E-04 * ln_T + 1.50477058E-03 * ln_T_2 + -2.47386864E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((8.61637822E-06 + -1.68762514E-04 * ln_T + 1.40696588E-03 * ln_T_2 + -2.55900763E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((8.60902651E-06 + -1.68618521E-04 * ln_T + 1.40576542E-03 * ln_T_2 + -2.55682422E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((7.75349377E-06 + -1.50122099E-04 * ln_T + 1.26050651E-03 * ln_T_2 + -2.22447501E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[1] = (1. - mass_fractions[1]) * mole_fractions[1] / ( 0.
+    + mole_fractions[0] / ((8.62418622E-06 + -1.68915443E-04 * ln_T + 1.40824085E-03 * ln_T_2 + -2.56132655E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((5.25389680E-06 + -1.28235545E-04 * ln_T + 1.17612487E-03 * ln_T_2 + -3.05390468E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.81943576E-05 + -6.10831873E-04 * ln_T + 4.97587795E-03 * ln_T_2 + -1.12592633E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((5.56979620E-06 + -1.16307445E-04 * ln_T + 9.44652682E-04 * ln_T_2 + -1.99463722E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((5.45865288E-06 + -1.13986571E-04 * ln_T + 9.25802471E-04 * ln_T_2 + -1.95483493E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((4.03880015E-06 + -8.59650818E-05 * ln_T + 6.97879872E-04 * ln_T_2 + -1.52976288E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((4.00923511E-06 + -8.53357957E-05 * ln_T + 6.92771216E-04 * ln_T_2 + -1.51856463E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((3.89040364E-06 + -8.23029468E-05 * ln_T + 6.68013786E-04 * ln_T_2 + -1.44740787E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[2] = (1. - mass_fractions[2]) * mole_fractions[2] / ( 0.
+    + mole_fractions[0] / ((2.17983369E-05 + -4.81332814E-04 * ln_T + 3.95481711E-03 * ln_T_2 + -9.22873381E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((5.25389680E-06 + -1.28235545E-04 * ln_T + 1.17612487E-03 * ln_T_2 + -3.05390468E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.01460159E-05 + -5.41017848E-04 * ln_T + 5.55554866E-03 * ln_T_2 + -1.53159246E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((9.59148263E-06 + -2.24308215E-04 * ln_T + 1.95098418E-03 * ln_T_2 + -4.87968419E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((9.43974601E-06 + -2.20759674E-04 * ln_T + 1.92011974E-03 * ln_T_2 + -4.80248791E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((5.22492715E-06 + -1.27528425E-04 * ln_T + 1.16963903E-03 * ln_T_2 + -3.03706299E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((5.19752054E-06 + -1.26859493E-04 * ln_T + 1.16350386E-03 * ln_T_2 + -3.02113251E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((5.54983595E-06 + -1.33176211E-04 * ln_T + 1.19565030E-03 * ln_T_2 + -3.06215755E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[3] = (1. - mass_fractions[3]) * mole_fractions[3] / ( 0.
+    + mole_fractions[0] / ((2.80532870E-05 + -5.65916495E-04 * ln_T + 4.64888361E-03 * ln_T_2 + -9.09176434E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((2.81943576E-05 + -6.10831873E-04 * ln_T + 4.97587795E-03 * ln_T_2 + -1.12592633E-02 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((2.01460159E-05 + -5.41017848E-04 * ln_T + 5.55554866E-03 * ln_T_2 + -1.53159246E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((3.47673493E-05 + -7.40275463E-04 * ln_T + 6.00991816E-03 * ln_T_2 + -1.31823966E-02 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((3.47062348E-05 + -7.38974197E-04 * ln_T + 5.99935385E-03 * ln_T_2 + -1.31592244E-02 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((2.81812077E-05 + -6.10546980E-04 * ln_T + 4.97355719E-03 * ln_T_2 + -1.12540119E-02 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((2.81688315E-05 + -6.10278850E-04 * ln_T + 4.97137299E-03 * ln_T_2 + -1.12490696E-02 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((2.59510402E-05 + -5.59123123E-04 * ln_T + 4.54951116E-03 * ln_T_2 + -1.01939025E-02 * ln_T_3)*T_32)
+    );
+    Ddiag[4] = (1. - mass_fractions[4]) * mole_fractions[4] / ( 0.
+    + mole_fractions[0] / ((9.37178644E-06 + -1.76843510E-04 * ln_T + 1.50978537E-03 * ln_T_2 + -2.48211304E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((5.56979620E-06 + -1.16307445E-04 * ln_T + 9.44652682E-04 * ln_T_2 + -1.99463722E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((9.59148263E-06 + -2.24308215E-04 * ln_T + 1.95098418E-03 * ln_T_2 + -4.87968419E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((3.47673493E-05 + -7.40275463E-04 * ln_T + 6.00991816E-03 * ln_T_2 + -1.31823966E-02 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((7.07160706E-06 + -1.44488755E-04 * ln_T + 1.18043538E-03 * ln_T_2 + -2.37790885E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((5.54137502E-06 + -1.15713959E-04 * ln_T + 9.39832372E-04 * ln_T_2 + -1.98445912E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((5.51450455E-06 + -1.15152855E-04 * ln_T + 9.35275068E-04 * ln_T_2 + -1.97483635E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((5.18959361E-06 + -1.07632457E-04 * ln_T + 8.75498870E-04 * ln_T_2 + -1.82232347E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[5] = (1. - mass_fractions[5]) * mole_fractions[5] / ( 0.
+    + mole_fractions[0] / ((9.34065782E-06 + -1.76256120E-04 * ln_T + 1.50477058E-03 * ln_T_2 + -2.47386864E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((5.45865288E-06 + -1.13986571E-04 * ln_T + 9.25802471E-04 * ln_T_2 + -1.95483493E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((9.43974601E-06 + -2.20759674E-04 * ln_T + 1.92011974E-03 * ln_T_2 + -4.80248791E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((3.47062348E-05 + -7.38974197E-04 * ln_T + 5.99935385E-03 * ln_T_2 + -1.31592244E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((7.07160706E-06 + -1.44488755E-04 * ln_T + 1.18043538E-03 * ln_T_2 + -2.37790885E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((5.42964996E-06 + -1.13380937E-04 * ln_T + 9.20883496E-04 * ln_T_2 + -1.94444850E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((5.40222381E-06 + -1.12808229E-04 * ln_T + 9.16231946E-04 * ln_T_2 + -1.93462674E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((5.09077120E-06 + -1.05582874E-04 * ln_T + 8.58827255E-04 * ln_T_2 + -1.78762202E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[6] = (1. - mass_fractions[6]) * mole_fractions[6] / ( 0.
+    + mole_fractions[0] / ((8.61637822E-06 + -1.68762514E-04 * ln_T + 1.40696588E-03 * ln_T_2 + -2.55900763E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((4.03880015E-06 + -8.59650818E-05 * ln_T + 6.97879872E-04 * ln_T_2 + -1.52976288E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((5.22492715E-06 + -1.27528425E-04 * ln_T + 1.16963903E-03 * ln_T_2 + -3.03706299E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.81812077E-05 + -6.10546980E-04 * ln_T + 4.97355719E-03 * ln_T_2 + -1.12540119E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((5.54137502E-06 + -1.15713959E-04 * ln_T + 9.39832372E-04 * ln_T_2 + -1.98445912E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((5.42964996E-06 + -1.13380937E-04 * ln_T + 9.20883496E-04 * ln_T_2 + -1.94444850E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((3.97756651E-06 + -8.46617357E-05 * ln_T + 6.87299076E-04 * ln_T_2 + -1.50656962E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((3.86257503E-06 + -8.17142220E-05 * ln_T + 6.63235388E-04 * ln_T_2 + -1.43705435E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[7] = (1. - mass_fractions[7]) * mole_fractions[7] / ( 0.
+    + mole_fractions[0] / ((8.60902651E-06 + -1.68618521E-04 * ln_T + 1.40576542E-03 * ln_T_2 + -2.55682422E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((4.00923511E-06 + -8.53357957E-05 * ln_T + 6.92771216E-04 * ln_T_2 + -1.51856463E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((5.19752054E-06 + -1.26859493E-04 * ln_T + 1.16350386E-03 * ln_T_2 + -3.02113251E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.81688315E-05 + -6.10278850E-04 * ln_T + 4.97137299E-03 * ln_T_2 + -1.12490696E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((5.51450455E-06 + -1.15152855E-04 * ln_T + 9.35275068E-04 * ln_T_2 + -1.97483635E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((5.40222381E-06 + -1.12808229E-04 * ln_T + 9.16231946E-04 * ln_T_2 + -1.93462674E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((3.97756651E-06 + -8.46617357E-05 * ln_T + 6.87299076E-04 * ln_T_2 + -1.50656962E-03 * ln_T_3)*T_32)
+    + mole_fractions[8] / ((3.83621145E-06 + -8.11564905E-05 * ln_T + 6.58708547E-04 * ln_T_2 + -1.42724590E-03 * ln_T_3)*T_32)
+    );
+    Ddiag[8] = (1. - mass_fractions[8]) * mole_fractions[8] / ( 0.
+    + mole_fractions[0] / ((7.75349377E-06 + -1.50122099E-04 * ln_T + 1.26050651E-03 * ln_T_2 + -2.22447501E-03 * ln_T_3)*T_32)
+    + mole_fractions[1] / ((3.89040364E-06 + -8.23029468E-05 * ln_T + 6.68013786E-04 * ln_T_2 + -1.44740787E-03 * ln_T_3)*T_32)
+    + mole_fractions[2] / ((5.54983595E-06 + -1.33176211E-04 * ln_T + 1.19565030E-03 * ln_T_2 + -3.06215755E-03 * ln_T_3)*T_32)
+    + mole_fractions[3] / ((2.59510402E-05 + -5.59123123E-04 * ln_T + 4.54951116E-03 * ln_T_2 + -1.01939025E-02 * ln_T_3)*T_32)
+    + mole_fractions[4] / ((5.18959361E-06 + -1.07632457E-04 * ln_T + 8.75498870E-04 * ln_T_2 + -1.82232347E-03 * ln_T_3)*T_32)
+    + mole_fractions[5] / ((5.09077120E-06 + -1.05582874E-04 * ln_T + 8.58827255E-04 * ln_T_2 + -1.78762202E-03 * ln_T_3)*T_32)
+    + mole_fractions[6] / ((3.86257503E-06 + -8.17142220E-05 * ln_T + 6.63235388E-04 * ln_T_2 + -1.43705435E-03 * ln_T_3)*T_32)
+    + mole_fractions[7] / ((3.83621145E-06 + -8.11564905E-05 * ln_T + 6.58708547E-04 * ln_T_2 + -1.42724590E-03 * ln_T_3)*T_32)
+    );
+}
 void fg_rates(const dfloat log_T, const dfloat T, const dfloat T2, const dfloat T4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat P0_RT, const dfloat rcp_P0_RT,const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* molar_rates) {
     dfloat c, Pr, logFcent, logPr_c, f1;
     c = exp2(-12050.7 * rcp_T + -0.406 * log_T + 31.724);

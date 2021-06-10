@@ -212,15 +212,17 @@ class CPickler(CMill):
         return permanent_dipole_moment[a]*permanent_dipole_moment[b] / (8. * pi * epsilon_0 * sqrt(well_depth_J[a]*well_depth_J[b]) * cb((diameter[a] + diameter[b])/2.))
 
     def collision_integral(self, table, a, b, T):
-        print(header_T_star, a, b, T, self.T_star(a, b, T))
+        #print(header_T_star, a, b, T, self.T_star(a, b, T), file=sys.stderr)
         ln_T_star = ln(self.T_star(a, b, T))
-        delta_star = self.reduced_dipole_moment(a, b)
         header_ln_T_star = map(ln, header_T_star)
-        interpolation_start_index = min((1+next(i for i,header_ln_T_star in enumerate(header_ln_T_star[slice(1, -1)]) if ln_T_star < header_ln_T_star))-1, len(header_ln_T_star)-3);
-        header_ln_T_star_slice = header_ln_T_star[slice(interpolation_start_index, -1)][slice(3)]
-        polynomials = table[slice(interpolation_start_index, -1)][slice(3)]
+        interpolation_start_index = min((1+next(i for i,header_ln_T_star in enumerate(header_ln_T_star[1:]) if ln_T_star < header_ln_T_star))-1, len(header_ln_T_star)-3);
+        header_ln_T_star_slice = header_ln_T_star[interpolation_start_index:][:3]
+        assert(len(header_ln_T_star_slice) == 3)
+        polynomials = table[interpolation_start_index:][:3]
+        assert(len(polynomials) == 3)
         evaluate_polynomial = lambda P, x: dot(P, map(lambda k: pow(x, k), range(len(P))))
         quadratic_interpolation = lambda x, y, x0: ((x[1]-x[0])*(y[2]-y[1])-(y[1]-y[0])*(x[2]-x[1]))/((x[1]-x[0])*(x[2]-x[0])*(x[2]-x[1]))*(x0 - x[0])*(x0 - x[1]) + ((y[1]-y[0])/(x[1]-x[0]))*(x0-x[1]) + y[1]
+        delta_star = self.reduced_dipole_moment(a, b)
         return quadratic_interpolation(header_ln_T_star_slice, map(lambda P: evaluate_polynomial(P, delta_star), polynomials), ln_T_star)
     #}
 
@@ -234,6 +236,7 @@ class CPickler(CMill):
         N = 50
         (temperature_min, temperature_max) = (300., 3000.)
         T = map(lambda n: temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min), range(N))
+        #sys.exit("%s"%map(lambda T: self.T_star(0,0, T), T))
         class TransportPolynomials:
             pass
         transport_polynomials = TransportPolynomials()
@@ -319,25 +322,25 @@ class CPickler(CMill):
         species = mechanism.species()
         self.species = species
         import pyre.handbook
-        molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight/1e3, s.composition)), species)
-        f = open("species", "w")
-        to_string = lambda x: '%s'%x
-        f.write("molar_mass: "+ to_string(molar_mass) +"\n")
+        self.molar_mass = map(lambda s: sum(map(lambda (element, count): count * pyre.handbook.periodicTable().symbol(element.capitalize()).atomicWeight/1e3, s.composition)), species)
+        #f = open("species", "w")
+        #to_string = lambda x: '%s'%x
+        #f.write("molar_mass: "+ to_string(self.molar_mass) +"\n")
         self.internal_degrees_of_freedom = map(lambda s: [0., 1., 3./2.][s.trans[0].parameters[0]], species) #transport.geometry { Atom => 0., Linear{..} => 1., Nonlinear{..} => 3./2. }
-        f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
+        #f.write("internal_degrees_of_freedom: "+ to_string(self.internal_degrees_of_freedom) +"\n")
         self.heat_capacity_ratio = map(lambda s: 1. + 2./[3., 5., 6.][s.trans[0].parameters[0]], species) #1. + 2. / match s.transport.geometry { Atom => 3., Linear{..} => 5., Nonlinear{..} => 6. };
-        f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
+        #f.write("heat_capacity_ratio: "+ to_string(self.heat_capacity_ratio) +"\n")
         self.well_depth_J = map(lambda s: float(s.trans[0].eps)*K, species) #well_depth_K * K
-        f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
+        #f.write("well_depth_J: "+ to_string(self.well_depth_J) +"\n")
         self.diameter = map(lambda s: float(s.trans[0].sig)*1e-10, species) #diameter_Å*1e-10
-        f.write("diameter: "+ to_string(self.diameter) +"\n")
+        #f.write("diameter: "+ to_string(self.diameter) +"\n")
         Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
         self.permanent_dipole_moment = map(lambda s: float(s.trans[0].dip)*Cm_per_Debye, species)
-        f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
+        #f.write("permanent_dipole_moment: "+ to_string(self.permanent_dipole_moment) +"\n")
         self.polarizability = map(lambda s: float(s.trans[0].pol)*1e-30, species) # polarizability_Å3*1e-30
-        f.write("polarizability: "+ to_string(self.polarizability) +"\n")
+        #f.write("polarizability: "+ to_string(self.polarizability) +"\n")
         self.rotational_relaxation = map(lambda s: float(s.trans[0].zrot), species)
-        f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
+        #f.write("rotational_relaxation: "+ to_string(self.rotational_relaxation) +"\n")
         def from_fuego(s):
             self = NASA7()
             [high, low] = s.thermo # /!\ Reverse order
@@ -346,9 +349,7 @@ class CPickler(CMill):
             self.pieces = [low.parameters, high.parameters]
             return self
         self.thermodynamics = map(from_fuego, species)
-        f.write("thermodynamics: "+ to_string(map(lambda s: (s.temperature_split, s.pieces), self.thermodynamics)) +"\n")
-        #f.write(to_string(self))
-        f.close()
+        #f.write("thermodynamics: "+ to_string(map(lambda s: (s.temperature_split, s.pieces), self.thermodynamics)) +"\n")
         species_names = map(lambda s: s.symbol, species)
         self.species_names = species_names
 
@@ -409,10 +410,14 @@ class CPickler(CMill):
             return reaction
 
         self.reactions = map(lambda reaction: from_fuego(species_names, reaction), mechanism.reaction())
+
+        transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
+        #f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
+
         # Species
         self._write('#define n_species %d' % (len(species)))
-        self._write('const dfloat fg_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, molar_mass))))
-        self._write('const dfloat fg_rcp_molar_mass[%s] = {%s};'%(len(molar_mass), ', '.join(map(to_string, map(lambda w: 1./w, molar_mass)))))
+        self._write('const dfloat fg_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, self.molar_mass))))
+        self._write('const dfloat fg_rcp_molar_mass[%s] = {%s};'%(len(self.molar_mass), ', '.join(map(lambda x: '%s'%x, map(lambda w: 1./w, self.molar_mass)))))
 
         def molar_heat_capacity_at_constant_pressure_R_expression(a):
             return '%+15.8e %+15.8e * T %+15.8e * T_2 %+15.8e * T_3 %+15.8e * T_4' % (a[0], a[1], a[2], a[3], a[4])
@@ -425,12 +430,9 @@ class CPickler(CMill):
                               (a[5]/ln(2),             (a[0] - a[6])/ln(2), -a[0], -a[1]/2/ln(2), (1./3.-1./2.)*a[2]/ln(2), (1./4.-1./3.)*a[3]/ln(2), (1./5.-1./4.)*a[4]/ln(2))
         self.thermodynamic_function("fg_exp_Gibbs_RT", exp_Gibbs_RT_expression)
 
-        self.molar_mass = molar_mass
-        transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
-        f.write(to_string(transport_polynomials.binary_thermal_diffusion_coefficients_T32))
-        #self.viscosity_function(transport_polynomials.sqrt_viscosity_T14)
-        #self.thermal_conductivity_function(transport_polynomials.thermal_conductivity_T12)
-        #self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
+        self.viscosity_function(transport_polynomials.sqrt_viscosity_T14)
+        self.thermal_conductivity_function(transport_polynomials.thermal_conductivity_T12)
+        self.mixture_diffusion_coefficients_function(transport_polynomials.binary_thermal_diffusion_coefficients_T32)
 
         # Reactions
         self._write(rates(self.reactions))
@@ -448,7 +450,7 @@ class CPickler(CMill):
         c1 = 2./pi * (5./2. - f_internal)/(rotational_relaxation[a] * fz(298.*K / well_depth_J[a]) / fz(T_star) + 2./pi * (5./3. * internal_degrees_of_freedom[a] + f_internal))
         f_translation = 5./2. * (1. - c1 * internal_degrees_of_freedom[a]/(3./2.))
         f_rotation = f_internal * (1. + c1)
-        Cv_internal = molar_heat_capacity_at_constant_pressure_R(thermodynamics[a], T) - 5./2. - internal_degrees_of_freedom[a]
+        Cv_internal = thermodynamics[a].molar_heat_capacity_at_constant_pressure_R(T) - 5./2. - internal_degrees_of_freedom[a]
         return (self.viscosity(a, T)/(molar_mass[a]/NA))*K*(f_translation * 3./2. + f_rotation * internal_degrees_of_freedom[a] + f_internal * Cv_internal)
 
     def reduced_mass(self, a, b):
