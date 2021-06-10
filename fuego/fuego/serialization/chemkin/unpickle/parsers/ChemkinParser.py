@@ -1,32 +1,17 @@
 #!/usr/bin/env python
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2003  All Rights Reserved
-#
-# <LicenseText>
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
 
 from BaseParser import BaseParser
 
-
 class ChemkinParser(BaseParser):
-
-
-    # the main parsing loop
-
     def parse(self, mechanism, file):
         # Reset the token counts
         import pyre
         import fuego
         import journal
         from fuego.serialization.chemkin.unpickle.tokens.Token import Token
-
-        #print "Hello Chemkin Parser !!"
 
         Token._constructed = 0
         Token._destructed = 0
@@ -88,15 +73,6 @@ class ChemkinParser(BaseParser):
         self._reactionParser.onEndOfFile()
         return
 
-
-    # others
-
-    def printStatistics(self):
-        print "Chemkin input file: '%s'" % self._filename
-        print "    Tokens: %d-%d" % (Token._constructed, Token._destructed)
-        return
-
-
     def __init__(self):
 
         BaseParser.__init__(self)
@@ -110,32 +86,3 @@ class ChemkinParser(BaseParser):
         self._thermoParser = None
         self._transParser = None
         self._reactionParser = None
-
-        return
-
-
-    def _printScanners(self):
-        elements = self._elementParser._scanner._pattern()
-        print "Element parser (%d): %s" % (len(elements), elements)
-
-        species = self._speciesParser._scanner._pattern()
-        print "Species parser (%d): %s" % (len(species), species)
-
-        thermo = self._thermoParser._scanner._pattern()
-        print "Thermo parser (%d): %s" % (len(thermo), thermo)
-
-        #if doTrans/='n':
-        trans = self._transParser._scanner._pattern()
-        print "Trans parser (%d): %s" % (len(trans), trans)
-
-        reaction = self._reactionParser._scanner._pattern()
-        print "Reaction parser (%d): %s" % (len(reaction), reaction)
-
-        return
-
-
-# version
-__id__ = "$Id$"
-
-#
-# End of file

@@ -34,15 +34,6 @@ class Mechanism(object):
         self._transdb = filename
         return
 
-
-    def printStatistics(self):
-        print "Mechanism '%s'" % self._name
-        print "    elements:", self._elements.size()
-        print "     species:", self._species.size()
-        print " qss species:", self._qss_species.size()
-        print "   reactions:", self._reactions.size()
-
-
     # elements
 
     def newElement(self, symbol, weight=None, locator=None):
@@ -55,10 +46,8 @@ class Mechanism(object):
 
         return element
 
-
     def element(self, symbol=None):
         return self._elements.find(symbol)
-
 
     # species
 
@@ -118,8 +107,7 @@ class Mechanism(object):
                 if not resolution:
                     unresolvedSpecies.append(species)
                 else:
-                    self._info.log(
-                        "resolving species '%s' against '%s'" % (species.symbol, self._thermdb))
+                    print("resolving species '%s' against '%s'" % (species.symbol, self._thermdb))
                     self._species.replace(species.symbol, species, resolution)
 
         if unresolvedSpecies:
@@ -144,9 +132,8 @@ class Mechanism(object):
 
     def reaction(self, species=None, id=None):
         if not self._sorted:
-            pass#print '*** WARNING: reactions have not been sorted'
+            pass
         return self._reactions.find(species, id)
-
 
     def _sort_reactions(self):
         n = [0]
@@ -218,27 +205,16 @@ class Mechanism(object):
     #   and improve memory locality
     #==========================================
     def _reorder_reaction_set_tsp(self,rset):
-
         import numpy as npy
-
         nReactions = len(rset)
         nSpecies = len(self.species())
-
         reactionmat=npy.zeros((nReactions,nSpecies))
-
         for i,reaction in zip(range(nReactions),rset):
-
             agents = list(set(reaction.reactants+reaction.products))
-
             for a in agents:
                 symbol, coefficient = a
                 reactionmat[i][self.species(symbol).id]=coefficient
-
         new_to_old_map=self._tsp_solve(reactionmat,0.001)
-        #new_to_old_map=self._cluster_solve(reactionmat)
-
-        print(new_to_old_map)
-
         return(new_to_old_map)
 
     def _sort_reactions_within_type_tsp(self,n):
@@ -484,20 +460,12 @@ class Mechanism(object):
         self._thermdb = "therm.dat"
         self._transdb = "tran.dat"
         self._externalDb = None
-
         self._elements    = ElementSet()
         self._species     = SpeciesSet()
         self._qss_species = QssSpeciesSet()
         self._reactions   = ReactionSet()
-
         self._thermoRange = ()
-
-        self._info = journal.debug("fuego.serialization")
-
         self._sorted = False
-
-        return
-
 
     # swallow an external thermo database
     def _readExternalThermoDb(self):
@@ -505,40 +473,3 @@ class Mechanism(object):
         filename = self._thermdb
         db = fuego.serialization.loadThermoDatabase(filename, format="chemkin")
         return db
-
-
-    def dump(self):
-        print
-        print "Statistics:"
-        print "-----------"
-        self.printStatistics()
-
-        print
-        print "Elements:"
-        print "---------"
-        for element in self.element():
-            print "%6s: %s" % (element.symbol, element)
-
-        print
-        print "Species:"
-        print "---------"
-        for species in self.species():
-            print "%10s: %s" % (species.symbol, species)
-
-        print
-        print "Reactions:"
-        print "----------"
-        i = 1
-        for reaction in self.reaction():
-            print "%4d: %s" % (i, reaction)
-            i += 1
-
-        return
-
-
-
-
-# version
-__id__ = "$Id$"
-
-# End of file

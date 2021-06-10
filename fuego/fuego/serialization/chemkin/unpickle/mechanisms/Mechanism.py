@@ -1,38 +1,12 @@
 #!/usr/bin/env python
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
 #                               Michael A.G. Aivazis
 #                        California Institute of Technology
 #                        (C) 1998-2003  All Rights Reserved
-#
-# <LicenseText>
-#
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-
 
 class Mechanism(object):
-
-
     from MechanismExceptions import DuplicateElement, DuplicateSpecies, DuplicateQssSpecies, DuplicateThermalProperties, DuplicateTransProperties
-
-
-    # housekeeping
-    
     def source(self):
         return self._source
-
-
-    def printStatistics(self):
-        print "Mechanism '%s'" % self._source
-        print "    elements:", self._elements.size()
-        print "     species:", self._species.size()
-        print " qss species:", self._qss_species.size()
-        print "      thermo:", self._thermoDb.size()
-        print "      trans:", self._transDb.size()
-        print "   reactions:", self._reactions.size()
-
 
     # elements
 
@@ -44,17 +18,14 @@ class Mechanism(object):
 
         if duplicate and element.locator:
             raise self.DuplicateElement(symbol)
-        
-        return
 
+        return
 
     def element(self, symbol=None):
         return self._elements.find(symbol)
 
-
     def elementDeclarations(self):
         return self._elements
-
 
     # species
 
@@ -67,16 +38,11 @@ class Mechanism(object):
         if duplicate:
             raise self.DuplicateSpecies(symbol)
 
-        return
-
-
     def species(self, symbol=None):
         return self._species.find(symbol)
 
-
     def speciesDeclarations(self):
         return self._species
-
 
     # qss species
 
@@ -89,16 +55,11 @@ class Mechanism(object):
         if duplicate:
             raise self.DuplicateQssSpecies(symbol)
 
-        return
-
-
     def qss_species(self, symbol=None):
         return self._qss_species.find(symbol)
 
-
     def qss_speciesDeclarations(self):
         return self._qss_species
-
 
     # thermo
 
@@ -111,73 +72,46 @@ class Mechanism(object):
         if duplicate:
             raise self.DuplicateThermo(symbol)
 
-        return
-
-
     def thermalProperties(self, species=None):
         prop = self._thermoDb.find(species)
         if not prop:
             return self._externalDb.find(species)
 
-
     def thermalDatabase(self):
         return self._thermoDb
 
-
     def thermoAll(self):
         return self._thermoDb.all(1)
-
 
     def thermoDone(self):
         if self._thermoDb.all():
             return
 
         self._externalDb = self._readExternalThermoDatabase()
-        return
-
 
     def thermoRange(self, range=None):
         return self._thermoDb.range(range)
 
-
     # trans
-
 
     def declareTransProperties(self, species):
         symbol = species.symbol
         duplicate = self._transDb.find(symbol)
-
         self._transDb.species(species)
-
         if duplicate:
             raise self.DuplicateTrans(symbol)
 
-        return
-
-
     def transProperties(self, species=None):
         prop = self._transDb.find(species)
-        #if not prop:
-        #    return self._externalDb.find(species)
-
 
     def transDatabase(self):
         return self._transDb
 
-
     def transAll(self):
         return self._transDb.all(1)
 
-
     def transDone(self):
-        if self._transDb.all():
-            return
-        else:
-            print "Someting went wrong with your transport"
-
-        #self._externalDb = self._readExternalThermoDatabase()
-        #return
-
+        assert(self._transDb.all())
 
     # reactions
 
@@ -190,9 +124,8 @@ class Mechanism(object):
 
     def reactionDeclarations(self):
         return self._reactions
-        
-        
-    # other methods  
+
+    # other methods
 
     def __init__(self, source):
         self._source = source
@@ -207,7 +140,7 @@ class Mechanism(object):
 
         from QssSpeciesDb import QssSpeciesDb
         self._qss_species = QssSpeciesDb()
-        
+
         from ThermoDb import ThermoDb
         self._thermoDb = ThermoDb()
 
@@ -219,16 +152,16 @@ class Mechanism(object):
 
         from ElementDeclaration import ElementDeclaration
         self.elementFactory = ElementDeclaration
-        
+
         from SpeciesDeclaration import SpeciesDeclaration
         self.speciesFactory = SpeciesDeclaration
 
         from ThermoDeclaration import ThermoDeclaration
         self.thermoFactory = ThermoDeclaration
-        
+
         from ReactionDeclaration import ReactionDeclaration
         self.reactionFactory = ReactionDeclaration
-        
+
         return
 
 
@@ -253,7 +186,7 @@ class Mechanism(object):
         mechanism = pyre.chemistry.unpickle.unpickleChemkin(externalDb, mechanism)
         if diagnosticState:
             pyre.diagnostics.category("chemkin-parser").activate()
-            
+
         pyre.diagnostics.report(
             "chemkin-parser",
             "done loading external thermo database '%s'" % externalDb.name)

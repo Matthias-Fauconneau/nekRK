@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0 && nRep>0)
-      printf("avg throughput: %.3f GDOF/s\n",
+      printf("average throughput: %.3f GDOF/s\n",
         (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
 
     // get results from device
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     double reference_density = concentration * molar_mass;
     const double reference_time = reference_length / reference_velocity;
 
-    // print results
+    // Prints results
     for (int k=0; k<n_species; k++) {
         double mass_production_rate = rates[k*n_states+0];
         // mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
