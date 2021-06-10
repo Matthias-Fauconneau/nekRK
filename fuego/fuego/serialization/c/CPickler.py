@@ -25,7 +25,6 @@ def product_of_exponentiations(c, v):
     elif num=='': return '1./(%s)'%(div)
     else: return '%s/(%s)'%(num, div)
 #}
-import journal
 from weaver.mills.CMill import CMill
 from pyre.units.pressure import atm
 from pyre.units.SI import meter, second, mole, kelvin
@@ -213,7 +212,6 @@ class CPickler(CMill):
         return permanent_dipole_moment[a]*permanent_dipole_moment[b] / (8. * pi * epsilon_0 * sqrt(well_depth_J[a]*well_depth_J[b]) * cb((diameter[a] + diameter[b])/2.))
 
     def collision_integral(self, table, a, b, T):
-        #print(header_T_star, a, b, T, self.T_star(a, b, T), file=sys.stderr)
         ln_T_star = ln(self.T_star(a, b, T))
         header_ln_T_star = map(ln, header_T_star)
         interpolation_start_index = min((1+next(i for i,header_ln_T_star in enumerate(header_ln_T_star[1:]) if ln_T_star < header_ln_T_star))-1, len(header_ln_T_star)-3);
@@ -234,7 +232,7 @@ class CPickler(CMill):
             return self.omega_star_22(a, b, T)/self.collision_integral(A_star, a, b, T)
 
     def transport_polynomials(self):
-        N = 3#50
+        N = 50
         (temperature_min, temperature_max) = (300., 3000.)
         T = map(lambda n: temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min), range(N))
         #sys.exit("%s"%map(lambda T: self.T_star(0,0, T), T))
@@ -242,6 +240,7 @@ class CPickler(CMill):
             pass
         transport_polynomials = TransportPolynomials()
         transport_polynomials.sqrt_viscosity_T14 = map(lambda a: polynomial_regression(map(ln, T), map(lambda T: self.viscosity(a, T) / sqrt(sqrt(T)), T), 3), range(len(self.species)))
+        sys.exit("\n".join(map(lambda p: "%s"%p, transport_polynomials.sqrt_viscosity_T14)))
         transport_polynomials.thermal_conductivity_T12 = map(lambda a: polynomial_regression(map(ln, T), map(lambda T: self.thermal_conductivity(a, T) / sqrt(T), T), 3), range(len(self.species)))
         print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)")
         import time

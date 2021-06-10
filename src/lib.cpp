@@ -72,11 +72,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
             if (transport) {
                 kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
-                printf("transport\n");
                 transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
             }
             kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
-            //printf("production_rates\n");
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
             number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
             mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties); // FIXME: Should always be host CPU
@@ -88,9 +86,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     set_molar_mass();
 
     if(rank==0 && verbose) {
-      printf("nekRK initialized successfully\n");
-      printf("mechanism file: %s\n", mechFile.c_str());
-      printf("nSpecies: %d\n", n_species);
+      std::cout << "nekRK initialized successfully\n";
+        std::cout << "mechanism file: "<< mechFile <<"\n";
+        std::cout << "nSpecies: "<< n_species <<"\n";
     }
 }
 
