@@ -13,7 +13,7 @@ Dependencies:
 ```sh
 export OCCA_DIR=$HOME/occa
 export NEKRK_PATH=$HOME/.local/nekRK
-fuego/run.sh etc/fuego/mechanisms/grimech30 (only required if mechanisms does not exist in share/mechanism)
+./main.py mechanisms/grimech30.yaml (only required if mechanisms does not exist in share/mechanism)
 cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH
 cd build && make -j && make install
 ```
