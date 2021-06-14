@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/env python3.9
 from cantera import Solution
 gas= Solution('LiDryer.yaml')
 temperature= 1000

@@ -156,7 +156,8 @@ void nekRK::production_rates(const int n_states, double pressure,
        o_energy_rate,
        reference_temperature,
        1./reference_mass_rate,
-       R/reference_energy_rate);
+       R/reference_energy_rate
+    );
 }
 
 int nekRK::number_of_species()
@@ -169,7 +170,7 @@ const double* nekRK::molar_mass()
   return (const double*) m_molar;
 }
 
-void nekRK::transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di)
+void nekRK::transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, double reference_temperature)
 {
     transportCoeffs_kernel(
         nStates,
@@ -178,6 +179,7 @@ void nekRK::transportCoeffs(int nStates, double p, occa::memory T, occa::memory 
         Yi,
         mue,
         lambda,
-        rho_Di
+        rho_Di,
+        reference_temperature
     );
 }

@@ -106,7 +106,8 @@ int main(int argc, char **argv) {
                     o_mass_fractions,
                     o_viscosity,
                     o_thermal_conductivity,
-                    o_rho_Di);
+                    o_rho_Di,
+                    reference_temperature);
 
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
@@ -118,7 +119,8 @@ int main(int argc, char **argv) {
                                                  o_mass_fractions,
                                                  o_viscosity,
                                                  o_thermal_conductivity,
-                                                 o_rho_Di);
+                                                 o_rho_Di,
+                                                    reference_temperature);
     }
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);

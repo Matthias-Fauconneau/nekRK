@@ -13,7 +13,9 @@ from numpy import pi #π = pi
 from numpy import sqrt
 from numpy import log2
 from numpy import log as ln
-from numpy import polyfit as polynomial_regression
+from numpy import polynomial
+polynomial_regression = lambda X, Y, degree: polynomial.polynomial.polyfit(X, Y, degree, w=[1/sq(y) for y in Y])
+from numpy import linspace
 
 K = 1.380649e-23 #* J/kelvin
 light_speed = 299792458.
@@ -183,20 +185,16 @@ class Species:
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(K*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.omega_star_11(a, b, T))
 
     def transport_polynomials(self):
-        N = 50
-        (temperature_min, temperature_max) = (300., 3000.)
-        T = [temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min) for n in range(N)]
-        ln_T = list(map(ln, T))
+        T = linspace(300., 3000., 50)
         class TransportPolynomials:
             pass
         transport_polynomials = TransportPolynomials()
-        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln_T, [self.viscosity(a, T) / sqrt(sqrt(T)) for T in T], 3) for a in range(self.len)]
-        #raise("\n".join(map(lambda p: f'{p}', transport_polynomials.sqrt_viscosity_T14)))
-        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln_T, [self.thermal_conductivity(a, T) / sqrt(T) for T in T], 3) for a in range(self.len)]
+        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T], 3) for a in range(self.len)]
+        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T], 3) for a in range(self.len)]
         #print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
         import time
         start_time = time.time()
-        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln_T, [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T], 3) for b in range(self.len)] for a in range(self.len)]
+        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T], 3) for b in range(self.len)] for a in range(self.len)]
         #print(f'{int(time.time() - start_time)}s', file=stderr)
         return transport_polynomials
 

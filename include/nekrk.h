@@ -40,7 +40,7 @@ namespace nekRK {
         occa::memory energy_rate
     );
 
-    void transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di);
+    void transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, const double reference_temperature);
 
 }
 

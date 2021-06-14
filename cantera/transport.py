@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-from cantera import Solution
+#!/bin/env python3.9
 #PelePhysics/Support/Fuego/Mechanism/Models/LiDryer
-#ck2yaml --input=mechanism.inp --output=/usr/share/cantera/data/LiDryer.yaml #--thermo=therm.dat --transport=tran.dat
+#ck2yaml --input=mechanism.inp --output=mechanisms/LiDryer.yaml #--thermo=therm.dat --transport=tran.dat
+from cantera import Solution
 gas= Solution('LiDryer.yaml', thermo='IdealGas')
 temperature= 1000
 pressure= 101325
