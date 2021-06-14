@@ -4,16 +4,16 @@ nekRK is a software package for [nekRS](https://github.com/Nek5000/nekRS) to com
 
 ## How to compile
 Dependencies:
+- C++
+- Python3
 - CMake-3.11
-- MPI
 - [OCCA](https://github.com/libocca/occa) (/!\ The occa source directory needs to stay available at the same path as it is used by the OCCA installation)
-- Python2
-- Numpy for Python2: This old version might have been renamed to integrate with modern systems e.g numpy-python2
+- MPI
 
 ```sh
 export OCCA_DIR=$HOME/occa
 export NEKRK_PATH=$HOME/.local/nekRK
-./main.py mechanisms/grimech30.yaml (only required if mechanisms does not exist in share/mechanism)
+./main.py mechanisms/grimech30.yaml > share/mechanisms/grimech30.c (only required if mechanisms does not exist in share/mechanism)
 cmake -B build -DOCCA_DIR=$OCCA_DIR -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH
 cd build && make -j && make install
 ```

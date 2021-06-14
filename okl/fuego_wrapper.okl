@@ -85,7 +85,7 @@
         thermal_conductivity[id] = fg_thermal_conductivity(T, mole_fractions);
 
         float Di[n_species];
-        fg_mixture_diffusion_coefficients(mole_fractions, mass_fractions, T, /*-> Di*/ Di);
+        fg_mixture_diffusion_coefficients(T, mole_fractions, mass_fractions, /*-> Di*/ Di);
         const float K = 1.380649e-23; // J / K
         const float NA = 6.02214076e23;
         const float R = K*NA;

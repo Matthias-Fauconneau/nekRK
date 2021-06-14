@@ -1,17 +1,18 @@
 #!/bin/env python
-import sys
+from sys import float_info, argv, stderr
 #from more_itertools import partition
 def partition(pred, iterable):
+    from itertools import tee, filterfalse
     t1, t2 = tee(iterable)
-    return filterfalse(pred, t1), filter(pred, t2)
+    return list(filterfalse(pred, t1)), list(filter(pred, t2))
 
 from numpy import square as sq
-from numpy import dot
 cb = lambda x: x*x*x
+from numpy import dot
 from numpy import pi #π = pi
 from numpy import sqrt
-from numpy import log as ln
 from numpy import log2
+from numpy import log as ln
 from numpy import polyfit as polynomial_regression
 
 K = 1.380649e-23 #* J/kelvin
@@ -21,6 +22,7 @@ epsilon_0 = 1./(light_speed*light_speed*mu_0) # F/m (Farad=s⁴A²/(m²kg)
 NA = 6.02214076e23 #/mole
 R = K*NA
 Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
+J_per_cal = 4.184
 standard_atomic_weights = {'H': 1.008, 'C': 12.011, 'N': 14.0067, 'O': 15.999, 'Ar': 39.95}
 
 class NASA7:
@@ -30,7 +32,7 @@ class NASA7:
         a = self.piece(T)
         return a[0]+a[1]*T+a[2]*T*T+a[3]*T*T*T+a[4]*T*T*T*T
 
-header_T_star = [sys.float_info.epsilon, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 50., 75., 100., 500.]
+header_T_star = [float_info.epsilon, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 50., 75., 100., 500.]
 header_delta_star = [0., 1./4., 1./2., 3./4., 1., 3./2., 2., 5./2.]
 omega_star_22 = [
 [4.1005, 4.266,  4.833,  5.742,  6.729,  8.624,  10.34,  11.89], #FIXME
@@ -183,167 +185,147 @@ class Species:
     def transport_polynomials(self):
         N = 50
         (temperature_min, temperature_max) = (300., 3000.)
-        T = list(map(lambda n: temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min), range(N)))
+        T = [temperature_min + float(n) / float(N-1) * (temperature_max-temperature_min) for n in range(N)]
         ln_T = list(map(ln, T))
         class TransportPolynomials:
             pass
         transport_polynomials = TransportPolynomials()
-        transport_polynomials.sqrt_viscosity_T14 = map(lambda a: polynomial_regression(ln_T, list(map(lambda T: self.viscosity(a, T) / sqrt(sqrt(T)), T)), 3), range(self.len))
-        sys.exit("\n".join(map(lambda p: f'{p}', transport_polynomials.sqrt_viscosity_T14)))
-        transport_polynomials.thermal_conductivity_T12 = map(lambda a: polynomial_regression(ln_T, map(lambda T: self.thermal_conductivity(a, T) / sqrt(T), T), 3), range(self.len))
-        print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)")
+        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln_T, [self.viscosity(a, T) / sqrt(sqrt(T)) for T in T], 3) for a in range(self.len)]
+        #raise("\n".join(map(lambda p: f'{p}', transport_polynomials.sqrt_viscosity_T14)))
+        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln_T, [self.thermal_conductivity(a, T) / sqrt(T) for T in T], 3) for a in range(self.len)]
+        #print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
         import time
         start_time = time.time()
-        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = map(
-            lambda a: map(lambda b: polynomial_regression(map(ln, T), map(lambda T: self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.), T), 3), range(len(self.species))), range(self.len))
-        print("%ds"%(time.time() - start_time))
+        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln_T, [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T], 3) for b in range(self.len)] for a in range(self.len)]
+        #print(f'{int(time.time() - start_time)}s', file=stderr)
         return transport_polynomials
 
 import ruamel.yaml
-model = ruamel.yaml.YAML(typ='safe').load(open('/usr/share/cantera/data/LiDryer.yaml'))
+model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
 species = model['species']
 for inert in ['AR','N2']:
     def position(iterator, predicate):
         for index, item in enumerate(iterator):
-                if predicate(item):
-                    return index
+            if predicate(item):
+                return index
         return None
     inert = position(species, lambda e: e['name']==inert)
     if inert:
         species.append(species.pop(inert)) # Move inert specie to last index
         break
 else:
-    print("Missing inert specie", file=sys.stderr)
+    print("Missing inert specie", file=stderr)
 
-self = Species()
-self.len = len(species)
-p = lambda f: list(map(f, species))
-self.molar_mass = p(lambda s: sum(map(lambda element: element[1] * standard_atomic_weights[element[0]]/1e3, s['composition'].items())))
-self.internal_degrees_of_freedom = p(lambda s: {'atom': 0, 'linear': 1, 'nonlinear': 3/2}[s['transport']['geometry']])
-self.heat_capacity_ratio = p(lambda s: 1. + 2./{'atom': 3, 'linear': 5, 'nonlinear': 6}[s['transport']['geometry']])
-self.well_depth_J = p(lambda s: s['transport']['well-depth']*K)
-self.diameter = p(lambda s: s['transport']['diameter']*1e-10) #Å
-self.permanent_dipole_moment = p(lambda s: s['transport'].setdefault('dipole',0)*Cm_per_Debye)
-self.polarizability = p(lambda s: s['transport'].setdefault('polarizability',0)*1e-30) # Å³
-self.rotational_relaxation = p(lambda s: float(s['transport'].setdefault('rotational-relaxation',0)))
-def from_model(s):
-    self = NASA7()
-    self.temperature_split = s['temperature-ranges'][1]
-    self.pieces = s['data']
+def from_model(species):
+    self = Species()
+    self.len = len(species)
+    p = lambda f: list(map(f, species))
+    self.names = p(lambda s: s['name'])
+    self.molar_mass = p(lambda s: sum([element[1] * standard_atomic_weights[element[0]]/1e3 for element in s['composition'].items()]))
+    def from_model(s): self = NASA7(); self.temperature_split = s['temperature-ranges'][1]; self.pieces = s['data']; return self
+    self.thermodynamics = p(lambda s: from_model(s['thermo']))
+    self.internal_degrees_of_freedom = p(lambda s: {'atom': 0, 'linear': 1, 'nonlinear': 3/2}[s['transport']['geometry']])
+    self.heat_capacity_ratio = p(lambda s: 1. + 2./{'atom': 3, 'linear': 5, 'nonlinear': 6}[s['transport']['geometry']])
+    self.well_depth_J = p(lambda s: s['transport']['well-depth']*K)
+    self.diameter = p(lambda s: s['transport']['diameter']*1e-10) #Å
+    self.permanent_dipole_moment = p(lambda s: s['transport'].get('dipole',0)*Cm_per_Debye)
+    self.polarizability = p(lambda s: s['transport'].get('polarizability',0)*1e-30) # Å³
+    self.rotational_relaxation = p(lambda s: float(s['transport'].get('rotational-relaxation',0)))
     return self
-self.thermodynamics = list(map(lambda s: from_model(s['thermo']), species))
-self.species_names = list(map(lambda s: s['name'], species))
+species = from_model(species)
 
-transport_polynomials = self.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
-
-temperature_splits = {}
-for index, specie in enumerate(thermodynamics):
-    temperature_splits.setdefault(specie.temperature_split, []).append(index)
-
-def from_fuego(species_names, reaction):
-    assert(reaction.units["prefactor"]=='mole/cm**3')
-    assert(reaction.units["activation"]=='cal/mole')
-    preexponential_factor, temperature_exponent, activation_energy_cal = reaction.arrhenius
-
-    reaction.type = "Elementary"
-    if reaction.thirdBody:
-        reaction.type = "ThreeBody"
-    if reaction.low:
-        reaction.type = "PressureModification"
-    if reaction.troe:
-        reaction.type = "Falloff"
-
-    reaction.reactants = map(lambda specie: sum(map(lambda _, coefficient: coefficient, filter(lambda s, _: s == specie, reaction.reactants))), species_names)
-    reaction.products = map(lambda specie: sum(map(lambda _, coefficient: coefficient, filter(lambda s, _: s == specie, reaction.products))), species_names)
-    reaction.net = map(lambda reactant, product: -reactant + product, zip(reaction.reactants, reaction.products))
+def from_model(species_names, r):
+    class Reaction(): pass
+    reaction = Reaction()
+    reaction.type = r.get('type', 'elementary')
+    reaction.reversible = r.get('reversible', False)
+    import re
+    [reaction.reactants, reaction.products] = [[sum([c for (_, c) in filter(lambda s: s[0] == specie, side)]) for specie in species.names] for side in
+                            [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
+    reaction.net = [-reactant + product for reactant, product in zip(reaction.reactants, reaction.products)]
     reaction.sum_net = sum(reaction.net)
 
     class RateConstant(): pass
     reaction.rate_constant = RateConstant()
     concentration_cm3_unit_conversion_factor_exponent = sum(reaction.reactants)
-    if reaction.type == "ThreeBody":
+    if reaction.type == "three-body":
         concentration_cm3_unit_conversion_factor_exponent += 1
-    reaction.rate_constant.preexponential_factor = preexponential_factor * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent-1)
-    reaction.rate_constant.temperature_exponent = temperature_exponent
-    J_per_cal = 4.184
-    reaction.rate_constant.activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
-
-    if reaction.thirdBody:
-        specie, coefficient = reaction.thirdBody
-        if not reaction.efficiencies:
-                assert(specie != "<mixture>")
-                reaction.efficiencies = {specie: coefficient}
-    else:
-            assert(not reaction.efficiencies)
-    reaction.efficiencies = map(lambda specie: dict(reaction.efficiencies).get(specie, 1.), species_names)
-    if reaction.low:
-        preexponential_factor, temperature_exponent, activation_energy_cal = reaction.low
+    rate_constant = r.get('rate-constant', r.get('high-P-rate-constant'))
+    reaction.rate_constant.preexponential_factor = rate_constant['A'] * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent-1)
+    reaction.rate_constant.temperature_exponent = rate_constant['b']
+    reaction.rate_constant.activation_temperature = rate_constant['Ea'] * J_per_cal / (K*NA)
+    if r.get('efficiencies'): reaction.efficiencies = [r['efficiencies'].get(specie, r.get('default-efficiency', 1)) for specie in species.names]
+    k0 = r.get('low-P-rate-constant')
+    if k0:
         reaction.k0 = RateConstant()
-        reaction.k0.preexponential_factor = preexponential_factor * pow(1e-6, sum(reaction.reactants)-1+1),
-        reaction.k0.temperature_exponent = temperature_exponent
-        J_per_cal = 4.184
-        reaction.k0.activation_temperature = activation_energy_cal * J_per_cal / (K*NA)
-    if reaction.troe:
-        A, T3, T1 = reaction.troe[0], reaction.troe[1], reaction.troe[2]
-        if len(reaction.troe) == 4: T2 = reaction.troe[3]
-        else: T2 = 0
+        reaction.k0.preexponential_factor = k0['A'] * pow(1e-6, sum(reaction.reactants)-1+1)
+        reaction.k0.temperature_exponent = k0['b']
+        reaction.k0.activation_temperature = k0['Ea'] * J_per_cal / (K*NA)
+    if reaction.type == 'falloff':
         class Troe(): pass
         reaction.troe = Troe()
-        reaction.troe.A = A
-        reaction.troe.T3 = T3
-        reaction.troe.T1 = T1
-        reaction.troe.T2 = T2
+        reaction.troe.A = r['Troe']['A']
+        reaction.troe.T3 = r['Troe']['T3']
+        reaction.troe.T1 = r['Troe']['T1']
+        reaction.troe.T2 = r['Troe'].get('T2', 0)
     #}
     return reaction
+reactions = [from_model(species.names, reaction) for reaction in model['reactions']]
 
-self.reactions = map(lambda reaction: from_fuego(species_names, reaction), mechanism.reaction())
+temperature_splits = {}
+for index, specie in enumerate(species.thermodynamics):
+    temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
-select = lambda predicate, consequent, alternative: consequent if predicate else alternative
-mul = lambda c, v: select(c==0, '', f"{select(c == 1, '', select(c == -1, '-', f'{c}'))}*{v}")
-code = lambda f, l: '\n    '.join(map(f, l))
+transport_polynomials = species.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
+
+code = lambda lines: '\n\t'.join(lines)
+mul = lambda c, v: None if c==0 else f"{'' if c == 1 else '-' if c == -1 else f'{c}*'}{v}"
 def product_of_exponentiations(c, v):
     for _c in c: assert(_c == int(_c))
-    c = map(lambda c: int(c), c)
-    (num, div) = partition(lambda _, c: c>0, filter(lambda _, c: c!=0, enumerate(c)))
+    c = [int(c) for c in c]
+    (div, num) = partition(lambda c: c[1]>0, filter(lambda c: c[1]!=0, enumerate(c)))
     from itertools import repeat, chain
-    num = '*'.join(chain(*map(lambda i, c: repeat(f'{v}[{i}',max(0,c)), num)))
-    div = '*'.join(chain(*map(lambda i, c: repeat(f'{v}[{i}',max(0,-c)), div)))
+    flatten = lambda t: [item for sublist in t for item in sublist]
+    num = '*'.join(flatten([repeat(f'{v}[{i}]',max(0,c)) for i, c in num]))
+    div   = '*'.join(flatten([repeat(f'{v}[{i}]',max(0,-c)) for i ,c in div]))
     if (num=='') and (div==''): return '1.'
     elif div=='': return num
     elif num=='': return f'1./{div}'
     else: return f'{num}/{div}'
 #}
 
-piece = lambda expression, i: code(lambda i, nasa7: f'_[{i}] = {expression(nasa7.pieces[i])};', enumerate(thermodynamics))
-thermodynamics = lambda e: code(lambda temperature_split, species: f'if (T < {temperature_split}) {{\n{piece(e, 0)}\n}}\n else\n {{\n{piece(e, 1)}}}', temperature_splits.items())
+piece = lambda specie_indices, expression, piece: code([f'_[{specie}] = {expression(species.thermodynamics[specie].pieces[piece])};' for specie in specie_indices])
+thermodynamics = lambda e: code([f'if (T < {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
 
-arrhenius = lambda rate_constant: f'exp2({-rate_constant.activation_temperature/ln(2)} * rcp_T + {rate_constant.temperature_exponent} * log_T + {log2(rate_constant.A)})'
-rcp_arrhenius = lambda rate_constant: f'exp2({rate_constant.activation_temperature/ln(2)} * rcp_T - {rate_constant.temperature_exponent} * log_T - {log2(rate_constant.A)})'
+arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temperature_exponent} * log_T + {log2(r.preexponential_factor)})'
+rcp_arrhenius = lambda r: f'exp2({r.activation_temperature/ln(2)} * rcp_T - {r.temperature_exponent} * log_T - {log2(r.preexponential_factor)})'
 
 def reaction(id, r):
-    efficiency = f"({'+'.join(map(lambda specie, efficiency: f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]', enumerate(r.efficiencies)))})"
-    if r.type == "Elementary":
-        c = f'c = {arrhenius(rate_constant)}'
-    elif r.type == "ThreeBody":
-        c = f'c = {arrhenius(rate_constant)} * {efficiency}'
-    elif r.type == "PressureModification":
+    if hasattr(r, 'efficiencies'):
+        efficiency = f"({'+'.join([f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]' for specie, efficiency in enumerate(r.efficiencies)])})"
+    if r.type == "elementary":
+        c = f'c = {arrhenius(r.rate_constant)}'
+    elif r.type == "three-body":
+        c = f'c = {arrhenius(r.rate_constant)} * {efficiency}'
+    elif r.type == "pressure-modification":
         c = f'''Pr = {arrhenius(r.k0)} * {efficiency};
-        c = Pr / ({rcp_arrhenius(rate_constant)} * Pr + 1.)'''
-    elif r.type == "Falloff":
+        c = Pr / ({rcp_arrhenius(r.rate_constant)} * Pr + 1.)'''
+    elif r.type == "falloff":
         A, T3, T1, T2 = r.troe.A, r.troe.T3, r.troe.T1, r.troe.T2
-        c = f'''Pr = {arrhenius(reaction.k0)} * {efficiency};
+        c = f'''
+        Pr = {arrhenius(r.k0)} * {efficiency};
         logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) + exp2({-T2/ln(2)}*rcp_T));
         logPr_c = log2(Pr) - 0.67*logFcent - {0.4*log2(10)};
         f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-{0.75*log2(10.)});
-        c = Pr / ({rcp_arrhenius(rate_constant)} * Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
-    else: sys.exit(reaction.type)
-    Rf = product_of_exponentiations(reactants, 'concentrations')
-    if reaction.reversible:
-        rcp_equilibrium_constant = product_of_exponentiations(net, 'exp_Gibbs0_RT');
+        c = Pr / ({rcp_arrhenius(r.rate_constant)} * Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
+    else: exit(r.type)
+    Rf = product_of_exponentiations(r.reactants, 'concentrations')
+    if r.reversible:
+        rcp_equilibrium_constant = product_of_exponentiations(r.net, 'exp_Gibbs0_RT');
         if -sum_net == 0: pass
         elif -sum_net == 1: rcp_equilibrium_constant += '* P0_RT'
         elif -sum_net == -1: rcp_equilibrium_constant += '* rcp_P0_RT'
-        else: sys.exit(f'Σnet {sum_net}')
+        else: raise(f'Σnet {sum_net}')
         Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(products, "concentrations")}'
         R = f'{Rf} - {Rr}'
     else:
@@ -352,46 +334,50 @@ def reaction(id, r):
     const float cR{id} = c * {R};'''
 #}
 
+line= '\n\t'
 print(
-f'''#define n_species {len(self)}
-const float fg_molar_mass[{len(self.molar_mass)}] = {', '.join(map(lambda x: '%s'%x, self.molar_mass))};
-const float fg_rcp_molar_mass[{len(self.molar_mass)}] = {', '.join(map(lambda x: '%s'%x, map(lambda w: 1./w, self.molar_mass)))};
-void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* species) {{
+f"""#define n_species {species.len}
+const float fg_molar_mass[{species.len}] = {{{', '.join([f'{w}' for w in species.molar_mass])}}};
+const float fg_rcp_molar_mass[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass])}}};
+void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'{a[0]} + {a[1]} * T + {a[2]} * T_2 + {a[3]} * T_3 + {a[4]} * T_4')}
 }}
-void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* species) {{
+void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'{a[0]} + {a[1]/2} * T + {a[2]/3} * T_2 + {a[3]/4} * T_3 + {a[4]/5} * T_4 + {a[5]} * rcp_T')}
 }}
-void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* species) {{
+void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
 }}
 float fg_viscosity(float T, const float mole_fractions[]) {{
-    float T_14 =	sqrt(sqrt(T));
-    float ln_T = log(T);
-    float ln_T_2 = ln_T*ln_T;
-    float ln_T_3 = ln_T_2*ln_T;
-    return pow({'+'.join(map(lambda i, P: f'+ mole_fractions[{i}] * pow(({P[0]} + {P[1]} * ln_T + {P[2]} * ln_T_2 + {P[3]} * ln_T_3)*T_14, {2*6})', enumerate(sqrt_vis_T14)))}), 1./6.);
+ float T_14 =	sqrt(sqrt(T));
+ float ln_T = log(T);
+ float ln_T_2 = ln_T*ln_T;
+ float ln_T_3 = ln_T_2*ln_T;
+ return pow(
+    {('+'+line).join([f'mole_fractions[{i}] * pow(({P[0]} + {P[1]} * ln_T + {P[2]} * ln_T_2 + {P[3]} * ln_T_3)*T_14, {2*6})' for i, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}, 1./6.);
 }}
 
 float fg_thermal_conductivity(float T, const float mole_fractions[]) {{
-    float T_12 =	sqrt(T);
-    float ln_T = log(T);
-    float ln_T_2 = ln_T*ln_T;
-    float ln_T_3 = ln_T_2*ln_T;
-    return pow({'+'.join(map(lambda i, P: f'T_12 * pow(({P[i][0]} + {P[i][1]}*ln_T + {P[i][2]}*ln_T_2 + {P[i][3]}*ln_T_3), 4) * mole_fractions[{i}]', enumerate(conductivity_T12)))}, 1./4.);
+ float T_12 =	sqrt(T);
+ float ln_T = log(T);
+ float ln_T_2 = ln_T*ln_T;
+ float ln_T_3 = ln_T_2*ln_T;
+ return pow(
+    {('+'+line).join([f'T_12 * pow(({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3), 4) * mole_fractions[{i}]' for i, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}, 1./4.);
 }}
 
-float fg_mixture_diffusion_coefficients(float T, const float mole_fractions[]) {{
-    float ln_T = log(T);
-    float ln_T_2 = ln_T*ln_T;
-    float ln_T_3 = ln_T_2*ln_T;
-    float T_32 = T*sqrt(T);
-    {lines(lambda k: f"Ddiag[{k}] = (1. - mass_fractions[{k}]) * mole_fractions[{k}] / ({map(lambda j, P: f'mole_fractions[{i}] / (({P[i][0]} + {P[i][1]}*ln_T + {P[i][2]}*ln_T_2 + {P[i][3]}*ln_T_3)*T_32)', M[k])});", enumerate(M))}
+void fg_mixture_diffusion_coefficients(float T, const float mole_fractions[], const float mass_fractions[], float* _) {{
+ float ln_T = log(T);
+ float ln_T_2 = ln_T*ln_T;
+ float ln_T_3 = ln_T_2*ln_T;
+ float T_32 = T*sqrt(T);
+ {code(f'''_[{k}] = (1. - mass_fractions[{k}]) * mole_fractions[{k}] / (
+    {('+'+line).join([f"mole_fractions[{j}] / (({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)*T_32)" for j, P in enumerate(row)])});''' for k, row in enumerate(transport_polynomials.binary_thermal_diffusion_coefficients_T32))}
 }}
 
 void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* molar_rates) {{
-    float c, Pr, logFcent, logPr_c, f1;
-    {lines(reaction, enumerate(reactions))}
-    {lines(lambda specie: f"molar_rates[{specie}] = {'+'.join(filter(None, map(lambda i, r: mul(r.net[specie],f'cR{i}'), enumerate(reactions))))};", range(species.len()-1))}
+ float c, Pr, logFcent, logPr_c, f1;
+    {code([reaction(i, r) for i, r in enumerate(reactions)])}
+    {code([f"molar_rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
 }}
-''')
+""".replace('+ -','-').replace('+-','-'))
