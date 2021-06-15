@@ -127,6 +127,12 @@ int main(int argc, char **argv) {
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0) printf("avg throughput: %.3f GDOF/s\n", (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
     // get results from device
+    auto viscosity = new double[n_states];
+    o_viscosity.copyTo(viscosity);
+    printf("%f\n", viscosity[0]);
+    auto conductivity = new double[n_states];
+    o_thermal_conductivity.copyTo(conductivity);
+    printf("%f\n", conductivity[0]);
     auto rho_Di = new double[n_species*n_states];
     o_rho_Di.copyTo(rho_Di);
     // print results

@@ -360,8 +360,9 @@ float fg_thermal_conductivity(float T, const float mole_fractions[]) {{
  float ln_T = log(T);
  float ln_T_2 = ln_T*ln_T;
  float ln_T_3 = ln_T_2*ln_T;
- return pow(
-    {('+'+line).join([f'T_12 * pow(({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3), 4) * mole_fractions[{i}]' for i, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}, 1./4.);
+ {code([f'float lambda_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
+ return T_12/2. * ({'+'.join([f'mole_fractions[{k}]*lambda_{k}' for k in range(species.len)])})
+                + T_12/2. / ({'+'.join([f'mole_fractions[{k}]/lambda_{k}' for k in range(species.len)])});
 }}
 
 void fg_mixture_diffusion_coefficients(float T, const float mole_fractions[], const float mass_fractions[], float* _) {{
@@ -378,4 +379,4 @@ void fg_rates(const float log_T, const float T, const float T2, const float T4, 
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"molar_rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
 }}
-""".replace('+ -','-').replace('+-','-'))
+""".replace('+ -','-').replace('+-','-').replace('mole_fractions','X'))
