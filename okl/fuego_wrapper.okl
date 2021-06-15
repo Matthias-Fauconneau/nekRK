@@ -40,7 +40,10 @@
     fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
     const float rcp_T2 = rcp_T*rcp_T;
     float molar_rates[n_species-1];
+    printf("%f\n", T);
+    for(int k=0; k<n_species-1; k++) { printf("%f ", wrk[k]); } printf("\n");
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
+    for(int k=0; k<n_species-1; k++) { printf("%e ", molar_rates[k]); } printf("\n");
     fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
     float energy_rate_RT = 0.;
@@ -84,11 +87,7 @@
         thermal_conductivity[id] = fg_thermal_conductivity(T, mole_fractions);
 
         float Di[n_species];
-        printf("%f\n", T);
-        for(int k=0; k<n_species-1; k++) { printf("%f ", mole_fractions[k]); } printf("\n");
-        for(int k=0; k<n_species-1; k++) { printf("%f ", mass_fractions[k]); } printf("\n");
-        fg_mixture_diffusion_coefficients(T, mole_fractions, mass_fractions, /*-> Di*/ Di);
-        for(int k=0; k<n_species-1; k++) { printf("%f ", Di[k]); } printf("\n");
+        fg_mixture_diffusion_coefficients(T, mole_fractions, mass_fractions, /*->*/ Di);
         const float K = 1.380649e-23; // J / K
         const float NA = 6.02214076e23;
         const float R = K*NA;

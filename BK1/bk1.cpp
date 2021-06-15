@@ -15,7 +15,6 @@ using namespace std;
 #include "occa.hpp"
 #include <nekrk.h>
 
-
 int main(int argc, char **argv) {
     feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
     MPI_Init(&argc, &argv);
@@ -144,7 +143,7 @@ int main(int argc, char **argv) {
     const double reference_time = reference_length / reference_velocity;
 
     // Prints results
-    for (int k=0; k<n_species; k++) {
+    for (int k=0; k<n_species-1; k++) {
         double mass_production_rate = rates[k*n_states+0];
         // mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
         double reference_mass_rate = reference_density / reference_time;

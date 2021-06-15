@@ -236,7 +236,7 @@ def from_model(species_names, r):
     class Reaction(): pass
     reaction = Reaction()
     reaction.type = r.get('type', 'elementary')
-    reaction.reversible = r.get('reversible', False)
+    reaction.reversible = r.get('reversible', True)
     import re
     [reaction.reactants, reaction.products] = [[sum([c for (_, c) in filter(lambda s: s[0] == specie, side)]) for specie in species.names] for side in
                             [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
@@ -288,8 +288,8 @@ def product_of_exponentiations(c, v):
     div   = '*'.join(flatten([repeat(f'{v}[{i}]',max(0,-c)) for i ,c in div]))
     if (num=='') and (div==''): return '1.'
     elif div=='': return num
-    elif num=='': return f'1./{div}'
-    else: return f'{num}/{div}'
+    elif num=='': return f'1./({div})'
+    else: return f'{num}/({div})'
 #}
 
 piece = lambda specie_indices, expression, piece: code([f'_[{specie}] = {expression(species.thermodynamics[specie].pieces[piece])};' for specie in specie_indices])
@@ -320,12 +320,12 @@ def reaction(id, r):
     Rf = product_of_exponentiations(r.reactants, 'concentrations')
     if r.reversible:
         rcp_equilibrium_constant = product_of_exponentiations(r.net, 'exp_Gibbs0_RT');
-        if -sum_net == 0: pass
-        elif -sum_net == 1: rcp_equilibrium_constant += '* P0_RT'
-        elif -sum_net == -1: rcp_equilibrium_constant += '* rcp_P0_RT'
+        if -r.sum_net == 0: pass
+        elif -r.sum_net == 1: rcp_equilibrium_constant += '* P0_RT'
+        elif -r.sum_net == -1: rcp_equilibrium_constant += '* rcp_P0_RT'
         else: raise(f'Σnet {sum_net}')
-        Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(products, "concentrations")}'
-        R = f'{Rf} - {Rr}'
+        Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(r.products, "concentrations")}'
+        R = f'({Rf} - {Rr})'
     else:
         R = Rf
     return f'''{c};
@@ -374,9 +374,9 @@ void fg_mixture_diffusion_coefficients(float T, const float mole_fractions[], co
     {('+'+line).join([f"mole_fractions[{j}] / (({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)*T_32)" for j, P in enumerate(row)])});''' for k, row in enumerate(transport_polynomials.binary_thermal_diffusion_coefficients_T32))}
 }}
 
-void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* molar_rates) {{
+void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
-    {code([f"molar_rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
+    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
 }}
-""".replace('+ -','-').replace('+-','-').replace('mole_fractions','X'))
+""".replace('+ -','-').replace('+-','-').replace('mole_fractions','X').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
