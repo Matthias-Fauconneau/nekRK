@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
         std::cout << "active occa mode: " << device.mode() << '\n';
     }
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, false/*, verbose*/);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
     const int n_species = nekRK::number_of_species();
 
     // setup reference quantities

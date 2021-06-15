@@ -97,9 +97,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 /* API */
 
 void nekRK::init(const char* model_path, occa::device device,
-      occa::properties kernel_properties, int group_size, MPI_Comm comm, bool transport)
+      occa::properties kernel_properties, int group_size, MPI_Comm comm, bool transport, bool verbose)
 {
-  setup(model_path, device, kernel_properties, group_size, comm, transport, false);
+  setup(model_path, device, kernel_properties, group_size, comm, transport, verbose);
 }
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)

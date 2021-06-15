@@ -12,7 +12,8 @@ namespace nekRK {
         occa::properties kernel_properties,
         int blockSize,
         MPI_Comm comm,
-        bool transport
+        bool transport,
+        bool verbose
     );
 
     int number_of_species();
