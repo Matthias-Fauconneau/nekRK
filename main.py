@@ -244,7 +244,7 @@ def from_model(species_names, r):
     reaction.type = r.get('type', 'elementary')
     reaction.reversible = r.get('reversible', True)
     import re
-    [reaction.reactants, reaction.products] = [[sum([c for (_, c) in filter(lambda s: s[0] == specie, side)]) for specie in species.names] for side in
+    [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species.names] for side in
                             [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
     reaction.net = [-reactant + product for reactant, product in zip(reaction.reactants, reaction.products)]
     reaction.sum_net = sum(reaction.net)
@@ -287,7 +287,7 @@ mul = lambda c, v: None if c==0 else f"{'' if c == 1 else '-' if c == -1 else f'
 def product_of_exponentiations(c, v):
     for _c in c: assert(_c == int(_c))
     c = [int(c) for c in c]
-    (div, num) = partition(lambda c: c[1]>0, filter(lambda c: c[1]!=0, enumerate(c)))
+    (div, num) = partition(lambda c: c[1]>0, [(i, c) for i, c in enumerate(c) if c!=0])
     from itertools import repeat, chain
     flatten = lambda t: [item for sublist in t for item in sublist]
     num = '*'.join(flatten([repeat(f'{v}[{i}]',max(0,c)) for i, c in num]))

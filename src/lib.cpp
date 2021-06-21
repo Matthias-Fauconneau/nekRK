@@ -63,7 +63,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     //kernel_properties["compiler_flags"] += " --use_fast_math";
     //kernel_properties["okl/enabled"] = false;
 
-    string okl_path = string(getenv("NEKRK_PATH") ?: ".")+"/okl/fuego_wrapper.okl";
+    string okl_path = string(getenv("NEKRK_PATH") ?: ".")+"/okl/lib.okl";
 
     // ?
     int rank;

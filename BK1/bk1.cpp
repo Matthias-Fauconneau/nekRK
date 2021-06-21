@@ -18,7 +18,7 @@ using namespace std;
 int main(int argc, char **argv) {
     feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
     MPI_Init(&argc, &argv);
-    int rank, size;
+    int rank = 0, size = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     const int nRep = std::stoi(argv[4]);
     std::string mech("LiDryer");
     if(argc > 5) mech.assign(argv[5]);
-    const bool verbose = argc < 6;
+    const bool verbose = argc < 7;
 
     char deviceConfig[BUFSIZ];
     const int deviceId = 0;
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
                     reference_velocity,
                     reference_mass_fractions);
 
-    // populdate states
+    // populate states
     auto mass_fractions = new double[n_species*n_states];
     for (int i=0; i<n_species; i++) {
         for (int id=0; id<n_states; id++) {
@@ -149,11 +149,11 @@ int main(int argc, char **argv) {
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * molar_mass_species[k]);
-        if(rank==0 && verbose) printf("%.2e\n", molar_rate);
+        if(rank==0) printf("%s: %.0f, ", (const char*[]){"H2","O2","H2O","H","O","OH","HO2","H2O2"}[k], molar_rate);
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
-    //printf("%13s hrr=%.15e\n", "", heat_release_rate[0] * energy_rate);
+    printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
 
     MPI_Finalize();
     exit(EXIT_SUCCESS);
