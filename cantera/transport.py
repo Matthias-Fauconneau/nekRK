@@ -6,7 +6,4 @@ gas= Solution('LiDryer.yaml', thermo='IdealGas')
 temperature= 1000
 pressure= 101325
 gas.TPX = temperature, pressure, {'H2': 1, 'O2': 1, 'H2O': 1, 'H': 1, 'O': 1, 'OH': 1, 'HO2': 1, 'H2O2': 1, 'N2': 1}
-#gas()
-print(gas.viscosity)
-print(gas.thermal_conductivity)
-print(gas.mix_diff_coeffs)
+print(f"μ: {gas.viscosity:.4}, λ: {gas.thermal_conductivity:.4}, D: {' '.join([f'{x:.3e}' for x in gas.mix_diff_coeffs])}")

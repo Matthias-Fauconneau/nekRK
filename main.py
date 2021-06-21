@@ -14,7 +14,7 @@ from numpy import sqrt
 from numpy import log2
 from numpy import log as ln
 from numpy import polynomial
-polynomial_regression = lambda X, Y, degree=3: polynomial.polynomial.polyfit(X, Y, deg=3, w=[1/sq(y) for y in Y])
+polynomial_regression = lambda X, Y, degree=3: polynomial.polynomial.polyfit(X, Y, deg=degree, w=[1/sq(y) for y in Y])
 from numpy import linspace
 
 K = 1.380649e-23 #* J/kelvin
@@ -36,7 +36,7 @@ class NASA7:
 
 header_T_star = [float_info.epsilon, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 25., 30., 35., 40., 50., 75., 100., 500.]
 header_delta_star = [0., 1./4., 1./2., 3./4., 1., 3./2., 2., 5./2.]
-omega_star_22 = [
+collision_integrals_Omega_star_22 = [
 [4.1005, 4.266,  4.833,  5.742,  6.729,  8.624,  10.34,  11.89], #FIXME
 [4.1005, 4.266,  4.833,  5.742,  6.729,  8.624,  10.34,  11.89],
 [3.2626, 3.305,  3.516,  3.914,  4.433,  5.57,   6.637,  7.618],
@@ -77,7 +77,7 @@ omega_star_22 = [
 [0.5887, 0.5889, 0.5894, 0.59,   0.5903, 0.5901, 0.5895, 0.5885],
 [0.5887, 0.5889, 0.5894, 0.59,   0.5903, 0.5901, 0.5895, 0.5885], #FIXME
 ];
-A_star = [
+collision_integrals_A_star = [
 [1.0065, 1.0840, 1.0840, 1.0840, 1.0840, 1.0840, 1.0840, 1.0840],
 [1.0231, 1.0660, 1.0380, 1.0400, 1.0430, 1.0500, 1.0520, 1.0510],
 [1.0424, 1.0450, 1.0480, 1.0520, 1.0560, 1.0650, 1.0660, 1.0640],
@@ -119,6 +119,11 @@ A_star = [
 [1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187, 1.14187],
 ]
 
+# Least square fits polynomials in δ⃰, for each T⃰  row of the collision integrals tables
+polynomial_regression_delta_star = lambda table: [polynomial_regression(header_delta_star, T_star_row, degree=6) for T_star_row in table]
+Omega_star_22 = polynomial_regression_delta_star(collision_integrals_Omega_star_22);
+A_star = polynomial_regression_delta_star(collision_integrals_A_star);
+
 class Species:
     def interaction_well_depth(self, a, b):
         well_depth_J = self.well_depth_J
@@ -139,19 +144,20 @@ class Species:
         assert(len(header_ln_T_star_slice) == 3)
         polynomials = table[interpolation_start_index:][:3]
         assert(len(polynomials) == 3)
-        evaluate_polynomial = lambda P, x: dot(P, list(map(lambda k: pow(x, k), range(len(P)))))
+        evaluate_polynomial = lambda P, x: dot(P, [pow(x, k) for k in range(len(P))])
         quadratic_interpolation = lambda x, y, x0: ((x[1]-x[0])*(y[2]-y[1])-(y[1]-y[0])*(x[2]-x[1]))/((x[1]-x[0])*(x[2]-x[0])*(x[2]-x[1]))*(x0 - x[0])*(x0 - x[1]) + ((y[1]-y[0])/(x[1]-x[0]))*(x0-x[1]) + y[1]
         delta_star = self.reduced_dipole_moment(a, b)
-        return quadratic_interpolation(header_ln_T_star_slice, list(map(lambda P: evaluate_polynomial(P, delta_star), polynomials)), ln_T_star)
+        for P in polynomials: assert len(P) == 7, len(P)
+        return quadratic_interpolation(header_ln_T_star_slice, [evaluate_polynomial(P, delta_star) for P in polynomials], ln_T_star)
     #}
 
-    def omega_star_22(self, a, b, T):
-            return self.collision_integral(omega_star_22, a, b, T)
+    def Omega_star_22(self, a, b, T):
+            return self.collision_integral(Omega_star_22, a, b, T)
 
-    def omega_star_11(self, a, b, T):
-            return self.omega_star_22(a, b, T)/self.collision_integral(A_star, a, b, T)
+    def Omega_star_11(self, a, b, T):
+            return self.Omega_star_22(a, b, T)/self.collision_integral(A_star, a, b, T)
 
-    viscosity = lambda self, a, T: 5./16. * sqrt(pi * self.molar_mass[a]/NA * K*T) / (self.omega_star_22(a, a, T) * pi * sq(self.diameter[a]))
+    viscosity = lambda self, a, T: 5./16. * sqrt(pi * self.molar_mass[a]/NA * K*T) / (self.Omega_star_22(a, a, T) * pi * sq(self.diameter[a]))
 
     def thermal_conductivity(self, a, T):
         (molar_mass, thermodynamics, diameter, well_depth_J, rotational_relaxation, internal_degrees_of_freedom) = (self.molar_mass, self.thermodynamics, self.diameter, self.well_depth_J, self.rotational_relaxation, self.internal_degrees_of_freedom)
@@ -182,22 +188,21 @@ class Species:
         return (self.diameter[a] + self.diameter[b])/2. * pow(self.xi(a, b), -1./6.)
 
     def binary_thermal_diffusion_coefficient(self, a, b, T):
-        return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(K*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.omega_star_11(a, b, T))
+        return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(K*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
         T = linspace(300., 3000., 50)
         class TransportPolynomials:
             pass
-        transport_polynomials = TransportPolynomials()
-        f = lambda T: sqrt(self.viscosity(0, T)) / sqrt(sqrt(T))
-        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T]) for a in range(self.len)]
-        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T]) for a in range(self.len)]
-        #print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
+        _ = TransportPolynomials()
+        _.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T]) for a in range(self.len)]
+        _.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T]) for a in range(self.len)]
+        #print("_.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
         import time
         start_time = time.time()
-        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T]) for b in range(self.len)] for a in range(self.len)]
+        _.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / (T*sqrt(T)) for T in T]) for b in range(self.len)] for a in range(self.len)]
         #print(f'{int(time.time() - start_time)}s', file=stderr)
-        return transport_polynomials
+        return _
 
 import ruamel.yaml
 model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
@@ -275,10 +280,6 @@ temperature_splits = {}
 for index, specie in enumerate(species.thermodynamics):
     temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
-T = linspace(300., 3000., 50)
-f = lambda T: sqrt(species.viscosity(0, T)) / sqrt(sqrt(T))
-print(f'{list(map(f, T))}', file=stderr)
-print(f'{polynomial_regression(ln(T), list(map(f, T)), 3)}', file=stderr)
 transport_polynomials = species.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
 
 code = lambda lines: '\n\t'.join(lines)
@@ -337,7 +338,6 @@ def reaction(id, r):
     const float cR{id} = c * {R};'''
 #}
 
-backslash='\\'
 line= '\n\t'
 print(
 f"""float sq(float x) {{ return x*x; }}
@@ -353,26 +353,25 @@ void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const flo
 void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
 }}
-float fg_viscosity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
+float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
     {code([f'float sqrt_viscosity_T14_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}
-    {code([f'printf("%f{backslash}n", sqrt_viscosity_T14_{k});' for k in range(species.len)])}
- return T_12*(
+ return
     {('+'+line).join([f'''mole_fractions[{k}] * sq(sqrt_viscosity_T14_{k}) / (
         {('+'+line+'	').join([(lambda sqrt_a: f'mole_fractions[{j}] * sq({sqrt_a} + {sqrt_a*sqrt(sqrt(species.molar_mass[j]/species.molar_mass[k]))} * sqrt_viscosity_T14_{k}/sqrt_viscosity_T14_{j})')(sqrt(1/sqrt(8) * 1/sqrt(1. + species.molar_mass[k]/species.molar_mass[j]))) for j in range(species.len)])}
-    )''' for k in range(species.len)])}
- );
+    )''' for k in range(species.len)])};
 }}
 
-float fg_thermal_conductivity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
- {code([f'float conductivity_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
- return T_12/2. * ({'+'.join([f'mole_fractions[{k}]*conductivity_{k}' for k in range(species.len)])})
-                + T_12/2. / ({'+'.join([f'mole_fractions[{k}]/conductivity_{k}' for k in range(species.len)])});
+float fg_thermal_conductivity_T_12_2(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
+ {code([f'float conductivity_T12_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
+ return (
+    {'+'.join([f'mole_fractions[{k}]*conductivity_T12_{k}' for k in range(species.len)])})
+ + 1./ (
+    {'+'.join([f'mole_fractions[{k}]/conductivity_T12_{k}' for k in range(species.len)])});
 }}
 
-void fg_mixture_diffusion_coefficients(float T, float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[], const float mass_fractions[], float* _) {{
- float T_32 = T*T_12;
- {code(f'''_[{k}] = (1. - mass_fractions[{k}]) * mole_fractions[{k}] / (
-    {('+'+line).join([f"mole_fractions[{j}] / (({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)*T_32)" for j, P in enumerate(row)])});''' for k, row in enumerate(transport_polynomials.binary_thermal_diffusion_coefficients_T32))}
+void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[], const float mass_fractions[], float* _) {{
+ {code(f'''_[{k}] = (1. - mass_fractions[{k}]) / (
+    {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
 
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
@@ -380,4 +379,4 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
 }}
-""".replace('+ -','-').replace('+-','-').replace('mole_fractions','X').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
+""".replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))

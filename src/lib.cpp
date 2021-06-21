@@ -170,11 +170,11 @@ const double* nekRK::molar_mass()
   return (const double*) m_molar;
 }
 
-void nekRK::transportCoeffs(int nStates, double p, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, double reference_temperature)
+void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, double reference_temperature)
 {
     transportCoeffs_kernel(
         nStates,
-        p,
+        pressure_Pa,
         T,
         Yi,
         mue,

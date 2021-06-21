@@ -40,10 +40,7 @@
     fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
     const float rcp_T2 = rcp_T*rcp_T;
     float molar_rates[n_species-1];
-    printf("%f\n", T);
-    for(int k=0; k<n_species-1; k++) { printf("%f ", wrk[k]); } printf("\n");
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
-    for(int k=0; k<n_species-1; k++) { printf("%e ", molar_rates[k]); } printf("\n");
     fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
     float energy_rate_RT = 0.;
@@ -58,8 +55,8 @@
 #if CFG_FEATURE_TRANSPORT
 @kernel void transport(
     const int n_states,
-    const float pressure,
-    @restrict const float* temperature,
+    const float pressure_Pa,
+    @restrict const float* temperature_normalized,
     @restrict const float* mass_fractions,
     @restrict float* viscosity,
     @restrict float* thermal_conductivity,
@@ -68,8 +65,7 @@
 )
 {
     for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
-        const float T = reference_temperature * temperature[id];
-        printf("%f\n", T);
+        const float T = reference_temperature * temperature_normalized[id];
         float mass_fraction[n_species];
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
@@ -88,21 +84,19 @@
         float ln_T = log(T);
         float ln_T_2 = ln_T*ln_T;
         float ln_T_3 = ln_T_2*ln_T;
-        printf("%f %f %f %f\n", T_12, ln_T, ln_T_2, ln_T_3);
-        for(int k=0; k<n_species; k++) { printf("%f ", mole_fractions[k]); } printf("\n");
-        viscosity[id] = fg_viscosity(T_12, ln_T, ln_T_2, ln_T_3, mole_fractions);
-        printf("%f\n", viscosity[id]);
-        thermal_conductivity[id] = fg_thermal_conductivity(T_12, ln_T, ln_T_2, ln_T_3, mole_fractions);
+        viscosity[id] = T_12*fg_viscosity_T_12(ln_T, ln_T_2, ln_T_3, mole_fractions);
+        thermal_conductivity[id] = T_12/2.*fg_thermal_conductivity_T_12_2(ln_T, ln_T_2, ln_T_3, mole_fractions);
 
-        float Di[n_species];
-        fg_mixture_diffusion_coefficients(T, T_12, ln_T, ln_T_2, ln_T_3, mole_fractions, mass_fractions, /*->*/ Di);
+        float T_32 = T*T_12;
+        float P_T_32_mixture_diffusion_coefficients[n_species];
+        fg_P_T_32_mixture_diffusion_coefficients(ln_T, ln_T_2, ln_T_3, mole_fractions, mass_fractions, /*->*/ P_T_32_mixture_diffusion_coefficients);
         const float K = 1.380649e-23; // J / K
         const float NA = 6.02214076e23;
         const float R = K*NA;
-        float concentration = pressure/R/T;
-        float density = concentration * mean_molar_mass;
+        float concentration = pressure_Pa/R/T;
+        float density_T_32_P = concentration * mean_molar_mass * T_32 / pressure_Pa;
         for(int k=0;k<n_species;k++) {
-            rho_Di[k*n_states + id] = density * Di[k];
+            rho_Di[k*n_states + id] = density_T_32_P * P_T_32_mixture_diffusion_coefficients[k];
         }
     }
 }

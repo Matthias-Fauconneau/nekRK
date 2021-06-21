@@ -92,9 +92,9 @@ int main(int argc, char **argv) {
 
     auto temperatures = new double[n_states];
     for (int i=0; i<n_states; i++) temperatures[i] = temperature_K / reference_temperature;
-    auto o_temperature = device.malloc<double>(n_states, temperatures);
+    auto o_temperature_normalized = device.malloc<double>(n_states, temperatures);
 
-    const double pressure = pressure_Pa / reference_pressure;
+    const double pressure_normalized = pressure_Pa / reference_pressure;
 
     auto o_viscosity = device.malloc<double>(n_states);
     auto o_thermal_conductivity = device.malloc<double>(n_states);
@@ -102,8 +102,8 @@ int main(int argc, char **argv) {
 
     // warm up
     nekRK::transportCoeffs(n_states,
-                            pressure,
-                    o_temperature,
+                            pressure_Pa,
+                    o_temperature_normalized,
                     o_mass_fractions,
                     o_viscosity,
                     o_thermal_conductivity,
@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
     auto startTime = MPI_Wtime();
     for(int i=0; i<nRep; i++) {
         nekRK::transportCoeffs(n_states,
-                                                     pressure,
-                                                 o_temperature,
+                                                     pressure_Pa,
+                                                 o_temperature_normalized,
                                                  o_mass_fractions,
                                                  o_viscosity,
                                                  o_thermal_conductivity,
@@ -130,24 +130,24 @@ int main(int argc, char **argv) {
     // get results from device
     auto viscosity = new double[n_states];
     o_viscosity.copyTo(viscosity);
-    printf("%f\n", viscosity[0]);
+    printf("μ: %1.3e, ", viscosity[0])	;
     auto conductivity = new double[n_states];
     o_thermal_conductivity.copyTo(conductivity);
-    printf("%f\n", conductivity[0]);
+    printf("λ: %.4f, ", conductivity[0]);
     auto rho_Di = new double[n_species*n_states];
     o_rho_Di.copyTo(rho_Di);
     // print results
-    const float K = 1.380649e-23; // J / K
+    const float kB = 1.380649e-23; // J / K
     const float NA = 6.02214076e23;
-    const float R = K*NA;
-    double concentration = reference_pressure / R / reference_temperature;
+    double concentration = pressure_Pa/NA / (reference_temperature*kB);
     double density = concentration * molar_mass;
+    printf("D: ");
     for (int k=0; k<n_species; k++) {
         double density_times_diffusion_coefficient = rho_Di[k*n_states+0];
         //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
-        printf("%f ", density_times_diffusion_coefficient/density*10);
+        printf("%.3e ", density_times_diffusion_coefficient/density);
     }
 
     MPI_Finalize();
-    exit(EXIT_SUCCESS);
+    return 0;
 }
