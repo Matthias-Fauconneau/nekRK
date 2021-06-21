@@ -64,11 +64,12 @@
     @restrict float* viscosity,
     @restrict float* thermal_conductivity,
     @restrict float* rho_Di,
-    const double reference_temperature
+    const float reference_temperature
 )
 {
     for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
         const float T = reference_temperature * temperature[id];
+        printf("%f\n", T);
         float mass_fraction[n_species];
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
@@ -83,11 +84,18 @@
             mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;
         }
 
-        viscosity[id] = fg_viscosity(T, mole_fractions);
-        thermal_conductivity[id] = fg_thermal_conductivity(T, mole_fractions);
+        float T_12 =	sqrt(T);
+        float ln_T = log(T);
+        float ln_T_2 = ln_T*ln_T;
+        float ln_T_3 = ln_T_2*ln_T;
+        printf("%f %f %f %f\n", T_12, ln_T, ln_T_2, ln_T_3);
+        for(int k=0; k<n_species; k++) { printf("%f ", mole_fractions[k]); } printf("\n");
+        viscosity[id] = fg_viscosity(T_12, ln_T, ln_T_2, ln_T_3, mole_fractions);
+        printf("%f\n", viscosity[id]);
+        thermal_conductivity[id] = fg_thermal_conductivity(T_12, ln_T, ln_T_2, ln_T_3, mole_fractions);
 
         float Di[n_species];
-        fg_mixture_diffusion_coefficients(T, mole_fractions, mass_fractions, /*->*/ Di);
+        fg_mixture_diffusion_coefficients(T, T_12, ln_T, ln_T_2, ln_T_3, mole_fractions, mass_fractions, /*->*/ Di);
         const float K = 1.380649e-23; // J / K
         const float NA = 6.02214076e23;
         const float R = K*NA;

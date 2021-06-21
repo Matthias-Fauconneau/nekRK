@@ -14,7 +14,7 @@ from numpy import sqrt
 from numpy import log2
 from numpy import log as ln
 from numpy import polynomial
-polynomial_regression = lambda X, Y, degree: polynomial.polynomial.polyfit(X, Y, degree, w=[1/sq(y) for y in Y])
+polynomial_regression = lambda X, Y, degree=3: polynomial.polynomial.polyfit(X, Y, deg=3, w=[1/sq(y) for y in Y])
 from numpy import linspace
 
 K = 1.380649e-23 #* J/kelvin
@@ -189,12 +189,13 @@ class Species:
         class TransportPolynomials:
             pass
         transport_polynomials = TransportPolynomials()
-        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T], 3) for a in range(self.len)]
-        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T], 3) for a in range(self.len)]
+        f = lambda T: sqrt(self.viscosity(0, T)) / sqrt(sqrt(T))
+        transport_polynomials.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T]) for a in range(self.len)]
+        transport_polynomials.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T]) for a in range(self.len)]
         #print("transport_polynomials.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
         import time
         start_time = time.time()
-        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T], 3) for b in range(self.len)] for a in range(self.len)]
+        transport_polynomials.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / pow(T, 3./2.) for T in T]) for b in range(self.len)] for a in range(self.len)]
         #print(f'{int(time.time() - start_time)}s', file=stderr)
         return transport_polynomials
 
@@ -274,6 +275,10 @@ temperature_splits = {}
 for index, specie in enumerate(species.thermodynamics):
     temperature_splits.setdefault(specie.temperature_split, []).append(index)
 
+T = linspace(300., 3000., 50)
+f = lambda T: sqrt(species.viscosity(0, T)) / sqrt(sqrt(T))
+print(f'{list(map(f, T))}', file=stderr)
+print(f'{polynomial_regression(ln(T), list(map(f, T)), 3)}', file=stderr)
 transport_polynomials = species.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
 
 code = lambda lines: '\n\t'.join(lines)
@@ -332,9 +337,11 @@ def reaction(id, r):
     const float cR{id} = c * {R};'''
 #}
 
+backslash='\\'
 line= '\n\t'
 print(
-f"""#define n_species {species.len}
+f"""float sq(float x) {{ return x*x; }}
+#define n_species {species.len}
 const float fg_molar_mass[{species.len}] = {{{', '.join([f'{w}' for w in species.molar_mass])}}};
 const float fg_rcp_molar_mass[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass])}}};
 void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
@@ -346,35 +353,29 @@ void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const flo
 void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
 }}
-float fg_viscosity(float T, const float mole_fractions[]) {{
- float T_14 =	sqrt(sqrt(T));
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- return pow(
-    {('+'+line).join([f'mole_fractions[{i}] * pow(({P[0]} + {P[1]} * ln_T + {P[2]} * ln_T_2 + {P[3]} * ln_T_3)*T_14, {2*6})' for i, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}, 1./6.);
+float fg_viscosity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
+    {code([f'float sqrt_viscosity_T14_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}
+    {code([f'printf("%f{backslash}n", sqrt_viscosity_T14_{k});' for k in range(species.len)])}
+ return T_12*(
+    {('+'+line).join([f'''mole_fractions[{k}] * sq(sqrt_viscosity_T14_{k}) / (
+        {('+'+line+'	').join([(lambda sqrt_a: f'mole_fractions[{j}] * sq({sqrt_a} + {sqrt_a*sqrt(sqrt(species.molar_mass[j]/species.molar_mass[k]))} * sqrt_viscosity_T14_{k}/sqrt_viscosity_T14_{j})')(sqrt(1/sqrt(8) * 1/sqrt(1. + species.molar_mass[k]/species.molar_mass[j]))) for j in range(species.len)])}
+    )''' for k in range(species.len)])}
+ );
 }}
 
-float fg_thermal_conductivity(float T, const float mole_fractions[]) {{
- float T_12 =	sqrt(T);
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- {code([f'float lambda_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
- return T_12/2. * ({'+'.join([f'mole_fractions[{k}]*lambda_{k}' for k in range(species.len)])})
-                + T_12/2. / ({'+'.join([f'mole_fractions[{k}]/lambda_{k}' for k in range(species.len)])});
+float fg_thermal_conductivity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
+ {code([f'float conductivity_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
+ return T_12/2. * ({'+'.join([f'mole_fractions[{k}]*conductivity_{k}' for k in range(species.len)])})
+                + T_12/2. / ({'+'.join([f'mole_fractions[{k}]/conductivity_{k}' for k in range(species.len)])});
 }}
 
-void fg_mixture_diffusion_coefficients(float T, const float mole_fractions[], const float mass_fractions[], float* _) {{
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- float T_32 = T*sqrt(T);
+void fg_mixture_diffusion_coefficients(float T, float T_12, float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[], const float mass_fractions[], float* _) {{
+ float T_32 = T*T_12;
  {code(f'''_[{k}] = (1. - mass_fractions[{k}]) * mole_fractions[{k}] / (
     {('+'+line).join([f"mole_fractions[{j}] / (({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)*T_32)" for j, P in enumerate(row)])});''' for k, row in enumerate(transport_polynomials.binary_thermal_diffusion_coefficients_T32))}
 }}
 
-void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}

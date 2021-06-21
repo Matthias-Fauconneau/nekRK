@@ -1,3 +1,4 @@
+float sq(float x) { return x*x; }
 #define n_species 9
 const float fg_molar_mass[9] = {0.002016, 0.031998, 0.018015, 0.001008, 0.015999, 0.017006999999999998, 0.033006, 0.034013999999999996, 0.0280134};
 const float fg_rcp_molar_mass[9] = {496.031746031746, 31.251953247077942, 55.50929780738274, 992.063492063492, 62.503906494155885, 58.79931792791204, 30.297521662727988, 29.39965896395602, 35.69720205330306};
@@ -70,46 +71,144 @@ void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const fl
     _[8] = exp2(-1331.3156655337414 * rcp_T -4.405829073030314 -2.92664 * log_T -0.0010733485194284185 * T + 1.3668960838898307e-07 * T_2 -1.2139124613047913e-11 * T_3 + 4.87151299854126e-16 * T_4);
  }
 }
-float fg_viscosity(float T, const float X[]) {
- float T_14 =	sqrt(sqrt(T));
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- return pow(
-    X[0] * pow((0.0002586719832832168 + 0.00012548581818095953 * ln_T -1.128157220842636e-05 * ln_T_2 + 6.118637089282553e-07 * ln_T_3)*T_14, 12)+
-    X[1] * pow((-0.002020502208299535 + 0.0011656450236792251 * ln_T -0.00014692570494606613 * ln_T_2 + 6.706575302930392e-06 * ln_T_3)*T_14, 12)+
-    X[2] * pow((0.001146562690702771 -0.0005285590859525093 * ln_T + 8.722513499111046e-05 * ln_T_2 -4.28218767593406e-06 * ln_T_3)*T_14, 12)+
-    X[3] * pow((-0.002231780279941454 + 0.0011238951598202998 * ln_T -0.0001418064340164863 * ln_T_2 + 6.337022151711568e-06 * ln_T_3)*T_14, 12)+
-    X[4] * pow((-0.001086777881255509 + 0.0008286089689878946 * ln_T -0.00010226827539508661 * ln_T_2 + 4.776012493748897e-06 * ln_T_3)*T_14, 12)+
-    X[5] * pow((-0.0011035055179576564 + 0.0008413628813015143 * ln_T -0.00010384238413112624 * ln_T_2 + 4.84952466515101e-06 * ln_T_3)*T_14, 12)+
-    X[6] * pow((-0.0020362300613760496 + 0.0011747185567823918 * ln_T -0.00014806939382256605 * ln_T_2 + 6.758780160999189e-06 * ln_T_3)*T_14, 12)+
-    X[7] * pow((-0.002051601688223652 + 0.001183586579923729 * ln_T -0.00014918717884721905 * ln_T_2 + 6.8098026110401365e-06 * ln_T_3)*T_14, 12)+
-    X[8] * pow((-0.0015458686420835902 + 0.0009543240824386539 * ln_T -0.00011977259986770015 * ln_T_2 + 5.505384835918426e-06 * ln_T_3)*T_14, 12), 1./6.);
+float fg_viscosity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float X[]) {
+    float sqrt_viscosity_T14_0 = 0.0002586719832832168 + 0.00012548581818095953*ln_T -1.128157220842636e-05*ln_T_2 + 6.118637089282553e-07*ln_T_3;
+    float sqrt_viscosity_T14_1 = -0.002020502208299535 + 0.0011656450236792251*ln_T -0.00014692570494606613*ln_T_2 + 6.706575302930392e-06*ln_T_3;
+    float sqrt_viscosity_T14_2 = 0.001146562690702771 -0.0005285590859525093*ln_T + 8.722513499111046e-05*ln_T_2 -4.28218767593406e-06*ln_T_3;
+    float sqrt_viscosity_T14_3 = -0.002231780279941454 + 0.0011238951598202998*ln_T -0.0001418064340164863*ln_T_2 + 6.337022151711568e-06*ln_T_3;
+    float sqrt_viscosity_T14_4 = -0.001086777881255509 + 0.0008286089689878946*ln_T -0.00010226827539508661*ln_T_2 + 4.776012493748897e-06*ln_T_3;
+    float sqrt_viscosity_T14_5 = -0.0011035055179576564 + 0.0008413628813015143*ln_T -0.00010384238413112624*ln_T_2 + 4.84952466515101e-06*ln_T_3;
+    float sqrt_viscosity_T14_6 = -0.0020362300613760496 + 0.0011747185567823918*ln_T -0.00014806939382256605*ln_T_2 + 6.758780160999189e-06*ln_T_3;
+    float sqrt_viscosity_T14_7 = -0.002051601688223652 + 0.001183586579923729*ln_T -0.00014918717884721905*ln_T_2 + 6.8098026110401365e-06*ln_T_3;
+    float sqrt_viscosity_T14_8 = -0.0015458686420835902 + 0.0009543240824386539*ln_T -0.00011977259986770015*ln_T_2 + 5.505384835918426e-06*ln_T_3;
+    printf("%f\n", sqrt_viscosity_T14_0);
+    printf("%f\n", sqrt_viscosity_T14_1);
+    printf("%f\n", sqrt_viscosity_T14_2);
+    printf("%f\n", sqrt_viscosity_T14_3);
+    printf("%f\n", sqrt_viscosity_T14_4);
+    printf("%f\n", sqrt_viscosity_T14_5);
+    printf("%f\n", sqrt_viscosity_T14_6);
+    printf("%f\n", sqrt_viscosity_T14_7);
+    printf("%f\n", sqrt_viscosity_T14_8);
+ return T_12*(
+    X[0] * sq(sqrt_viscosity_T14_0) /*/ (
+        X[0] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.5855901795610634 + 1.1688313766866358 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.5790424617421422 + 1.001143534078895 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.45180100180492244 + 0.3799178428257963 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.577221031059996 + 0.9688191706725953 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.5781821492964925 + 0.9853691816620463 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5858554726647912 + 1.17846335668192 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5861055914396311 + 1.1878665679865819 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.5843624418323665 + 1.1282390282975072 * sqrt_viscosity_T14_0/sqrt_viscosity_T14_8)
+    )*/+
+    X[1] * sq(sqrt_viscosity_T14_1) /*/ (
+        X[0] * sq(0.2933835155678699 + 0.14698656195273008 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.46064391998929644 + 0.39901865594136454 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.24856753896630487 + 0.1047198079220346 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.45180100180492244 + 0.3799178428257963 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.45637761328314064 + 0.38967321277930606 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5019271716268475 + 0.5058342382850257 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5037745309672377 + 0.5115286060914264 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.4914852845690401 + 0.47541323339165154 * sqrt_viscosity_T14_1/sqrt_viscosity_T14_8)
+    )*/+
+    X[2] * sq(sqrt_viscosity_T14_2) /*/ (
+        X[0] * sq(0.33490719470998226 + 0.19370397937838632 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.5317867168954801 + 0.6139169540608385 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.2852810237328657 + 0.13874886868757655 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.49242068280067725 + 0.47802535093447335 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.4963627651279554 + 0.48926883862995624 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5332593579911572 + 0.6204090762707718 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5346635287638544 + 0.6267385674946784 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.5251852124633972 + 0.5864694286981884 * sqrt_viscosity_T14_2/sqrt_viscosity_T14_8)
+    )*/+
+    X[3] * sq(sqrt_viscosity_T14_3) /*/ (
+        X[0] * sq(0.537284965911771 + 0.6389431042462725 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.5900108360947904 + 1.4004756540493521 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.5865652330854574 + 1.2060345555502852 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.5855901795610634 + 1.1688313766866358 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.5861055914396311 + 1.1878665679865819 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5901484899998148 + 1.4117064242065558 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5902781319125892 + 1.4226759436487912 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.5893718231209943 + 1.3532115368706605 * sqrt_viscosity_T14_3/sqrt_viscosity_T14_8)
+    )*/+
+    X[4] * sq(sqrt_viscosity_T14_4) /*/ (
+        X[0] * sq(0.34390743782108935 + 0.20489954354482498 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.537284965911771 + 0.6389431042462725 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.5072495179928723 + 0.5225249110995454 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.2933835155678699 + 0.14698656195273008 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.5037745309672377 + 0.5115286060914264 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5386611186975298 + 0.6455659904716761 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5399719543367936 + 0.6520222570130803 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.5310986482544309 + 0.6109327996727034 * sqrt_viscosity_T14_4/sqrt_viscosity_T14_8)
+    )*/+
+    X[5] * sq(sqrt_viscosity_T14_5) /*/ (
+        X[0] * sq(0.339258223198384 + 0.19906554041450197 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.5345004970202478 + 0.6259964840511291 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.5035595467215292 + 0.51086067471041 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.28919053164284375 + 0.14268958497128517 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.4961379970329562 + 0.4886172225246574 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5359262141538373 + 0.632552092068409 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.537284965911771 + 0.6389431042462725 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.5281005521477199 + 0.5982754047702775 * sqrt_viscosity_T14_5/sqrt_viscosity_T14_8)
+    )*/+
+    X[6] * sq(sqrt_viscosity_T14_6) /*/ (
+        X[0] * sq(0.29124930606045696 + 0.1447902464661838 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.4980502831747219 + 0.4942033398320063 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.4583516807884874 + 0.3939663882750188 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.24670514653555417 + 0.1031323986394481 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.4494595518956551 + 0.37502964624346385 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.4540604807393521 + 0.38470019701269975 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5018695242857543 + 0.5056581684076131 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.4894428355011355 + 0.46978073977865975 * sqrt_viscosity_T14_6/sqrt_viscosity_T14_8)
+    )*/+
+    X[7] * sq(sqrt_viscosity_T14_7) /*/ (
+        X[0] * sq(0.28919053164284375 + 0.14268958497128517 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.4961379970329562 + 0.4886172225246574 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.45611536263506586 + 0.3891068173524204 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.24491049741137022 + 0.10161506669396154 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.4471775439169511 + 0.3703298924648816 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.45180100180492244 + 0.3799178428257963 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.4981092665821893 + 0.49437718261166247 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.4874421319098412 + 0.46435496487254957 * sqrt_viscosity_T14_7/sqrt_viscosity_T14_8)
+    )*/+
+    X[8] * sq(sqrt_viscosity_T14_8) /*/ (
+        X[0] * sq(0.30266588449751863 + 0.15676339045921106 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_0)+
+        X[1] * sq(0.5081006753316687 + 0.5252777740820286 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_1)+
+        X[2] * sq(0.47030500464870306 + 0.4211596064560409 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_2)+
+        X[3] * sq(0.2566924212693622 + 0.1117986923572366 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_3)+
+        X[4] * sq(0.46169689093267774 + 0.40136426593724167 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_4)+
+        X[5] * sq(0.4661568751699116 + 0.41147889617694056 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_5)+
+        X[6] * sq(0.5099278640845496 + 0.5312702683727968 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_6)+
+        X[7] * sq(0.5116771649594067 + 0.5371171345305903 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_7)+
+        X[8] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_8/sqrt_viscosity_T14_8)
+    )*/
+ );
 }
 
-float fg_thermal_conductivity(float T, const float X[]) {
- float T_12 =	sqrt(T);
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- float lambda_0 = -0.050776745398752425 + 0.030436795639160276*ln_T -0.005264394300387356*ln_T_2 + 0.0003196200271771332*ln_T_3;
-    float lambda_1 = -0.00038361347640629456 + 1.373891139435713e-06*ln_T + 6.810161455081438e-05*ln_T_2 -1.6949162182366439e-06*ln_T_3;
-    float lambda_2 = -0.03314552114457473 + 0.01807259175470779*ln_T -0.0033124821021180456*ln_T_2 + 0.0002053089285251191*ln_T_3;
-    float lambda_3 = -0.11247665483993963 + 0.048605181888636974*ln_T -0.006133412516962594*ln_T_2 + 0.00027894897449297655*ln_T_3;
-    float lambda_4 = -0.0042377610604339465 + 0.002708190037614555*ln_T -0.00036851997051419243*ln_T_2 + 1.998059951714731e-05*ln_T_3;
-    float lambda_5 = 0.01618888092740503 -0.0049621381060899715*ln_T + 0.0005125852933360243*ln_T_2 -5.977575221605563e-06*ln_T_3;
-    float lambda_6 = 0.0037930538656311195 -0.0019519150619400432*ln_T + 0.00033366018354223377*ln_T_2 -9.789488051034057e-06*ln_T_3;
-    float lambda_7 = 0.018249977181270135 -0.00919097797255152*ln_T + 0.0015147698273309828*ln_T_2 -6.985880683406551e-05*ln_T_3;
-    float lambda_8 = 0.020620098891692536 -0.009034900829577936*ln_T + 0.001356969721780825*ln_T_2 -6.306749101888294e-05*ln_T_3;
- return T_12/2. * (X[0]*lambda_0+X[1]*lambda_1+X[2]*lambda_2+X[3]*lambda_3+X[4]*lambda_4+X[5]*lambda_5+X[6]*lambda_6+X[7]*lambda_7+X[8]*lambda_8)
-                + T_12/2. / (X[0]/lambda_0+X[1]/lambda_1+X[2]/lambda_2+X[3]/lambda_3+X[4]/lambda_4+X[5]/lambda_5+X[6]/lambda_6+X[7]/lambda_7+X[8]/lambda_8);
+float fg_thermal_conductivity(float T_12, float ln_T, float ln_T_2, float ln_T_3, const float X[]) {
+ float conductivity_0 = -0.050776745398752425 + 0.030436795639160276*ln_T -0.005264394300387356*ln_T_2 + 0.0003196200271771332*ln_T_3;
+    float conductivity_1 = -0.00038361347640629456 + 1.373891139435713e-06*ln_T + 6.810161455081438e-05*ln_T_2 -1.6949162182366439e-06*ln_T_3;
+    float conductivity_2 = -0.03314552114457473 + 0.01807259175470779*ln_T -0.0033124821021180456*ln_T_2 + 0.0002053089285251191*ln_T_3;
+    float conductivity_3 = -0.11247665483993963 + 0.048605181888636974*ln_T -0.006133412516962594*ln_T_2 + 0.00027894897449297655*ln_T_3;
+    float conductivity_4 = -0.0042377610604339465 + 0.002708190037614555*ln_T -0.00036851997051419243*ln_T_2 + 1.998059951714731e-05*ln_T_3;
+    float conductivity_5 = 0.01618888092740503 -0.0049621381060899715*ln_T + 0.0005125852933360243*ln_T_2 -5.977575221605563e-06*ln_T_3;
+    float conductivity_6 = 0.0037930538656311195 -0.0019519150619400432*ln_T + 0.00033366018354223377*ln_T_2 -9.789488051034057e-06*ln_T_3;
+    float conductivity_7 = 0.018249977181270135 -0.00919097797255152*ln_T + 0.0015147698273309828*ln_T_2 -6.985880683406551e-05*ln_T_3;
+    float conductivity_8 = 0.020620098891692536 -0.009034900829577936*ln_T + 0.001356969721780825*ln_T_2 -6.306749101888294e-05*ln_T_3;
+ return T_12/2. * (X[0]*conductivity_0+X[1]*conductivity_1+X[2]*conductivity_2+X[3]*conductivity_3+X[4]*conductivity_4+X[5]*conductivity_5+X[6]*conductivity_6+X[7]*conductivity_7+X[8]*conductivity_8)
+                + T_12/2. / (X[0]/conductivity_0+X[1]/conductivity_1+X[2]/conductivity_2+X[3]/conductivity_3+X[4]/conductivity_4+X[5]/conductivity_5+X[6]/conductivity_6+X[7]/conductivity_7+X[8]/conductivity_8);
 }
 
-void fg_mixture_diffusion_coefficients(float T, const float X[], const float mass_fractions[], float* _) {
- float ln_T = log(T);
- float ln_T_2 = ln_T*ln_T;
- float ln_T_3 = ln_T_2*ln_T;
- float T_32 = T*sqrt(T);
+void fg_mixture_diffusion_coefficients(float T, float T_12, float ln_T, float ln_T_2, float ln_T_3, const float X[], const float mass_fractions[], float* _) {
+ float T_32 = T*T_12;
  _[0] = (1. - mass_fractions[0]) * X[0] / (
     X[0] / ((-0.0013593160289085888 + 0.0012491483642934097*ln_T -0.0001362823202920115*ln_T_2 + 8.166096666764263e-06*ln_T_3)*T_32)+
     X[1] / ((-0.002757292660861368 + 0.0014943915067611477*ln_T -0.00018146320600776524*ln_T_2 + 9.22974923762117e-06*ln_T_3)*T_32)+
@@ -202,7 +301,7 @@ void fg_mixture_diffusion_coefficients(float T, const float X[], const float mas
     X[8] / ((-0.0014137682760905614 + 0.0006588216246572793*ln_T -8.173125038241601e-05*ln_T_2 + 3.889865074139697e-06*ln_T_3)*T_32));
 }
 
-void fg_rates(const float log_T, const float T, const float T2, const float T4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float G[], const float C[], float* _) {
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float G[], const float C[], float* _) {
  float c, Pr, logFcent, logPr_c, f1;
     c = exp2(-12050.746610262851 * rcp_T -0.406 * log_T + 31.723952184259364);
     const float cR0 = c * (C[1]*C[3] - G[4]*G[5]/(G[1]*G[3]) * C[4]*C[5]);
