@@ -355,18 +355,20 @@ void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const fl
 }}
 float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
     {code([f'float sqrt_viscosity_T14_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}
+    {code([f'float rcp_sqrt_viscosity_T14_{k} = 1./sqrt_viscosity_T14_{k};' for k in range(species.len)])}
  return
     {('+'+line).join([f'''mole_fractions[{k}] * sq(sqrt_viscosity_T14_{k}) / (
-        {('+'+line+'	').join([(lambda sqrt_a: f'mole_fractions[{j}] * sq({sqrt_a} + {sqrt_a*sqrt(sqrt(species.molar_mass[j]/species.molar_mass[k]))} * sqrt_viscosity_T14_{k}/sqrt_viscosity_T14_{j})')(sqrt(1/sqrt(8) * 1/sqrt(1. + species.molar_mass[k]/species.molar_mass[j]))) for j in range(species.len)])}
+        {('+'+line+'	').join([(lambda sqrt_a: f'mole_fractions[{j}] * sq({sqrt_a} + {sqrt_a*sqrt(sqrt(species.molar_mass[j]/species.molar_mass[k]))} * sqrt_viscosity_T14_{k} * rcp_sqrt_viscosity_T14_{j})')(sqrt(1/sqrt(8) * 1/sqrt(1. + species.molar_mass[k]/species.molar_mass[j]))) for j in range(species.len)])}
     )''' for k in range(species.len)])};
 }}
 
 float fg_thermal_conductivity_T_12_2(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
- {code([f'float conductivity_T12_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
+    {code([f'float conductivity_T12_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.thermal_conductivity_T12)])}
  return (
-    {'+'.join([f'mole_fractions[{k}]*conductivity_T12_{k}' for k in range(species.len)])})
- + 1./ (
-    {'+'.join([f'mole_fractions[{k}]/conductivity_T12_{k}' for k in range(species.len)])});
+    {' + '.join([f'mole_fractions[{k}]*conductivity_T12_{k}' for k in range(species.len)])}
+ ) + 1./ (
+    {' + '.join([f'mole_fractions[{k}]/conductivity_T12_{k}' for k in range(species.len)])}
+ );
 }}
 
 void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[], const float mass_fractions[], float* _) {{

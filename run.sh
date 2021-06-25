@@ -5,8 +5,8 @@ set file "/usr/share/cantera/data/$name.yaml"
 echo -e 'Cantera\t| '
 cantera/reaction.py $file
 cantera/transport.py $file
-echo -e 'Rust\t| '
-run combustion 'tool' $file || exit 1
+#echo -e 'Rust\t| '
+#run combustion $file || exit 1
 echo -e 'NekRK\t| '
 ./main.py $file > /var/tmp/$name.c || exit 1
 mv /var/tmp/$name.c share/mechanisms
