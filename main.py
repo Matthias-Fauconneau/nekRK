@@ -242,6 +242,7 @@ def from_model(species_names, r):
     class Reaction(): pass
     reaction = Reaction()
     reaction.type = r.get('type', 'elementary')
+    if reaction.type == 'falloff' and not r.get('Troe'): reaction.type = 'three-body'
     reaction.reversible = r.get('reversible', True)
     import re
     [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species.names] for side in
@@ -381,4 +382,4 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
 }}
-""".replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
+""".replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
