@@ -1,9 +1,11 @@
 cmake_minimum_required(VERSION 3.11)
 project(nekrk LANGUAGES CXX)
+set(CMAKE_C_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
+set(CMAKE_CXX_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
 #find_package(OCCA REQUIRED)
 include_directories(${OCCA_DIR}/include)
-include_directories(${OCCA_DIR}/include)
 link_directories(${OCCA_DIR}/lib)
+#message(${OCCA_DIR}/lib)
 find_library(NAMES occa PATHS ${OCCA_DIR}/lib)
 
 include_directories(${CMAKE_SOURCE_DIR})

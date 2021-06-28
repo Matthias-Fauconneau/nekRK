@@ -197,7 +197,7 @@ class Species:
         _ = TransportPolynomials()
         _.sqrt_viscosity_T14 = [polynomial_regression(ln(T), [sqrt(self.viscosity(a, T)) / sqrt(sqrt(T)) for T in T]) for a in range(self.len)]
         _.thermal_conductivity_T12 = [polynomial_regression(ln(T), [self.thermal_conductivity(a, T) / sqrt(T) for T in T]) for a in range(self.len)]
-        #print("_.binary_thermal_diffusion_coefficients_T32 using Python (slow version)", file=stderr)
+        #print("Fit binary thermal diffusion coefficients using Python (slow version)", file=stderr)
         import time
         start_time = time.time()
         _.binary_thermal_diffusion_coefficients_T32 = [[polynomial_regression(ln(T), [self.binary_thermal_diffusion_coefficient(a, b, T) / (T*sqrt(T)) for T in T]) for b in range(self.len)] for a in range(self.len)]
@@ -207,18 +207,22 @@ class Species:
 import ruamel.yaml
 model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
 species = model['species']
-for inert in ['AR','N2']:
-    def position(iterator, predicate):
-        for index, item in enumerate(iterator):
-            if predicate(item):
-                return index
-        return None
-    inert = position(species, lambda e: e['name']==inert)
-    if inert:
-        species.append(species.pop(inert)) # Move inert specie to last index
-        break
-else:
-    print("Missing inert specie", file=stderr)
+if species[-1]['name'] not in ['N2','AR']:
+    for inert in ['N2','AR']:
+        def position(iterator, predicate):
+            for index, item in enumerate(iterator):
+                if predicate(item):
+                    return index
+            return None
+        inert = position(species, lambda e: e['name']==inert)
+        if inert:
+            species.append(species.pop(inert)) # Move inert specie to last index
+            break
+    else:
+        exit('Missing inert specie')
+    #print(f'{len(species)} species, inert specie: {species[-1]}', file=stderr)
+active_species = len(species)-1
+if species[-2]['name'] in ['N2','AR']: active_species = len(species)-2
 
 def from_model(species):
     self = Species()
@@ -343,8 +347,10 @@ line= '\n\t'
 print(
 f"""float sq(float x) {{ return x*x; }}
 #define n_species {species.len}
+#define n_active_species {active_species}
 const float fg_molar_mass[{species.len}] = {{{', '.join([f'{w}' for w in species.molar_mass])}}};
 const float fg_rcp_molar_mass[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass])}}};
+const float fg_rcp_molar_mass_rates[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass[:active_species]+[sum(species.molar_mass[active_species:])]])}}};
 void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(lambda a: f'{a[0]} + {a[1]} * T + {a[2]} * T_2 + {a[3]} * T_3 + {a[4]} * T_4')}
 }}
@@ -380,6 +386,6 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
-    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(species.len-1)])}
+    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(active_species)])}
 }}
 """.replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))

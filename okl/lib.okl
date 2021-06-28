@@ -10,22 +10,22 @@
     const float rcp_energy_rate)
 {
   for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
-    float wrk[n_species];
+    float wrk[n_active_species+1];
     float sum_active_mass_fractions = 0.;
     float mean_rcp_molar_mass = 0.;
-    for(int k=0;k<n_species-1;k++) {
+    for(int k=0;k<n_active_species;k++) {
         const float mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
-        wrk[k] = mass_fraction*fg_rcp_molar_mass[k];
+        wrk[k] = mass_fraction*fg_rcp_molar_mass_rates[k];
         sum_active_mass_fractions += mass_fraction;
         mean_rcp_molar_mass += wrk[k];
     }
-    wrk[n_species-1] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[n_species-1];
-    mean_rcp_molar_mass += wrk[n_species-1];
+    wrk[n_active_species] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass_rates[n_active_species];
+    mean_rcp_molar_mass += wrk[n_active_species];
 
     const float T = reference_temperature * temperature[id];
     const float rcp_T = 1./T;
     const float concentration = pressure_R * rcp_T;
-    for(int k=0; k < n_species; k++) wrk[k] *= concentration / mean_rcp_molar_mass;
+    for(int k=0; k < n_active_species+1; k++) wrk[k] *= concentration / mean_rcp_molar_mass;
 
     const float log_T = log2(T);
     const float T2 = T*T;
@@ -39,12 +39,12 @@
     float exp_Gibbs0_RT[n_species];
     fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
     const float rcp_T2 = rcp_T*rcp_T;
-    float molar_rates[n_species-1];
+    float molar_rates[n_active_species];
     fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
     fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
     float energy_rate_RT = 0.;
-    for(int k=0; k < n_species-1; k++) {
+    for(int k=0; k < n_active_species; k++) {
         mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
         energy_rate_RT += molar_rates[k] * wrk[k];
     }
@@ -52,7 +52,6 @@
   }
 }
 
-#if CFG_FEATURE_TRANSPORT
 @kernel void transport(
     const int n_states,
     const float pressure_Pa,
@@ -100,12 +99,18 @@
         }
     }
 }
-#endif
 
 @kernel void number_of_species(@restrict int* nSpecies)
 {
     for(int id=0;id<1;++id;@tile(p_blockSize,@outer,@inner)) {
       nSpecies[0] = n_species;
+    }
+}
+
+@kernel void number_of_active_species(@restrict int* nSpecies)
+{
+    for(int id=0;id<1;++id;@tile(p_blockSize,@outer,@inner)) {
+        nSpecies[0] = n_active_species;
     }
 }
 

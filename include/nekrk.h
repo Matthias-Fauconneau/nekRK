@@ -17,6 +17,7 @@ namespace nekRK {
     );
 
     int number_of_species();
+    int number_of_active_species();
     const double* molar_mass();
 
     double mean_specific_heat_at_CP_R(

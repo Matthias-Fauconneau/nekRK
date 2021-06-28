@@ -3,6 +3,9 @@ using namespace std;
 #include <cassert>
 #include <unistd.h>
 
+#include <sys/stat.h>
+bool exists(std::string name) { struct stat buffer; return (stat (name.c_str(), &buffer) == 0); }
+
 const double R = 1.380649e-23 * 6.02214076e23;
 
 #include <occa.hpp>
@@ -12,6 +15,7 @@ namespace {
     occa::kernel production_rates_kernel;
     occa::kernel transportCoeffs_kernel;
     occa::kernel number_of_species_kernel;
+    occa::kernel number_of_active_species_kernel;
     occa::kernel mean_specific_heat_at_CP_R_kernel;
     occa::kernel molar_mass_kernel;
 
@@ -23,6 +27,7 @@ namespace {
     double reference_energy_rate;
 
     int n_species = -1;
+    int n_active_species = -1;
     double *m_molar = 0;
 
     MPI_Comm comm;
@@ -36,6 +41,13 @@ void set_number_of_species()
   o_tmp.copyTo(&n_species);
 }
 
+void set_number_of_active_species()
+{
+    auto o_tmp = device.malloc<int>(1);
+    number_of_active_species_kernel(o_tmp);
+    o_tmp.copyTo(&n_active_species);
+}
+
 void set_molar_mass()
 {
   if(!m_molar) m_molar = new double[n_species];
@@ -47,11 +59,12 @@ void set_molar_mass()
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties,
        const int group_size, MPI_Comm _comm, bool transport, bool verbose)
 {
+    assert(mech);
     comm   = _comm;
     device = _device;
 
-    // FIXME: Assert exists. OCCA seems to create an empty file otherwise
     std::string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".c";
+    assert(exists(mechFile)); // FIXME: OCCA seems to create an empty file otherwise
 
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
@@ -71,18 +84,22 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     for (int r = 0; r < 2; r++) {
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
             if (transport) {
-                kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
+                //kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
+                if (verbose) { printf("Transport\n"); }
                 transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
             }
-            kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
+            //kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
+            if (verbose) { printf("Rates\n"); }
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
             number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
+            number_of_active_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_active_species", kernel_properties);
             mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties); // FIXME: Should always be host CPU
             molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties); // FIXME: Should always be host CPU, used once as the interface to get molar_mass
       }
       MPI_Barrier(comm);
     }
     set_number_of_species();
+    set_number_of_active_species();
     set_molar_mass();
 
     if(rank==0 && verbose) {
@@ -162,7 +179,14 @@ void nekRK::production_rates(const int n_states, double pressure,
 
 int nekRK::number_of_species()
 {
-  return n_species;
+    assert(n_species != ~0);
+    return n_species;
+}
+
+int nekRK::number_of_active_species()
+{
+    assert(n_active_species != ~0);
+    return n_active_species;
 }
 
 const double* nekRK::molar_mass()
