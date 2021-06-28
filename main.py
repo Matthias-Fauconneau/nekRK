@@ -17,12 +17,12 @@ from numpy import polynomial
 polynomial_regression = lambda X, Y, degree=3: polynomial.polynomial.polyfit(X, Y, deg=degree, w=[1/sq(y) for y in Y])
 from numpy import linspace
 
-K = 1.380649e-23 #* J/kelvin
+kB = 1.380649e-23 #* J/kelvin
 light_speed = 299792458.
 mu_0 = 1.2566370621e-6 #  H/m (Henry=kg⋅m²/(s²A²))
 epsilon_0 = 1./(light_speed*light_speed*mu_0) # F/m (Farad=s⁴A²/(m²kg)
 NA = 6.02214076e23 #/mole
-R = K*NA
+R = kB*NA
 Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
 J_per_cal = 4.184
 standard_atomic_weights = {'H': 1.008, 'C': 12.011, 'N': 14.0067, 'O': 15.999, 'Ar': 39.95}
@@ -130,7 +130,7 @@ class Species:
         return sqrt(well_depth_J[a]*well_depth_J[b]) * sq(self.xi(a, b))
 
     def T_star(self, a, b, T):
-        return T * K / self.interaction_well_depth(a, b)
+        return T * kB / self.interaction_well_depth(a, b)
 
     def reduced_dipole_moment(self, a, b):
         (well_depth_J, permanent_dipole_moment, diameter) = (self.well_depth_J, self.permanent_dipole_moment, self.diameter)
@@ -157,20 +157,20 @@ class Species:
     def Omega_star_11(self, a, b, T):
             return self.Omega_star_22(a, b, T)/self.collision_integral(A_star, a, b, T)
 
-    viscosity = lambda self, a, T: 5./16. * sqrt(pi * self.molar_mass[a]/NA * K*T) / (self.Omega_star_22(a, a, T) * pi * sq(self.diameter[a]))
+    viscosity = lambda self, a, T: 5./16. * sqrt(pi * self.molar_mass[a]/NA * kB*T) / (self.Omega_star_22(a, a, T) * pi * sq(self.diameter[a]))
 
     def thermal_conductivity(self, a, T):
         (molar_mass, thermodynamics, diameter, well_depth_J, rotational_relaxation, internal_degrees_of_freedom) = (self.molar_mass, self.thermodynamics, self.diameter, self.well_depth_J, self.rotational_relaxation, self.internal_degrees_of_freedom)
 
-        f_internal = molar_mass[a]/NA/(K * T) * self.binary_thermal_diffusion_coefficient(a,a,T) / self.viscosity(a, T);
+        f_internal = molar_mass[a]/NA/(kB * T) * self.binary_thermal_diffusion_coefficient(a,a,T) / self.viscosity(a, T);
         T_star= self.T_star(a, a, T)
         fz = lambda T_star: 1. + pow(pi, 3./2.) / sqrt(T_star) * (1./2. + 1./T_star) + (1./4. * sq(pi) + 2.) / T_star
         # Scaling factor for temperature dependence of rotational relaxation: Kee, Coltrin [2003:12.112, 2017:11.115]
-        c1 = 2./pi * (5./2. - f_internal)/(rotational_relaxation[a] * fz(298.*K / well_depth_J[a]) / fz(T_star) + 2./pi * (5./3. * internal_degrees_of_freedom[a] + f_internal))
+        c1 = 2./pi * (5./2. - f_internal)/(rotational_relaxation[a] * fz(298.*kB / well_depth_J[a]) / fz(T_star) + 2./pi * (5./3. * internal_degrees_of_freedom[a] + f_internal))
         f_translation = 5./2. * (1. - c1 * internal_degrees_of_freedom[a]/(3./2.))
         f_rotation = f_internal * (1. + c1)
         Cv_internal = thermodynamics[a].molar_heat_capacity_at_constant_pressure_R(T) - 5./2. - internal_degrees_of_freedom[a]
-        return (self.viscosity(a, T)/(molar_mass[a]/NA))*K*(f_translation * 3./2. + f_rotation * internal_degrees_of_freedom[a] + f_internal * Cv_internal)
+        return (self.viscosity(a, T)/(molar_mass[a]/NA))*kB*(f_translation * 3./2. + f_rotation * internal_degrees_of_freedom[a] + f_internal * Cv_internal)
 
     def reduced_mass(self, a, b):
         molar_mass = self.molar_mass
@@ -188,7 +188,7 @@ class Species:
         return (self.diameter[a] + self.diameter[b])/2. * pow(self.xi(a, b), -1./6.)
 
     def binary_thermal_diffusion_coefficient(self, a, b, T):
-        return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(K*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
+        return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(kB*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
         T = linspace(300., 3000., 50)
@@ -206,6 +206,8 @@ class Species:
 
 import ruamel.yaml
 model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
+units = model['units']
+assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");
 species = model['species']
 if species[-1]['name'] not in ['N2','AR']:
     for inert in ['N2','AR']:
@@ -234,7 +236,7 @@ def from_model(species):
     self.thermodynamics = p(lambda s: from_model(s['thermo']))
     self.internal_degrees_of_freedom = p(lambda s: {'atom': 0, 'linear': 1, 'nonlinear': 3/2}[s['transport']['geometry']])
     self.heat_capacity_ratio = p(lambda s: 1. + 2./{'atom': 3, 'linear': 5, 'nonlinear': 6}[s['transport']['geometry']])
-    self.well_depth_J = p(lambda s: s['transport']['well-depth']*K)
+    self.well_depth_J = p(lambda s: s['transport']['well-depth']*kB)
     self.diameter = p(lambda s: s['transport']['diameter']*1e-10) #Å
     self.permanent_dipole_moment = p(lambda s: s['transport'].get('dipole',0)*Cm_per_Debye)
     self.polarizability = p(lambda s: s['transport'].get('polarizability',0)*1e-30) # Å³
@@ -245,39 +247,59 @@ species = from_model(species)
 def from_model(species_names, r):
     class Reaction(): pass
     reaction = Reaction()
-    reaction.type = r.get('type', 'elementary')
-    if reaction.type == 'falloff' and not r.get('Troe'): reaction.type = 'three-body'
-    reaction.reversible = r.get('reversible', True)
     import re
     [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species.names] for side in
                             [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
     reaction.net = [-reactant + product for reactant, product in zip(reaction.reactants, reaction.products)]
     reaction.sum_net = sum(reaction.net)
 
-    class RateConstant(): pass
-    reaction.rate_constant = RateConstant()
-    concentration_cm3_unit_conversion_factor_exponent = sum(reaction.reactants)
-    if reaction.type == "three-body":
-        concentration_cm3_unit_conversion_factor_exponent += 1
-    rate_constant = r.get('rate-constant', r.get('high-P-rate-constant'))
-    reaction.rate_constant.preexponential_factor = rate_constant['A'] * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent-1)
-    reaction.rate_constant.temperature_exponent = rate_constant['b']
-    reaction.rate_constant.activation_temperature = rate_constant['Ea'] * J_per_cal / (K*NA)
+    def rate_constant(rate_constant, concentration_cm3_unit_conversion_factor_exponent):
+        class RateConstant(): pass
+        _ = RateConstant()
+        _.preexponential_factor = rate_constant['A'] * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent)
+        _.temperature_exponent = rate_constant['b']
+        Ea = rate_constant['Ea']
+        match units['activation-energy']:
+            case 'K': _.activation_temperature = Ea
+            case 'cal/mol': _.activation_temperature = Ea * J_per_cal / (kB*NA)
+            case _: exit('activation-energy')
+        #
+        return _
+    #
+
+    reactants = sum(reaction.reactants)
+    if r.get('type') == "three-body":
+        reactants += 1
+
+    reaction.rate_constant = rate_constant(r.get('rate-constant', r.get('high-P-rate-constant')), reactants-1)
     if r.get('efficiencies'): reaction.efficiencies = [r['efficiencies'].get(specie, r.get('default-efficiency', 1)) for specie in species.names]
-    k0 = r.get('low-P-rate-constant')
-    if k0:
-        reaction.k0 = RateConstant()
-        reaction.k0.preexponential_factor = k0['A'] * pow(1e-6, sum(reaction.reactants)-1+1)
-        reaction.k0.temperature_exponent = k0['b']
-        reaction.k0.activation_temperature = k0['Ea'] * J_per_cal / (K*NA)
-    if reaction.type == 'falloff':
-        class Troe(): pass
-        reaction.troe = Troe()
-        reaction.troe.A = r['Troe']['A']
-        reaction.troe.T3 = r['Troe']['T3']
-        reaction.troe.T1 = r['Troe']['T1']
-        reaction.troe.T2 = r['Troe'].get('T2', 0)
-    #}
+    type = r.get('type')
+    match type:
+        case None|'elementary':
+            if "<=>" in r['equation']:
+                assert(r.get('reversible', True))
+                reaction.type = 'elementary'
+            elif re.search("[^<]=>", r['equation']):
+                reaction.type = 'irreversible'
+            else:
+                exit(r)
+        case 'three-body':
+            reaction.type = 'three-body'
+        case 'falloff' if not r.get('Troe'):
+            reaction.type = 'pressure-modification'
+            reaction.k0 = rate_constant(r['low-P-rate-constant'], reactants)
+        case 'falloff':
+            reaction.type = 'falloff'
+            reaction.k0 = rate_constant(r['low-P-rate-constant'], reactants)
+            class Troe(): pass
+            reaction.troe = Troe()
+            reaction.troe.A = r['Troe']['A']
+            reaction.troe.T3 = r['Troe']['T3']
+            reaction.troe.T1 = r['Troe']['T1']
+            reaction.troe.T2 = r['Troe'].get('T2', 0)
+        case _:
+            exit(r)
+    #
     return reaction
 reactions = [from_model(species.names, reaction) for reaction in model['reactions']]
 
@@ -307,29 +329,33 @@ def thermodynamics(len, e):
     return code([f'if (T < {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
 
 arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temperature_exponent} * log_T + {log2(r.preexponential_factor)})'
-rcp_arrhenius = lambda r: f'exp2({r.activation_temperature/ln(2)} * rcp_T - {r.temperature_exponent} * log_T - {log2(r.preexponential_factor)})'
 
 def reaction(id, r):
     if hasattr(r, 'efficiencies'):
         efficiency = f"({'+'.join([f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]' for specie, efficiency in enumerate(r.efficiencies)])})"
-    if r.type == "elementary":
-        c = f'c = {arrhenius(r.rate_constant)}'
-    elif r.type == "three-body":
-        c = f'c = {arrhenius(r.rate_constant)} * {efficiency}'
-    elif r.type == "pressure-modification":
-        c = f'''Pr = {arrhenius(r.k0)} * {efficiency};
-        c = Pr / ({rcp_arrhenius(r.rate_constant)} * Pr + 1.)'''
-    elif r.type == "falloff":
-        A, T3, T1, T2 = r.troe.A, r.troe.T3, r.troe.T1, r.troe.T2
-        c = f'''
-        Pr = {arrhenius(r.k0)} * {efficiency};
-        logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) + exp2({-T2/ln(2)}*rcp_T));
-        logPr_c = log2(Pr) - 0.67*logFcent - {0.4*log2(10)};
-        f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent-{0.75*log2(10.)});
-        c = Pr / ({rcp_arrhenius(r.rate_constant)} * Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
-    else: exit(r.type)
+    match r.type:
+        case 'elementary'|'irreversible':
+            c = f'c = {arrhenius(r.rate_constant)}'
+        case "three-body":
+            c = f'c = {arrhenius(r.rate_constant)} * {efficiency}'
+        case "pressure-modification":
+            c = f'''C_k0 = {arrhenius(r.k0)} * {efficiency};
+            k_inf = {arrhenius(r.rate_constant)};
+            c = (C_k0 * k_inf) / (C_k0 + k_inf)'''
+        case "falloff":
+            A, T3, T1, T2 = r.troe.A, r.troe.T3, r.troe.T1, r.troe.T2
+            c = f'''k_inf = {arrhenius(r.rate_constant)};
+            Pr = {arrhenius(r.k0)} * {efficiency} / k_inf;
+            logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) + exp2({-T2/ln(2)}*rcp_T));
+            logPr_c = log2(Pr) - 0.67*logFcent - {0.4*log2(10)};
+            f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+{0.75*log2(10.)});
+            c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
+        case _:
+            exit(_)
+    #
     Rf = product_of_exponentiations(r.reactants, 'concentrations')
-    if r.reversible:
+    if r.type == 'irreversible': R = Rf
+    else:
         rcp_equilibrium_constant = product_of_exponentiations(r.net, 'exp_Gibbs0_RT');
         if -r.sum_net == 0: pass
         elif -r.sum_net == 1: rcp_equilibrium_constant += '* P0_RT'
@@ -337,8 +363,6 @@ def reaction(id, r):
         else: raise(f'Σnet {sum_net}')
         Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(r.products, "concentrations")}'
         R = f'({Rf} - {Rr})'
-    else:
-        R = Rf
     return f'''{c};
     const float cR{id} = c * {R};'''
 #}
@@ -385,7 +409,7 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 }}
 #endif
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
- float c, Pr, logFcent, logPr_c, f1;
+ float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(active_species)])}
 }}
