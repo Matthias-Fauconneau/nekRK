@@ -6,6 +6,9 @@ using namespace std;
 #include <sys/stat.h>
 bool exists(std::string name) { struct stat buffer; return (stat (name.c_str(), &buffer) == 0); }
 
+#include <fstream>
+#include <jsoncpp/json/json.h>
+
 const double R = 1.380649e-23 * 6.02214076e23;
 
 #include <occa.hpp>
@@ -26,34 +29,12 @@ namespace {
     double reference_mass_rate;
     double reference_energy_rate;
 
-    int n_species = -1;
-    int n_active_species = -1;
-    double *m_molar = 0;
+    std::vector<std::string> species_names;
+    int number_of_active_species = -1;
+    std::vector<double> species_molar_mass;
 
     MPI_Comm comm;
 
-};
-
-void set_number_of_species()
-{
-  auto o_tmp = device.malloc<int>(1);
-  number_of_species_kernel(o_tmp);
-  o_tmp.copyTo(&n_species);
-}
-
-void set_number_of_active_species()
-{
-    auto o_tmp = device.malloc<int>(1);
-    number_of_active_species_kernel(o_tmp);
-    o_tmp.copyTo(&n_active_species);
-}
-
-void set_molar_mass()
-{
-  if(!m_molar) m_molar = new double[n_species];
-  auto o_tmp = device.malloc<double>(n_species);
-  molar_mass_kernel(o_tmp);
-  o_tmp.copyTo(m_molar);
 }
 
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties,
@@ -62,6 +43,14 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     assert(mech);
     comm   = _comm;
     device = _device;
+
+    Json::Value model;
+    JSONCPP_STRING errs;
+    std::ifstream ifs(string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".json");
+    parseFromStream(Json::CharReaderBuilder(),ifs, &model, &errs);
+    for(auto specie: model["names"]) species_names.push_back(specie.asString());
+    for(auto specie: model["molar_mass"]) species_molar_mass.push_back(specie.asFloat());
+    number_of_active_species = model["active"].asFloat();
 
     std::string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".c";
     assert(exists(mechFile)); // FIXME: OCCA seems to create an empty file otherwise
@@ -84,28 +73,22 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     for (int r = 0; r < 2; r++) {
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
             if (transport) {
-                //kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
+                kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
                 if (verbose) { printf("Transport\n"); }
                 transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
             }
-            //kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
+            kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
             if (verbose) { printf("Rates\n"); }
             production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
-            number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
-            number_of_active_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_active_species", kernel_properties);
             mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties); // FIXME: Should always be host CPU
-            molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties); // FIXME: Should always be host CPU, used once as the interface to get molar_mass
       }
       MPI_Barrier(comm);
     }
-    set_number_of_species();
-    set_number_of_active_species();
-    set_molar_mass();
 
     if(rank==0 && verbose) {
       std::cout << "nekRK initialized successfully\n";
         std::cout << "mechanism file: "<< mechFile <<"\n";
-        std::cout << "nSpecies: "<< n_species <<"\n";
+        std::cout << "nSpecies: "<< nekRK::number_of_species() <<"\n";
     }
 }
 
@@ -123,7 +106,7 @@ double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
 {
     auto mcp = new double[1];
     auto o_mcp = device.malloc<double>(1);
-  auto o_mole_fractions = device.malloc<double>(n_species, mole_fractions);
+  auto o_mole_fractions = device.malloc<double>(number_of_species(), mole_fractions);
     // This is not a kernel, just to interface a single call to fg_molar_heat_capacity_at_constant_pressure_R on CPU
     mean_specific_heat_at_CP_R_kernel(T, o_mole_fractions, o_mcp);
     o_mcp.copyTo(mcp);
@@ -139,14 +122,14 @@ void nekRK::set_reference_parameters(
 {
     double sum_rcp_molar_mass = 0.;
     for(int k=0;k<number_of_species();k++)
-      sum_rcp_molar_mass += reference_mass_fractions_in[k] / m_molar[k];
+      sum_rcp_molar_mass += reference_mass_fractions_in[k] / species_molar_mass()[k];
     double reference_molar_mass = 1./sum_rcp_molar_mass;
     double reference_concentration = reference_pressure_in / R / reference_temperature_in;
     double reference_density = reference_concentration * reference_molar_mass;
 
     auto reference_mole_fractions = new double[number_of_species()];
     for(int k=0;k<number_of_species();k++)
-      reference_mole_fractions[k] = 1./m_molar[k] * reference_molar_mass * reference_mass_fractions_in[k];
+        reference_mole_fractions[k] = 1./species_molar_mass()[k] * reference_molar_mass * reference_mass_fractions_in[k];
 
     double reference_molar_heat_capacity_R =
       nekRK::mean_specific_heat_at_CP_R(reference_temperature_in, reference_mole_fractions);
@@ -179,19 +162,24 @@ void nekRK::production_rates(const int n_states, double pressure,
 
 int nekRK::number_of_species()
 {
-    assert(n_species != ~0);
-    return n_species;
+    assert(species_names);
+    return ::species_names.size();
 }
 
 int nekRK::number_of_active_species()
 {
-    assert(n_active_species != ~0);
-    return n_active_species;
+    assert(number_of_active_species != ~0);
+    return ::number_of_active_species;
 }
 
-const double* nekRK::molar_mass()
+const std::vector<double> nekRK::species_molar_mass()
 {
-  return (const double*) m_molar;
+  return ::species_molar_mass;
+}
+
+const std::vector<std::string> nekRK::species_names()
+{
+    return ::species_names;
 }
 
 void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, double reference_temperature)

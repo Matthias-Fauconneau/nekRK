@@ -61,14 +61,14 @@ int main(int argc, char **argv) {
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
 
-    auto molar_mass_species = nekRK::molar_mass();
+    auto species_molar_mass = nekRK::species_molar_mass();
 
     double molar_mass = 0.;
-    for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
+    for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * species_molar_mass[k];
 
     auto reference_mass_fractions = new double[n_species];
     for(int k=0; k<n_species; k++) {
-      reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;
+        reference_mass_fractions[k] = mole_fractions[k] * species_molar_mass[k]  / molar_mass;
     }
     const double reference_length = 1.;
     const double reference_velocity = 1.;

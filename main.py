@@ -281,10 +281,6 @@ def from_model(species_names, r):
     return reaction
 reactions = [from_model(species.names, reaction) for reaction in model['reactions']]
 
-temperature_splits = {}
-for index, specie in enumerate(species.thermodynamics):
-    temperature_splits.setdefault(specie.temperature_split, []).append(index)
-
 transport_polynomials = species.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
 
 code = lambda lines: '\n\t'.join(lines)
@@ -304,7 +300,11 @@ def product_of_exponentiations(c, v):
 #}
 
 piece = lambda specie_indices, expression, piece: code([f'_[{specie}] = {expression(species.thermodynamics[specie].pieces[piece])};' for specie in specie_indices])
-thermodynamics = lambda e: code([f'if (T < {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
+def thermodynamics(len, e):
+    temperature_splits = {}
+    for index, specie in enumerate(species.thermodynamics[:len]):
+        temperature_splits.setdefault(specie.temperature_split, []).append(index)
+    return code([f'if (T < {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
 
 arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temperature_exponent} * log_T + {log2(r.preexponential_factor)})'
 rcp_arrhenius = lambda r: f'exp2({r.activation_temperature/ln(2)} * rcp_T - {r.temperature_exponent} * log_T - {log2(r.preexponential_factor)})'
@@ -345,21 +345,22 @@ def reaction(id, r):
 
 line= '\n\t'
 print(
-f"""float sq(float x) {{ return x*x; }}
+f"""//{{"active":{active_species}, "names":{species.names}, "molar_mass":{species.molar_mass}
+float sq(float x) {{ return x*x; }}
 #define n_species {species.len}
 #define n_active_species {active_species}
 const float fg_molar_mass[{species.len}] = {{{', '.join([f'{w}' for w in species.molar_mass])}}};
 const float fg_rcp_molar_mass[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass])}}};
-const float fg_rcp_molar_mass_rates[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass[:active_species]+[sum(species.molar_mass[active_species:])]])}}};
 void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
- {thermodynamics(lambda a: f'{a[0]} + {a[1]} * T + {a[2]} * T_2 + {a[3]} * T_3 + {a[4]} * T_4')}
+ {thermodynamics(species.len, lambda a: f'{a[0]} + {a[1]} * T + {a[2]} * T_2 + {a[3]} * T_3 + {a[4]} * T_4')}
 }}
 void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
- {thermodynamics(lambda a: f'{a[0]} + {a[1]/2} * T + {a[2]/3} * T_2 + {a[3]/4} * T_3 + {a[4]/5} * T_4 + {a[5]} * rcp_T')}
+ {thermodynamics(active_species, lambda a: f'{a[0]} + {a[1]/2} * T + {a[2]/3} * T_2 + {a[3]/4} * T_3 + {a[4]/5} * T_4 + {a[5]} * rcp_T')}
 }}
 void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
- {thermodynamics(lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
+ {thermodynamics(active_species, lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
 }}
+#if CFG_FEATURE_TRANSPORT
 float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
     {code([f'float sqrt_viscosity_T14_{k} = {P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3;' for k, P in enumerate(transport_polynomials.sqrt_viscosity_T14)])}
     {code([f'float rcp_sqrt_viscosity_T14_{k} = 1./sqrt_viscosity_T14_{k};' for k in range(species.len)])}
@@ -382,7 +383,7 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
  {code(f'''_[{k}] = (1. - mass_fractions[{k}]) / (
     {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
-
+#endif
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}

@@ -18,7 +18,8 @@ namespace nekRK {
 
     int number_of_species();
     int number_of_active_species();
-    const double* molar_mass();
+    const std::vector<double> species_molar_mass();
+    const std::vector<std::string> species_names();
 
     double mean_specific_heat_at_CP_R(
         double T,

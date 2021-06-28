@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     }
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
-    const int n_species = nekRK::number_of_species();
+    const int n_species = nekRK::species_names().size();
     const int n_active_species = nekRK::number_of_active_species();
     printf("%d %d\n", n_active_species, n_species);
     // setup reference quantities
@@ -66,14 +66,14 @@ int main(int argc, char **argv) {
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
 
-    auto molar_mass_species = nekRK::molar_mass();
+    auto species_molar_mass = nekRK::species_molar_mass();
 
     double molar_mass = 0.;
-    for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
+    for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * species_molar_mass[k];
 
     auto reference_mass_fractions = new double[n_species];
     for(int k=0; k<n_species; k++) {
-      reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;
+      reference_mass_fractions[k] = mole_fractions[k] * species_molar_mass[k]  / molar_mass;
     }
     const double reference_length = 1.;
     const double reference_velocity = 1.;
@@ -87,19 +87,13 @@ int main(int argc, char **argv) {
                     reference_mass_fractions);
 
     // populate states
-    auto mass_fractions = new double[(n_active_species+1)*n_states];
-    for (int i=0; i<n_active_species; i++) {
+    auto mass_fractions = new double[n_species*n_states];
+    for (int i=0; i<n_species; i++) {
         for (int id=0; id<n_states; id++) {
             mass_fractions[i*n_states+id] = reference_mass_fractions[i];
         }
     }
-    double inert_mass_fraction = 0.;
-    for (int i=n_active_species; i<n_species; i++) inert_mass_fraction += reference_mass_fractions[i];
-    int inert_specie = n_active_species;
-    for (int id=0; id<n_states; id++) {
-        mass_fractions[inert_specie*n_states+id] = inert_mass_fraction;
-    }
-    auto o_mass_fractions = device.malloc<double>(n_active_species*n_states, mass_fractions);
+    auto o_mass_fractions = device.malloc<double>(n_species*n_states, mass_fractions);
 
     auto temperatures = new double[n_states];
     for (int i=0; i<n_states; i++) temperatures[i] = temperature_K / reference_temperature;
@@ -155,8 +149,8 @@ int main(int argc, char **argv) {
         // mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
-        double molar_rate = mass_production_rate / (rcp_mass_rate * molar_mass_species[k]);
-        if(rank==0) printf("%d: %.0f, ", k, molar_rate);
+        double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
+        if(rank==0) printf("%s: %.0f, ", nekRK::species_names()[k].c_str(), molar_rate);
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
