@@ -59,23 +59,17 @@
     const float rcp_energy_rate)
 {
     for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
-        float wrk[n_active_species+1]; // mass fraction / molar mass
+        float wrk[n_species]; // mass fraction / molar mass
         float mean_rcp_molar_mass = 0.;
-        for(int k=0; k<n_active_species; k++) {
+        for(int k=0; k<n_species; k++) {
             wrk[k] = fg_rcp_molar_mass[k] * fmax(0., mass_fractions[k*n_states + id]);
             mean_rcp_molar_mass += wrk[k];
         }
-        float inert_mole_proportion = 0.;
-        for(int k=n_active_species; k<n_species; k++) { // FIXME: Should be reduced once when switching from transport to kinetics, not on every kinetic step
-            inert_mole_proportion += fg_rcp_molar_mass[k] * fmax(0., mass_fractions[k*n_states + id]);
-        }
-        wrk[n_active_species] = inert_mole_proportion;
-        mean_rcp_molar_mass += inert_mole_proportion;
 
         const float T = reference_temperature * temperature[id];
         const float rcp_T = 1./T;
         const float concentration_times_mean_molar_mass = pressure_R * rcp_T / mean_rcp_molar_mass;
-        for(int k=0; k < n_active_species+1; k++) wrk[k] = concentration_times_mean_molar_mass * wrk[k];
+        for(int k=0; k < n_species; k++) wrk[k] = concentration_times_mean_molar_mass * wrk[k];
 
         const float log_T = log2(T);
         const float T2 = T*T;

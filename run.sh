@@ -4,9 +4,9 @@ set arg $argv[1]
 set file (test -e $arg && echo $arg || echo "/usr/share/cantera/data/$arg.yaml")
 echo -e 'Cantera\t| '
 cantera/reaction.py $file
-#cantera/transport.py $file
+cantera/transport.py $file
 echo -e 'Rust\t| '
-run combustion $file || exit 1
+run combustion transport $file || exit 1
 set name (basename $file)
 echo -e "NekRK $name\t| "
 set target share/mechanisms/$name.c
@@ -18,5 +18,5 @@ fish -c 'make -Cbuild -j --no-print-directory | rg -v Built | rg -v Consolidate 
 test -e share/mechanisms/$name.c || exit 1
 echo "Rates"
 PATH=/usr/lib/llvm/12/bin:/usr/bin build/bk1 Serial 1 1 0 $name || exit 1
-#echo "Transport"
-#PATH=/usr/lib/llvm/12/bin:/usr/bin build/bk2 Serial 1 1 0 $name
+echo "Transport"
+PATH=/usr/lib/llvm/12/bin:/usr/bin build/bk2 Serial 1 1 0 $name
