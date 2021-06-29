@@ -8,7 +8,8 @@ using namespace std;
 #include <string.h>
 #include <cmath>
 #include <unistd.h>
-
+#include <jsoncpp/json/json.h>
+size_t position(vector<string> v, string k) { return find(v.begin(), v.end(), k) - v.begin(); }
 #include "mpi.h"
 #include "omp.h"
 
@@ -64,8 +65,21 @@ int main(int argc, char **argv) {
     double pressure_Pa   = 101325.;
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
-    for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
+    for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
+    if (argc>=7) {
+        auto amount_proportions = new double[n_species];
+        for (int i=0; i<n_species; i++) amount_proportions[i] = 0;
 
+        Json::Value state;
+        JSONCPP_STRING errs;
+        Json::CharReaderBuilder().newCharReader()->parse(argv[7], argv[7]+strlen(argv[7]), &state, &errs);
+        for(auto specie: state["amount_proportions"].getMemberNames()) amount_proportions[position(nekRK::species_names(), specie)] = state["amount_proportions"][specie].asFloat();
+        double sum = 0.;
+        for (int i=0; i<n_species; i++) sum += amount_proportions[i];
+        for (int i=0; i<n_species; i++) mole_fractions[i] = amount_proportions[i]/sum;
+    } else {
+        for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
+    }
     auto species_molar_mass = nekRK::species_molar_mass();
 
     double molar_mass = 0.;

@@ -168,7 +168,7 @@ int nekRK::number_of_species()
 
 int nekRK::number_of_active_species()
 {
-    assert(number_of_active_species != ~0);
+    assert(::number_of_active_species != ~0);
     return ::number_of_active_species;
 }
 
