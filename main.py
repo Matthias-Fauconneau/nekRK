@@ -326,7 +326,7 @@ def thermodynamics(len, e):
     temperature_splits = {}
     for index, specie in enumerate(species.thermodynamics[:len]):
         temperature_splits.setdefault(specie.temperature_split, []).append(index)
-    return code([f'if (T < {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
+    return code([f'if (T <= {temperature_split}) {{\n\t{piece(species, e, 0)}\n }} else {{\n\t{piece(species, e, 1)}\n }}' for temperature_split, species in temperature_splits.items()])
 
 arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temperature_exponent} * log_T + {log2(r.preexponential_factor)})'
 

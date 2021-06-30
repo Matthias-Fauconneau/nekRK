@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
-    if (argc>=7) {
+    if (argc>=9) {
         auto values = split(argv[6], " ");
         vector<double> amount_proportions;
         for(auto&& value: values) amount_proportions.push_back(std::stof(value));
@@ -86,6 +86,8 @@ int main(int argc, char **argv) {
         double sum = 0.;
         for (int i=0; i<n_species; i++) sum += amount_proportions[i];
         for (int i=0; i<n_species; i++) mole_fractions[i] = amount_proportions[i]/sum;
+        temperature_K = stof(argv[7]);
+        pressure_Pa = stof(argv[8]);
     } else {
         for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
     }
