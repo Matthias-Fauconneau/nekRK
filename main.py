@@ -368,8 +368,9 @@ def reaction(id, r):
 #}
 
 line= '\n\t'
-print(
-f"""//{{"active":{active_species}, "names":{species.names}, "molar_mass":{species.molar_mass}
+print(f"""//{active_species}
+//{species.names}
+//{' '.join([f'{w}' for w in species.molar_mass])}
 float sq(float x) {{ return x*x; }}
 #define n_species {species.len}
 #define n_active_species {active_species}

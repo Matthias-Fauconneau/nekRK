@@ -11,6 +11,8 @@ Dependencies:
 - MPI
 
 ```sh
+git clone --recurse-submodules https://github.com/Matthias-Fauconneau/nekRK
+git submodule init && git submodule update # If already cloned without --recurse-submodules 
 export OCCA_DIR=$HOME/occa
 export NEKRK_PATH=$HOME/.local/nekRK
 ./main.py mechanisms/grimech30.yaml > share/mechanisms/grimech30.c (only required if mechanisms does not exist in share/mechanism)

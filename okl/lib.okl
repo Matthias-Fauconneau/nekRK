@@ -18,12 +18,12 @@
         }
         float mean_rcp_molar_mass = 0.;
         for(int i=0; i<n_species; i++) {
-            mean_rcp_molar_mass += mass_fractions[i]*fg_rcp_molar_mass[i];
+            mean_rcp_molar_mass += fg_rcp_molar_mass[i]*mass_fractions[i];
         }
         float mean_molar_mass = 1./mean_rcp_molar_mass;
         float mole_fractions[n_species];
         for(int i=0; i<n_species; i++) {
-            mole_fractions[i] = mass_fractions[i]*fg_rcp_molar_mass[i]*mean_molar_mass;
+            mole_fractions[i] = mean_molar_mass*fg_rcp_molar_mass[i]*mass_fractions[i];
         }
 
         float T_12 =	sqrt(T);

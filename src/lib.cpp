@@ -1,13 +1,35 @@
+#include <vector>
 #include <string>
 using namespace std;
+//#include <regex>
+//vector<string> split(const string str, const string regex_str) { return {sregex_token_iterator(str.begin(), str.end(), regex(regex_str), -1), sregex_token_iterator()}; }
+vector<string> split (string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+#include <fstream>
+string read(string path) {
+    ifstream input_file(path);
+    return string((istreambuf_iterator<char>(input_file)), istreambuf_iterator<char>());
+}
+
 #include <cassert>
 #include <unistd.h>
 
 #include <sys/stat.h>
 bool exists(std::string name) { struct stat buffer; return (stat (name.c_str(), &buffer) == 0); }
 
-#include <fstream>
-#include <jsoncpp/json/json.h>
+#include <yaml-cpp/yaml.h>
 
 const double R = 1.380649e-23 * 6.02214076e23;
 
@@ -44,16 +66,14 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     comm   = _comm;
     device = _device;
 
-    Json::Value model;
-    JSONCPP_STRING errs;
-    std::ifstream ifs(string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".json");
-    parseFromStream(Json::CharReaderBuilder(),ifs, &model, &errs);
-    for(auto specie: model["names"]) species_names.push_back(specie.asString());
-    for(auto specie: model["molar_mass"]) species_molar_mass.push_back(specie.asFloat());
-    number_of_active_species = model["active"].asFloat();
-
-    std::string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/share/mechanisms/" + string(mech) + ".c";
+    string mechFile = string(getenv("NEKRK_PATH") ?: ".") + "/mechanisms/" + string(mech) + ".c";
     assert(exists(mechFile)); // FIXME: OCCA seems to create an empty file otherwise
+
+    vector<string> lines = split(read(mechFile),"\n");
+    number_of_active_species = stoi(lines[0].substr(2));
+    species_names = split(lines[1].substr(4),"', '");
+    istringstream line(lines[2].substr(3));
+    copy(istream_iterator<float>(line), istream_iterator<float>(), back_inserter(species_molar_mass));
 
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
