@@ -29,8 +29,6 @@ string read(string path) {
 #include <sys/stat.h>
 bool exists(std::string name) { struct stat buffer; return (stat (name.c_str(), &buffer) == 0); }
 
-#include <yaml-cpp/yaml.h>
-
 const double R = 1.380649e-23 * 6.02214076e23;
 
 #include <occa.hpp>
