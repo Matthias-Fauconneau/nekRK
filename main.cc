@@ -1,14 +1,28 @@
-#include <fenv.h>
-#include <cstddef>
+#include <vector>
 #include <string>
 using namespace std;
+vector<string> split (string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+#include <fenv.h>
+#include <cstddef>
 #include <cassert>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <cmath>
 #include <unistd.h>
-#include <jsoncpp/json/json.h>
 size_t position(vector<string> v, string k) { return find(v.begin(), v.end(), k) - v.begin(); }
 #include "mpi.h"
 #include "omp.h"
@@ -54,22 +68,21 @@ int main(int argc, char **argv) {
     std::string deviceConfigString(deviceConfig);
     device.setup(deviceConfigString);
     if(rank == 0 && verbose) {
-        std::cout << "active occa mode: " << device.mode() << '\n';
+        std::cerr << "active occa mode: " << device.mode() << '\n';
     }
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
     const int n_species = nekRK::species_names().size();
     const int n_active_species = nekRK::number_of_active_species();
-    printf("%d %d\n", n_active_species, n_species);
     // setup reference quantities
     double pressure_Pa   = 101325.;
     double temperature_K = 1000.;
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
     if (argc>=7) {
-        istringstream line(argv[7]);
+        auto values = split(argv[7], " ");
         vector<double> amount_proportions;
-        copy(istream_iterator<float>(line), istream_iterator<float>(), back_inserter(amount_proportions));
+        for(auto&& value: values) amount_proportions.push_back(std::stof(value));
         assert(amount_proportions.size() == n_species);
         double sum = 0.;
         for (int i=0; i<n_species; i++) sum += amount_proportions[i];
@@ -137,9 +150,9 @@ int main(int argc, char **argv) {
     device.finish();
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
-    if(rank==0 && nRep>0)
-      printf("average throughput: %.3f GDOF/s\n",
-        (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
+    if(rank==0 && nRep>0) {
+        cerr<<"average throughput: "<<((size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9)<<" GDOF/s\n";
+    }
 
     // get results from device
     auto rates = new double[n_active_species*n_states];
