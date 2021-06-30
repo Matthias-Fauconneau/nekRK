@@ -23,7 +23,6 @@ vector<string> split (string s, string delimiter) {
 #include <string.h>
 #include <cmath>
 #include <unistd.h>
-size_t position(vector<string> v, string k) { return find(v.begin(), v.end(), k) - v.begin(); }
 #include "mpi.h"
 #include "omp.h"
 
@@ -80,7 +79,7 @@ int main(int argc, char **argv) {
     auto mole_fractions = new double[n_species];
     for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
     if (argc>=7) {
-        auto values = split(argv[7], " ");
+        auto values = split(argv[6], " ");
         vector<double> amount_proportions;
         for(auto&& value: values) amount_proportions.push_back(std::stof(value));
         assert(amount_proportions.size() == n_species);
