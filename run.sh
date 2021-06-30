@@ -15,4 +15,4 @@ command test $target -nt $file -a $target -nt main.py || begin; echo 'Fit binary
 set build debug; cmake -B$build -DOCCA_DIR=../occa/build -DCMAKE_BUILD_TYPE=Debug
 fish -c "make -C$build -j --no-print-directory | rg -v Built | rg -v Consolidate | rg -v Linking | rg -v Building; exit \$pipestatus[1]" || exit 1
 test -e mechanisms/$name.c || exit 1
-PATH=/usr/lib/llvm/12/bin:/usr/bin $build/nekrk Serial 1 1 0 $name || exit 1
+PATH=/usr/lib/llvm/12/bin:/usr/bin $build/main Serial 1 1 0 $name || exit 1
