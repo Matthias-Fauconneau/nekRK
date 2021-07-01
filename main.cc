@@ -86,10 +86,10 @@ int main(int argc, char **argv) {
         double sum = 0.;
         for (int i=0; i<n_species; i++) sum += amount_proportions[i];
         for (int i=0; i<n_species; i++) mole_fractions[i] = amount_proportions[i]/sum;
-        for(auto&& f: mole_fractions) cerr << f << ' ';
-        cerr << '\n';
         temperature_K = stod(argv[7]);
         pressure_Pa = stod(argv[8]);
+        for(auto&& f: mole_fractions) cerr << f << ' ';
+        cerr << temperature_K << ' ' << pressure_Pa << '\n';
     } else {
         printf("/!\\ Using dummy state\n");
         for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
@@ -108,11 +108,7 @@ int main(int argc, char **argv) {
     const double reference_pressure = pressure_Pa;
     const double reference_temperature = temperature_K;
 
-    nekRK::set_reference_parameters(reference_pressure,
-                            reference_temperature,
-                    reference_length,
-                    reference_velocity,
-                    reference_mass_fractions);
+    nekRK::set_reference_parameters(reference_pressure, reference_temperature, reference_length, reference_velocity, reference_mass_fractions);
 
     // populate states
     auto mass_fractions = new double[n_species*n_states];

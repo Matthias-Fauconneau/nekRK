@@ -191,7 +191,7 @@ class Species:
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(kB*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
-        T = linspace(300., 3000., 50)
+        T = linspace(300., 3000., 1) #50 TESTING: 1 instead of 50 breaks transport but speeds up testing the code generator for rates
         class TransportPolynomials:
             pass
         _ = TransportPolynomials()
@@ -332,8 +332,7 @@ arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temp
 
 def reaction(id, r):
     if hasattr(r, 'efficiencies'):
-        efficiency = f"(mixture_efficiency+{'+'.join(filter(None,
-                                                                                                            [f'{efficiency-1}*concentrations[{specie}]' if efficiency!=1 else None for specie, efficiency in enumerate(r.efficiencies)]))})"
+        efficiency = f"(mixture_efficiency+{'+'.join(filter(None, [f'{efficiency-1}*concentrations[{specie}]' if efficiency!=1 else None for specie, efficiency in enumerate(r.efficiencies)]))})"
     match r.type:
         case 'elementary'|'irreversible':
             c = f'c = {arrhenius(r.rate_constant)}'
@@ -366,7 +365,7 @@ def reaction(id, r):
         R = f'({Rf} - {Rr})'
     return f'''{c};
     cR = c * {R};
-    {code(filter(None, [f"_[{specie}] += {mul(net,'cR')};" if net!=0 else None for net in r.net]))}'''
+    {code(filter(None, [f"_[{specie}] += {mul(net,'cR')};" if net!=0 else None for specie, net in enumerate(r.net)]))}'''
 
 line= '\n\t'
 print(f"""//{active_species}
@@ -413,7 +412,7 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float cR, c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([f"_[{specie}] = 0;" for specie in range(active_species)])}
-    float mixture_efficiency = {'+'.join([f'concentrations[{specie}]' for specie in range(species.len)])};"
-    {code([reaction(i, r)+ for i, r in enumerate(reactions)])}
+    float mixture_efficiency = {'+'.join([f'concentrations[{specie}]' for specie in range(species.len)])};
+    {code([reaction(i, r) for i, r in enumerate(reactions)])}
 }}
 """.replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
