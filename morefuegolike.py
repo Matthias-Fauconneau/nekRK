@@ -191,7 +191,7 @@ class Species:
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(kB*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
-        T = linspace(300., 3000., 1) #50 TESTING: 1 instead of 50 breaks transport but speeds up testing the code generator for rates
+        T = linspace(300., 3000., 50)
         class TransportPolynomials:
             pass
         _ = TransportPolynomials()

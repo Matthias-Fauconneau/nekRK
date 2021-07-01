@@ -75,16 +75,16 @@
         const float T2 = T*T;
         const float T3 = T*T2;
         const float T4 = T*T3;
-        const float K = 1.380649e-23; // J/kelvin
+        const float kB = 1.380649e-23; // J/kelvin
         const float NA = 6.02214076e23; // /mole
-        const float reference_pressure = 101325. / (K*NA);
-        const float P0_RT = reference_pressure * rcp_T;
-        const float rcp_P0_RT = (1./reference_pressure) * T;
+        const float reference_pressure = 101325. / (kB*NA);
+        const float C0 = reference_pressure * rcp_T;
+        const float rcp_C0 = (1./reference_pressure) * T;
         float exp_Gibbs0_RT[n_active_species];
         fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
         const float rcp_T2 = rcp_T*rcp_T;
         float molar_rates[n_active_species];
-        fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2,P0_RT,rcp_P0_RT, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
+        fg_rates(log_T,T,T2,T4,rcp_T,rcp_T2, C0,rcp_C0, exp_Gibbs0_RT, /*concentrations*/wrk, /*->*/ molar_rates);
         fg_enthalpy_RT(log_T,T,T2,T3,T4,rcp_T, /*-> enthalpy_RT*/wrk);
 
         float energy_rate_RT = 0.;

@@ -191,7 +191,7 @@ class Species:
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(kB*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
-        T = linspace(300., 3000., 50)
+        T = linspace(300., 3000., 1) #50 TESTING: 1 instead of 50 breaks transport but speeds up testing the code generator for rates
         class TransportPolynomials:
             pass
         _ = TransportPolynomials()
@@ -209,7 +209,7 @@ model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
 units = model['units']
 assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");
 species = model['species']
-if species[-1]['name'] not in ['N2','AR']:
+"""if species[-1]['name'] not in ['N2','AR']: # FIXME: check reactions, warn (specie order need to match when comparing with Cantera and Rust)
     for inert in ['N2','AR']:
         def position(iterator, predicate):
             for index, item in enumerate(iterator):
@@ -222,9 +222,9 @@ if species[-1]['name'] not in ['N2','AR']:
             break
     else:
         exit('Missing inert specie')
-    #print(f'{len(species)} species, inert specie: {species[-1]}', file=stderr)
-active_species = len(species)-1
-if species[-2]['name'] in ['N2','AR']: active_species = len(species)-2
+    #print(f'{len(species)} species, inert specie: {species[-1]}', file=stderr)"""
+active_species = len(species)-1 # FIXME: check reactions
+#if species[-2]['name'] in ['N2','AR']: active_species = len(species)-2 # FIXME: check reactions
 
 def from_model(species):
     self = Species()
@@ -247,6 +247,7 @@ species = from_model(species)
 def from_model(species_names, r):
     class Reaction(): pass
     reaction = Reaction()
+    reaction.description = r['equation']
     import re
     [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species.names] for side in
                             [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
@@ -358,12 +359,13 @@ def reaction(id, r):
     else:
         rcp_equilibrium_constant = product_of_exponentiations(r.net, 'exp_Gibbs0_RT');
         if -r.sum_net == 0: pass
-        elif -r.sum_net == 1: rcp_equilibrium_constant += '* P0_RT'
-        elif -r.sum_net == -1: rcp_equilibrium_constant += '* rcp_P0_RT'
+        elif -r.sum_net == 1: rcp_equilibrium_constant += '* C0'
+        elif -r.sum_net == -1: rcp_equilibrium_constant += '* rcp_C0'
         else: raise(f'Σnet {sum_net}')
         Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(r.products, "concentrations")}'
         R = f'({Rf} - {Rr})'
-    return f'''{c};
+    return f'''//{r.description}
+    {c};
     const float cR{id} = c * {R};'''
 #}
 
@@ -409,7 +411,7 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
     {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
 #endif
-void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(active_species)])}
