@@ -120,11 +120,11 @@ void nekRK::init(const char* model_path, occa::device device,
   setup(model_path, device, kernel_properties, group_size, comm, transport, verbose);
 }
 
-double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
+double nekRK::mean_specific_heat_at_CP_R(double T, vector<double> mole_fractions)
 {
     auto mcp = new double[1];
     auto o_mcp = device.malloc<double>(1);
-  auto o_mole_fractions = device.malloc<double>(number_of_species(), mole_fractions);
+  auto o_mole_fractions = device.malloc<double>(number_of_species(), mole_fractions.data());
     // This is not a kernel, just to interface a single call to fg_molar_heat_capacity_at_constant_pressure_R on CPU
     mean_specific_heat_at_CP_R_kernel(T, o_mole_fractions, o_mcp);
     o_mcp.copyTo(mcp);
@@ -145,7 +145,7 @@ void nekRK::set_reference_parameters(
     double reference_concentration = reference_pressure_in / R / reference_temperature_in;
     double reference_density = reference_concentration * reference_molar_mass;
 
-    auto reference_mole_fractions = new double[number_of_species()];
+    vector<double> reference_mole_fractions(number_of_species());
     for(int k=0;k<number_of_species();k++)
         reference_mole_fractions[k] = 1./species_molar_mass()[k] * reference_molar_mass * reference_mass_fractions_in[k];
 

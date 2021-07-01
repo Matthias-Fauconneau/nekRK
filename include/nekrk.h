@@ -23,7 +23,7 @@ namespace nekRK {
 
     double mean_specific_heat_at_CP_R(
         double T,
-    double* mole_fractions
+    vector<double> mole_fractions
     );
 
     void set_reference_parameters(
