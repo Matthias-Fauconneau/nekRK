@@ -1,5 +1,4 @@
 #!/bin/env python
-from sys import float_info, argv, stderr
 #from more_itertools import partition
 def partition(pred, iterable):
     from itertools import tee, filterfalse
@@ -13,6 +12,7 @@ from numpy import pi #π = pi
 from numpy import sqrt
 from numpy import log2
 from numpy import log as ln
+from sys import float_info, argv, stderr
 from numpy import polynomial
 polynomial_regression = lambda X, Y, degree=3: polynomial.polynomial.polyfit(X, Y, deg=degree, w=[1/sq(y) for y in Y])
 from numpy import linspace
@@ -209,25 +209,8 @@ model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
 units = model['units']
 assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");
 species = model['species']
-"""if species[-1]['name'] not in ['N2','AR']: # FIXME: check reactions, warn (specie order need to match when comparing with Cantera and Rust)
-    for inert in ['N2','AR']:
-        def position(iterator, predicate):
-            for index, item in enumerate(iterator):
-                if predicate(item):
-                    return index
-            return None
-        inert = position(species, lambda e: e['name']==inert)
-        if inert:
-            species.append(species.pop(inert)) # Move inert specie to last index
-            break
-    else:
-        exit('Missing inert specie')
-    #print(f'{len(species)} species, inert specie: {species[-1]}', file=stderr)"""
-active_species = len(species) # FIXME: need an inert specie for matter conservation; avoid processing null rates
-active_species = len(species)-1 # FIXME: check reactions
-#if species[-2]['name'] in ['N2','AR']: active_species = len(species)-2 # FIXME: check reactions
 
-def from_model(species):
+def species_from_model(species):
     self = Species()
     self.len = len(species)
     p = lambda f: list(map(f, species))
@@ -243,14 +226,13 @@ def from_model(species):
     self.polarizability = p(lambda s: s['transport'].get('polarizability',0)*1e-30) # Å³
     self.rotational_relaxation = p(lambda s: float(s['transport'].get('rotational-relaxation',0)))
     return self
-species = from_model(species)
 
-def from_model(species_names, r):
+def reaction_from_model(species_names, r):
     class Reaction(): pass
     reaction = Reaction()
     reaction.description = r['equation']
     import re
-    [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species.names] for side in
+    [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species_names] for side in
                             [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
     reaction.net = [-reactant + product for reactant, product in zip(reaction.reactants, reaction.products)]
     reaction.sum_net = sum(reaction.net)
@@ -274,7 +256,7 @@ def from_model(species_names, r):
         reactants += 1
 
     reaction.rate_constant = rate_constant(r.get('rate-constant', r.get('high-P-rate-constant')), reactants-1)
-    if r.get('efficiencies'): reaction.efficiencies = [r['efficiencies'].get(specie, r.get('default-efficiency', 1)) for specie in species.names]
+    if r.get('efficiencies'): reaction.efficiencies = [r['efficiencies'].get(specie, r.get('default-efficiency', 1)) for specie in species_names]
     type = r.get('type')
     match type:
         case None|'elementary':
@@ -303,7 +285,13 @@ def from_model(species_names, r):
             exit(r)
     #
     return reaction
-reactions = [from_model(species.names, reaction) for reaction in model['reactions']]
+
+species_names = species_from_model(species).names # Only load species names to parse reactions. Properties will be loaded directly in the right order once inert species are found
+reactions = [reaction_from_model(species_names, reaction) for reaction in model['reactions']] # First load only used to find inert species
+(inert, active) = partition(lambda specie: any([reaction.net[species_names.index(specie['name'])] != 0 for reaction in reactions]), species)
+#print([inert['name'] for inert in inert], file=stderr)
+species = species_from_model(active+inert);
+reactions = [reaction_from_model(species.names, reaction) for reaction in model['reactions']] # Reload with new specie indexing
 
 transport_polynomials = species.transport_polynomials() # {sqrt_viscosity_T14, thermal_conductivity_T12, binary_thermal_diffusion_coefficients_T32}
 
@@ -367,26 +355,27 @@ def reaction(id, r):
         R = f'({Rf} - {Rr})'
     return f'''//{r.description}
     {c};
-    const float cR{id} = c * {R};'''
+    const float cR{id} = c * {R};
+    printf("%f ", cR{id});'''
 #}
 
 line= '\n\t'
-print(f"""//{active_species}
+print(f"""//{len(active)}
 //{species.names}
 //{' '.join([f'{w}' for w in species.molar_mass])}
 float sq(float x) {{ return x*x; }}
 #define n_species {species.len}
-#define n_active_species {active_species}
+#define n_active_species {len(active)}
 const float fg_molar_mass[{species.len}] = {{{', '.join([f'{w}' for w in species.molar_mass])}}};
 const float fg_rcp_molar_mass[{species.len}] = {{{', '.join([f'{1./w}' for w in species.molar_mass])}}};
 void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
  {thermodynamics(species.len, lambda a: f'{a[0]} + {a[1]} * T + {a[2]} * T_2 + {a[3]} * T_3 + {a[4]} * T_4')}
 }}
 void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
- {thermodynamics(active_species, lambda a: f'{a[0]} + {a[1]/2} * T + {a[2]/3} * T_2 + {a[3]/4} * T_3 + {a[4]/5} * T_4 + {a[5]} * rcp_T')}
+ {thermodynamics(len(active), lambda a: f'{a[0]} + {a[1]/2} * T + {a[2]/3} * T_2 + {a[3]/4} * T_3 + {a[4]/5} * T_4 + {a[5]} * rcp_T')}
 }}
 void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {{
- {thermodynamics(active_species, lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
+ {thermodynamics(len(active), lambda a: f'exp2({a[5]/ln(2)} * rcp_T + {(a[0] - a[6])/ln(2)} + {-a[0]} * log_T + {-a[1]/2/ln(2)} * T + {(1./3.-1./2.)*a[2]/ln(2)} * T_2 + {(1./4.-1./3.)*a[3]/ln(2)} * T_3 + {(1./5.-1./4.)*a[4]/ln(2)} * T_4)')}
 }}
 #if CFG_FEATURE_TRANSPORT
 float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float mole_fractions[]) {{
@@ -415,6 +404,6 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
  float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
-    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(active_species)])}
+    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(len(active))])}
 }}
 """.replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))

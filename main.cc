@@ -79,17 +79,18 @@ int main(int argc, char **argv) {
     vector<double> mole_fractions(n_species);
     for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
     if (argc>=9) {
-        auto values = split(argv[6], " ");
+        pressure_Pa = stod(argv[6]);
+        temperature_K = stod(argv[7]);
+        auto values = split(argv[8], " ");
         vector<double> amount_proportions;
         for(auto&& value: values) amount_proportions.push_back(std::stod(value));
         assert(amount_proportions.size() == n_species);
         double sum = 0.;
         for (int i=0; i<n_species; i++) sum += amount_proportions[i];
         for (int i=0; i<n_species; i++) mole_fractions[i] = amount_proportions[i]/sum;
-        temperature_K = stod(argv[7]);
-        pressure_Pa = stod(argv[8]);
+        /*cerr << pressure_Pa << ' ' << temperature_K << ' ';
         for(auto&& f: mole_fractions) cerr << f << ' ';
-        cerr << temperature_K << ' ' << pressure_Pa << '\n';
+        cerr << '\n';*/
     } else {
         printf("/!\\ Using dummy state\n");
         for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
@@ -174,11 +175,11 @@ int main(int argc, char **argv) {
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
-        if(rank==0) printf("%s: %.0f, ", nekRK::species_names()[k].c_str(), molar_rate);
+        //if(rank==0) printf("%s: %.0f, ", nekRK::species_names()[k].c_str(), molar_rate);
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
-    printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
+    //printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
 
     MPI_Finalize();
     exit(EXIT_SUCCESS);
