@@ -223,6 +223,7 @@ species = model['species']
     else:
         exit('Missing inert specie')
     #print(f'{len(species)} species, inert specie: {species[-1]}', file=stderr)"""
+active_species = len(species) # FIXME: need an inert specie for matter conservation; avoid processing null rates
 active_species = len(species)-1 # FIXME: check reactions
 #if species[-2]['name'] in ['N2','AR']: active_species = len(species)-2 # FIXME: check reactions
 
