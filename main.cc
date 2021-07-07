@@ -183,8 +183,10 @@ int main(int argc, char **argv) {
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
-        //if(rank==0) printf("%.0f ", nekRK::species_names()[k].c_str(), molar_rate);
-        //if(rank==0) printf("%s:%.0f ", nekRK::species_names()[k].c_str(), molar_rate);
+        if(rank==0) {
+            if (true) { printf("%.0f", molar_rate); } else { printf("%s:%.0f", nekRK::species_names()[k].c_str(), molar_rate); }
+            if (k<n_active_species-1) { cout<<' '; }
+        }
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;

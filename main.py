@@ -205,6 +205,7 @@ class Species:
         return _
 
 import ruamel.yaml
+if len(argv) != 2: print("./main.py mechanism.yaml > mechanism.c", file=stderr);
 model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
 units = model['units']
 assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");
@@ -356,7 +357,7 @@ def reaction(id, r):
     return f'''//{r.description}
     {c};
     const float cR{id} = c * {R};
-    printf("%f ", cR{id});'''
+    //printf("%f ", cR{id});'''
 #}
 
 line= '\n\t'
