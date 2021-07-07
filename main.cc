@@ -1,3 +1,4 @@
+#include <cassert>
 #include <vector>
 #include <string>
 using namespace std;
@@ -15,6 +16,7 @@ vector<string> split (string s, string delimiter) {
     res.push_back (s.substr (pos_start));
     return res;
 }
+bool is_number(const std::string &s) { return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit); }
 #include <fenv.h>
 #include <cstddef>
 #include <cassert>
@@ -40,16 +42,16 @@ int main(int argc, char **argv) {
         printf("Usage: ./bk1 mechanism SERIAL|CUDA|HIP nStates blockSize nRepetitions\n");
         return 1;
     }
-    std::string mech = "LiDryer";
+    string mech = "LiDryer";
     if (argc > 1) { mech.assign(argv[1]); }
-    std::string threadModel = "SERIAL";
+    string threadModel = "SERIAL";
     if (argc > 2) { threadModel = strdup(argv[2]); }
     int n_states = 1;
-    if (argc > 3) { n_states = std::stoi(argv[2])/size; }
+    if (argc > 3) { if(!is_number(argv[3])) assert(!argv[3]); n_states = stoi(argv[3])/size; }
     int blockSize = 1;
-    if (argc > 4) { blockSize = std::stoi(argv[3]); }
+    if (argc > 4) { if(!is_number(argv[4])) assert(!argv[4]); blockSize = stoi(argv[4]); }
     int nRep = 0;
-    if (argc>4) { nRep = std::stoi(argv[4]); }
+    if (argc>5) { if(!is_number(argv[5])) assert(!argv[5]); nRep = stoi(argv[5]); }
     const bool verbose = argc < 7;
 
     char deviceConfig[BUFSIZ];
@@ -68,15 +70,15 @@ int main(int argc, char **argv) {
     }
 
     occa::device device;
-    std::string deviceConfigString(deviceConfig);
+    string deviceConfigString(deviceConfig);
     device.setup(deviceConfigString);
     if(rank == 0 && verbose) {
-        std::cerr << "active occa mode: " << device.mode() << '\n';
+        cerr << "active occa mode: " << device.mode() << '\n';
     }
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
     const int n_species = nekRK::species_names().size();
-    for (int k=0; k<n_species; k++) cout << nekRK::species_names()[k] << ' ';
+    for (int k=0; k<n_species; k++) { cout << nekRK::species_names()[k]; if (k<n_species-1) { cout << ' '; } }
     cout << '\n';
     const int n_active_species = nekRK::number_of_active_species();
     // setup reference quantities
@@ -89,7 +91,7 @@ int main(int argc, char **argv) {
         temperature_K = stod(argv[7]);
         auto values = split(argv[8], " ");
         vector<double> amount_proportions;
-        for(auto&& value: values) amount_proportions.push_back(std::stod(value));
+        for(auto&& value: values) amount_proportions.push_back(stod(value));
         assert(amount_proportions.size() == n_species);
         double sum = 0.;
         for (int i=0; i<n_species; i++) sum += amount_proportions[i];

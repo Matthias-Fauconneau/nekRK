@@ -25,7 +25,7 @@ add_library(nekrk SHARED
 find_package(MPI REQUIRED)
 include_directories(${MPI_INCLUDE_PATH})
 
-set_property(TARGET nekrk PROPERTY CXX_STANDARD 14)
+set_property(TARGET nekrk PROPERTY CXX_STANDARD 20) # Will automatically decay to the latest supported standard
 target_include_directories (nekrk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries (nekrk PUBLIC occa)
 install(TARGETS nekrk DESTINATION lib)
