@@ -69,9 +69,11 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 
     vector<string> lines = split(read(mechFile),"\n");
     number_of_active_species = stoi(lines[0].substr(2));
-    species_names = split(lines[1].substr(4),"', '");
+    species_names = split(lines[1].substr(2)," ");
+    //for(auto&& value: species_names) cout <<"\""<< value << "\"\n";
     auto values = split(lines[2].substr(3), " ");
     for(auto&& value: values) species_molar_mass.push_back(std::stof(value));
+    //for(auto&& value: species_molar_mass) cout <<"\""<< value << "\"\n";
 
     kernel_properties["includes"].asArray();
     kernel_properties["includes"] += mechFile;
@@ -122,7 +124,7 @@ void nekRK::init(const char* model_path, occa::device device,
 
 double nekRK::mean_specific_heat_at_CP_R(double T, vector<double> mole_fractions)
 {
-    auto mcp = new double[1];
+    double mcp[1];
     auto o_mcp = device.malloc<double>(1);
   auto o_mole_fractions = device.malloc<double>(number_of_species(), mole_fractions.data());
     // This is not a kernel, just to interface a single call to fg_molar_heat_capacity_at_constant_pressure_R on CPU

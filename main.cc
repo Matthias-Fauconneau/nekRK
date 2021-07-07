@@ -36,16 +36,20 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if(argc < 5) {
-        printf("Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]\n");
+    if(argc < 1) {
+        printf("Usage: ./bk1 mechanism SERIAL|CUDA|HIP nStates blockSize nRepetitions\n");
         return 1;
     }
-    std::string threadModel; threadModel.assign(strdup(argv[1]));
-    const int n_states = std::stoi(argv[2])/size;
-    const int blockSize = std::stoi(argv[3]);
-    const int nRep = std::stoi(argv[4]);
-    std::string mech("LiDryer");
-    if(argc > 5) mech.assign(argv[5]);
+    std::string mech = "LiDryer";
+    if (argc > 1) { mech.assign(argv[1]); }
+    std::string threadModel = "SERIAL";
+    if (argc > 2) { threadModel = strdup(argv[2]); }
+    int n_states = 1;
+    if (argc > 3) { n_states = std::stoi(argv[2])/size; }
+    int blockSize = 1;
+    if (argc > 4) { blockSize = std::stoi(argv[3]); }
+    int nRep = 0;
+    if (argc>4) { nRep = std::stoi(argv[4]); }
     const bool verbose = argc < 7;
 
     char deviceConfig[BUFSIZ];
@@ -72,12 +76,14 @@ int main(int argc, char **argv) {
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
     const int n_species = nekRK::species_names().size();
+    for (int k=0; k<n_species; k++) cout << nekRK::species_names()[k] << ' ';
+    cout << '\n';
     const int n_active_species = nekRK::number_of_active_species();
     // setup reference quantities
     double pressure_Pa   = 101325.;
     double temperature_K = 1000.;
     vector<double> mole_fractions(n_species);
-    for (int i=0; i<n_species; i++) mole_fractions[i] = 0;
+    for (int k=0; k<n_species; k++) mole_fractions[k] = 0;
     if (argc>=9) {
         pressure_Pa = stod(argv[6]);
         temperature_K = stod(argv[7]);
@@ -100,7 +106,7 @@ int main(int argc, char **argv) {
     double molar_mass = 0.;
     for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * species_molar_mass[k];
 
-    auto reference_mass_fractions = new double[n_species];
+    auto reference_mass_fractions = vector<double>(n_species);
     for(int k=0; k<n_species; k++) {
       reference_mass_fractions[k] = mole_fractions[k] * species_molar_mass[k]  / molar_mass;
     }
@@ -109,20 +115,20 @@ int main(int argc, char **argv) {
     const double reference_pressure = pressure_Pa;
     const double reference_temperature = temperature_K;
 
-    nekRK::set_reference_parameters(reference_pressure, reference_temperature, reference_length, reference_velocity, reference_mass_fractions);
+    nekRK::set_reference_parameters(reference_pressure, reference_temperature, reference_length, reference_velocity, reference_mass_fractions.data());
 
     // populate states
-    auto mass_fractions = new double[n_species*n_states];
+    auto mass_fractions = vector<double>(n_species*n_states);
     for (int i=0; i<n_species; i++) {
         for (int id=0; id<n_states; id++) {
             mass_fractions[i*n_states+id] = reference_mass_fractions[i];
         }
     }
-    auto o_mass_fractions = device.malloc<double>(n_species*n_states, mass_fractions);
+    auto o_mass_fractions = device./*copyFrom*/malloc<double>(n_species*n_states, mass_fractions.data());
 
-    auto temperatures = new double[n_states];
+    auto temperatures = vector<double>(n_states);
     for (int i=0; i<n_states; i++) temperatures[i] = temperature_K / reference_temperature;
-    auto o_temperature = device.malloc<double>(n_states, temperatures);
+    auto o_temperature = device./*copyFrom*/malloc<double>(n_states, temperatures.data());
 
     const double pressure = pressure_Pa / reference_pressure;
 
@@ -156,10 +162,10 @@ int main(int argc, char **argv) {
     }
 
     // get results from device
-    auto rates = new double[n_active_species*n_states];
-    o_rates.copyTo(rates);
-    auto heat_release_rate = new double[n_states];
-    o_heat_release_rate.copyTo(heat_release_rate);
+    auto rates = vector<double>(n_active_species*n_states);
+    o_rates.copyTo(rates.data());
+    auto heat_release_rate = vector<double>(n_states);
+    o_heat_release_rate.copyTo(heat_release_rate.data());
 
     double K = 1.380649e-23; // J/kelvin
     double NA = 6.02214076e23; // /mole
@@ -175,12 +181,13 @@ int main(int argc, char **argv) {
         double reference_mass_rate = reference_density / reference_time;
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
-        //if(rank==0) printf("%s: %.0f, ", nekRK::species_names()[k].c_str(), molar_rate);
+        //if(rank==0) printf("%.0f ", nekRK::species_names()[k].c_str(), molar_rate);
+        //if(rank==0) printf("%s:%.0f ", nekRK::species_names()[k].c_str(), molar_rate);
     }
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
     //printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
 
     MPI_Finalize();
-    exit(EXIT_SUCCESS);
+    return 0;
 }

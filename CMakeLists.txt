@@ -3,6 +3,7 @@ project(nekrk LANGUAGES CXX)
 
 #set(CMAKE_C_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
 #set(CMAKE_CXX_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
+
 #find_package(OCCA REQUIRED)
 include_directories(${OCCA_DIR}/include)
 link_directories(${OCCA_DIR}/lib)
@@ -33,7 +34,7 @@ install(FILES include/nekrk.h DESTINATION include)
 install(DIRECTORY okl DESTINATION .)
 install(DIRECTORY mechanisms DESTINATION .)
 
-add_executable(main main)
+add_executable(main main.cc)
 target_link_libraries (main LINK_PUBLIC nekrk occa ${MPI_LIBRARIES})
 set_target_properties(main PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
 set_target_properties(main PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
