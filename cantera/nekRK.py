@@ -21,9 +21,9 @@ fuego_species = cantera_species #s['name'] for s in ruamel.yaml.YAML().load(open
 env = environ
 env["LD_LIBRARY_PATH"] = 'build'
 run = subprocess.run(cwd='fuego', env=env, args=['build/bk1','Serial','1','1','0',argv[1]], capture_output=True);
-assert len(run.stderr)==0, run.stderr
+run.check_returncode() #assert len(run.stderr)==0, run.stderr
 fuego = [float(run.stdout.decode().split()[fuego_species.index(s)]) for s in species]
 
 error = lambda a,b: abs(a-b)/abs(b) if min(abs(a),abs(b)) > 0 else 0 #min(abs(a),abs(b))
 print(f"{'':6}: {'NekRK':7} {'Cantera':7} {'Fuego':7} new abs rel old abs rel [kmol/m³/s])")
-print('\n'.join([f'{name:6}: {a/1e3:+7.0f} {b/1e3:+7.0f} {c/1e3:+7.0f} {abs(a-b):.0e} {error(a,b):.0e} {abs(c-b):.0e} {error(c,b):.0e}' for (name, a, b, c) in zip(species, rates, cantera, stgeke) if a != 0 and b != 0]))
+print('\n'.join([f'{name:6}: {a/1e3:+7.0f} {b/1e3:+7.0f} {c/1e3:+7.0f} {abs(a-b):.0e} {error(a,b):.0e} {abs(c-b):.0e} {error(c,b):.0e}' for (name, a, b, c) in zip(species, rates, cantera, fuego) if a != 0 and b != 0]))
