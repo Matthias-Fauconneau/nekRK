@@ -25,8 +25,7 @@ NA = 6.02214076e23 #/mole
 R = kB*NA
 Cm_per_Debye = 3.33564e-30 #C·m (Coulomb=A⋅s)
 J_per_cal = 4.184
-standard_atomic_weights = {'H': 1.008, 'C': 12.011, 'N': 14.0067, 'O': 15.999, 'Ar': 39.95}
-
+standard_atomic_weights = {'H': 1.008, 'He':4.002602, 'C': 12.011, 'N': 14.007, 'O': 15.999, 'F': 18.998403163, 'Cl': 35.45, 'Ar': 39.95}
 class NASA7:
     def piece(self, T):
         return self.pieces[0 if T < self.temperature_split else 1]
@@ -406,9 +405,9 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
     {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
 #endif
-void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* rates) {{
  float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
-    {code([f"_[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(len(active))])}
+    {code([f"rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(len(active))])}
 }}
-""".replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','G'))
+""".replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','eG').replace('mole_fractions','X'))

@@ -77,7 +77,7 @@ void setup(const char* mechanism_code_file_path_ptr, occa::device _device, occa:
     // Remark: Using absolute paths can avoid some reparse as OCCA will reparse files if given with another (relative) path
 
     vector<string> lines = split(read(mechanism_code_file_path),"\n");
-    assert(lines);
+    assert(lines.size() > 2);
     assert(is_number(lines[0].substr(2)));
     number_of_active_species = stoi(lines[0].substr(2));
     species_names = split(lines[1].substr(2)," ");

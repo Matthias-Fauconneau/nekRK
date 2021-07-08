@@ -184,7 +184,7 @@ int main(int argc, char **argv) {
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
         if(rank==0) {
-            if (true) { printf("%.0f", molar_rate); } else { printf("%s:%.0f", nekRK::species_names()[k].c_str(), molar_rate); }
+            if (true) { printf("%f", molar_rate); } else { printf("%s:%f", nekRK::species_names()[k].c_str(), molar_rate); }
             if (k<n_active_species-1) { cout<<' '; }
         }
     }
