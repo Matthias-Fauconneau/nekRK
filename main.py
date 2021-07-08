@@ -203,9 +203,8 @@ class Species:
         #print(f'{int(time.time() - start_time)}s', file=stderr)
         return _
 
-import ruamel.yaml
 if len(argv) != 2: print("./main.py mechanism.yaml > mechanism.c", file=stderr);
-model = ruamel.yaml.YAML(typ='safe').load(open(argv[1]))
+model = YAML().load(open(argv[1]))
 units = model['units']
 assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");
 species = model['species']
