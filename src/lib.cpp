@@ -134,7 +134,7 @@ double nekRK::mean_specific_heat_at_CP_R(double T, vector<double> mole_fractions
     double mcp[1];
     auto o_mcp = device.malloc<double>(1);
   auto o_mole_fractions = device.malloc<double>(number_of_species(), mole_fractions.data());
-    // This is not a kernel, just to interface a single call to fg_molar_heat_capacity_at_constant_pressure_R on CPU
+    // This is not a kernel, just an interface to fg_molar_heat_capacity_at_constant_pressure_R (for the single reference state) (FIXME: should be on CPU)
     mean_specific_heat_at_CP_R_kernel(T, o_mole_fractions, o_mcp);
     o_mcp.copyTo(mcp);
     return mcp[0];

@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
         cerr << "active occa mode: " << device.mode() << '\n';
     }
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/false, verbose);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/true, verbose);
     const int n_species = nekRK::species_names().size();
     for (int k=0; k<n_species; k++) { cout << nekRK::species_names()[k]; if (k<n_species-1) { cout << ' '; } }
     cout << '\n';
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 
     auto temperatures = vector<double>(n_states);
     for (int i=0; i<n_states; i++) temperatures[i] = temperature_K / reference_temperature;
-    auto o_temperature = device./*copyFrom*/malloc<double>(n_states, temperatures.data());
+    auto o_temperature_normalized = device./*copyFrom*/malloc<double>(n_states, temperatures.data());
 
     const double pressure = pressure_Pa / reference_pressure;
 
@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
     // warm up
     nekRK::production_rates(n_states,
                             pressure,
-                    o_temperature,
+                            o_temperature_normalized,
                     o_mass_fractions,
                     o_rates,
                     o_heat_release_rate);
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     for(int i=0; i<nRep; i++) {
         nekRK::production_rates(n_states,
                     pressure,
-                o_temperature,
+                    o_temperature_normalized,
                 o_mass_fractions,
                 o_rates,
                 o_heat_release_rate);
@@ -191,6 +191,37 @@ int main(int argc, char **argv) {
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
     //printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
+
+    auto o_viscosity = device.malloc<double>(n_states);
+    auto o_thermal_conductivity = device.malloc<double>(n_states);
+    auto o_rho_Di = device.malloc<double>(n_species*n_states);
+
+    nekRK::transportCoeffs(n_states,
+                                                 pressure_Pa,
+                                                o_temperature_normalized,
+                                                o_mass_fractions,
+                                                o_viscosity,
+                                                o_thermal_conductivity,
+                                                o_rho_Di,
+                                                reference_temperature);
+
+    // get results from device
+    auto viscosity = new double[n_states];
+    o_viscosity.copyTo(viscosity);
+    printf("μ: %1.3e, ", viscosity[0])	;
+    auto conductivity = new double[n_states];
+    o_thermal_conductivity.copyTo(conductivity);
+    printf("λ: %.4f, ", conductivity[0]);
+    auto rho_Di = new double[n_species*n_states];
+    o_rho_Di.copyTo(rho_Di);
+    // print results
+    double density = concentration * molar_mass;
+    printf("D: ");
+    for (int k=0; k<n_species; k++) {
+        double density_times_diffusion_coefficient = rho_Di[k*n_states+0];
+        //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
+        printf("%.3e ", density_times_diffusion_coefficient/density);
+    }
 
     MPI_Finalize();
     return 0;
