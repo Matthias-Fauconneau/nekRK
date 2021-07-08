@@ -190,7 +190,8 @@ class Species:
         return 3./16. * sqrt(2.*pi/self.reduced_mass(a,b)) * pow(kB*T, 3./2.) / (pi*sq(self.reduced_diameter(a,b))*self.Omega_star_11(a, b, T))
 
     def transport_polynomials(self):
-        T = linspace(300., 3000., 1) #50 TESTING: 1 instead of 50 breaks transport but speeds up testing the code generator for rates
+        T = linspace(300., 3000., 1) # breaks transport but speeds up testing the code generator for rates
+        T = linspace(300., 3000., 50)
         class TransportPolynomials:
             pass
         _ = TransportPolynomials()
@@ -204,6 +205,7 @@ class Species:
         return _
 
 if len(argv) != 2: print("./main.py mechanism.yaml > mechanism.c", file=stderr);
+from ruamel.yaml import YAML
 model = YAML().load(open(argv[1]))
 units = model['units']
 assert(units["length"]=="cm" and units["time"]=="s" and units["quantity"]=="mol");

@@ -209,15 +209,15 @@ const std::vector<std::string> nekRK::species_names()
     return ::species_names;
 }
 
-void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, double reference_temperature)
+void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory lambda, occa::memory mue, occa::memory rho_Di, double reference_temperature)
 {
     transportCoeffs_kernel(
         nStates,
         pressure_Pa,
         T,
         Yi,
-        mue,
         lambda,
+        mue,
         rho_Di,
         reference_temperature
     );

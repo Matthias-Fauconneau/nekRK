@@ -184,43 +184,44 @@ int main(int argc, char **argv) {
         double rcp_mass_rate = 1./reference_mass_rate;
         double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
         if(rank==0) {
-            if (true) { printf("%f", molar_rate); } else { printf("%s:%f", nekRK::species_names()[k].c_str(), molar_rate); }
+            if (true) { printf("%.15e", molar_rate); } else { printf("%s:%f", nekRK::species_names()[k].c_str(), molar_rate); }
             if (k<n_active_species-1) { cout<<' '; }
         }
     }
+    cout<<'\n';
     double molar_heat_capacity_R = nekRK::mean_specific_heat_at_CP_R(reference_temperature, mole_fractions);
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
     //printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
 
-    auto o_viscosity = device.malloc<double>(n_states);
     auto o_thermal_conductivity = device.malloc<double>(n_states);
+    auto o_viscosity = device.malloc<double>(n_states);
     auto o_rho_Di = device.malloc<double>(n_species*n_states);
 
     nekRK::transportCoeffs(n_states,
                                                  pressure_Pa,
                                                 o_temperature_normalized,
                                                 o_mass_fractions,
-                                                o_viscosity,
                                                 o_thermal_conductivity,
+                                                o_viscosity,
                                                 o_rho_Di,
                                                 reference_temperature);
 
-    // get results from device
-    auto viscosity = new double[n_states];
-    o_viscosity.copyTo(viscosity);
-    printf("μ: %1.3e, ", viscosity[0])	;
     auto conductivity = new double[n_states];
     o_thermal_conductivity.copyTo(conductivity);
-    printf("λ: %.4f, ", conductivity[0]);
+    printf("%15e ", conductivity[0]);
+    auto viscosity = new double[n_states];
+    o_viscosity.copyTo(viscosity);
+    //printf("μ: %1.3e, ", viscosity[0])	;
+    printf("%.15e ", viscosity[0])	;
     auto rho_Di = new double[n_species*n_states];
     o_rho_Di.copyTo(rho_Di);
     // print results
     double density = concentration * molar_mass;
-    printf("D: ");
+    //printf("D: ");
     for (int k=0; k<n_species; k++) {
         double density_times_diffusion_coefficient = rho_Di[k*n_states+0];
         //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
-        printf("%.3e ", density_times_diffusion_coefficient/density);
+        printf("%.15e ", density_times_diffusion_coefficient/density);
     }
 
     MPI_Finalize();

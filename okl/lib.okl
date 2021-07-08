@@ -4,8 +4,8 @@
     const float pressure_Pa,
     @restrict const float* temperature_normalized,
     @restrict const float* mass_fractions,
-    @restrict float* viscosity,
     @restrict float* thermal_conductivity,
+    @restrict float* viscosity,
     @restrict float* rho_Di,
     const float reference_temperature
 )
@@ -30,8 +30,8 @@
         float ln_T = log(T);
         float ln_T_2 = ln_T*ln_T;
         float ln_T_3 = ln_T_2*ln_T;
-        viscosity[id] = T_12*fg_viscosity_T_12(ln_T, ln_T_2, ln_T_3, mole_fractions);
         thermal_conductivity[id] = T_12/2.*fg_thermal_conductivity_T_12_2(ln_T, ln_T_2, ln_T_3, mole_fractions);
+        viscosity[id] = T_12*fg_viscosity_T_12(ln_T, ln_T_2, ln_T_3, mole_fractions);
 
         float T_32 = T*T_12;
         float P_T_32_mixture_diffusion_coefficients[n_species];
