@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(nekrk LANGUAGES CXX)
 
+set(CMAKE_C_FLAGS "-g")
+set(CMAKE_CXX_FLAGS "-g")
 #set(CMAKE_C_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
 #set(CMAKE_CXX_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
 

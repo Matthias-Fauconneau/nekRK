@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
         for(auto&& f: mole_fractions) cerr << f << ' ';
         cerr << '\n';*/
     } else {
-        printf("/!\\ Using dummy state\n");
+        cerr << "/!\\ Using dummy state (equal mole fractions for all species (irrespective whether radicals,inert,...))\n";
         for (int i=0; i<n_species; i++) mole_fractions[i] = 1./(double)n_species;
     }
     auto species_molar_mass = nekRK::species_molar_mass();

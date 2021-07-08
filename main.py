@@ -244,10 +244,14 @@ def reaction_from_model(species_names, r):
         _.preexponential_factor = rate_constant['A'] * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent)
         _.temperature_exponent = rate_constant['b']
         Ea = rate_constant['Ea']
-        match units['activation-energy']:
+        """match units['activation-energy']:
             case 'K': _.activation_temperature = Ea
             case 'cal/mol': _.activation_temperature = Ea * J_per_cal / (kB*NA)
-            case _: exit('activation-energy')
+            case _: exit('activation-energy')"""
+        match = units['activation-energy']
+        if match == 'K': _.activation_temperature = Ea
+        elif match == 'cal/mol': _.activation_temperature = Ea * J_per_cal / (kB*NA)
+        else: exit('activation-energy')
         #
         return _
     #
