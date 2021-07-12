@@ -233,8 +233,12 @@ def reaction_from_model(species_names, r):
     reaction = Reaction()
     reaction.description = r['equation']
     import re
-    [reaction.reactants, reaction.products] = [[sum([c for (s, c) in side if s == specie]) for specie in species_names] for side in
-                            [[(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in [s.strip() for s in re.split('<?=>', r['equation'])]]]
+    [reaction.reactants, reaction.products] = [
+        [sum([c for (s, c) in side if s == specie]) for specie in species_names] for side in
+            [ [(s.split(' ')[1], int(s.split(' ')[0])) if ' ' in s else (s, 1) for s in [s.strip() for s in side.removesuffix('+ M').removesuffix('(+M)').split(' + ')]] for side in
+                [s.strip() for s in re.split('<?=>', r['equation'])]
+            ]
+        ]
     reaction.net = [-reactant + product for reactant, product in zip(reaction.reactants, reaction.products)]
     reaction.sum_net = sum(reaction.net)
 
@@ -285,7 +289,7 @@ def reaction_from_model(species_names, r):
             reaction.troe.A = r['Troe']['A']
             reaction.troe.T3 = r['Troe']['T3']
             reaction.troe.T1 = r['Troe']['T1']
-            reaction.troe.T2 = r['Troe'].get('T2', 0)
+            reaction.troe.T2 = r['Troe'].get('T2', float('inf'))
         case _:
             exit(r)
     #
@@ -330,21 +334,21 @@ def reaction(id, r):
         efficiency = f"({'+'.join([f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]' for specie, efficiency in enumerate(r.efficiencies)])})"
     match r.type:
         case 'elementary'|'irreversible':
-            c = f'c = {arrhenius(r.rate_constant)}'
+            c = f'kf = {arrhenius(r.rate_constant)}'
         case "three-body":
-            c = f'c = {arrhenius(r.rate_constant)} * {efficiency}'
+            c = f'kf = {arrhenius(r.rate_constant)} * {efficiency}'
         case "pressure-modification":
             c = f'''C_k0 = {arrhenius(r.k0)} * {efficiency};
             k_inf = {arrhenius(r.rate_constant)};
-            c = (C_k0 * k_inf) / (C_k0 + k_inf)'''
+            kf = (C_k0 * k_inf) / (C_k0 + k_inf)'''
         case "falloff":
             A, T3, T1, T2 = r.troe.A, r.troe.T3, r.troe.T1, r.troe.T2
             c = f'''k_inf = {arrhenius(r.rate_constant)};
             Pr = {arrhenius(r.k0)} * {efficiency} / k_inf;
-            logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) + exp2({-T2/ln(2)}*rcp_T));
+            logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) {f'+ exp2({-T2/ln(2)}*rcp_T)' if T2 < float('inf') else ''});
             logPr_c = log2(Pr) - 0.67*logFcent - {0.4*log2(10)};
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+{0.75*log2(10.)});
-            c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
+            kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.))'''
         case _:
             exit(_)
     #
@@ -355,13 +359,14 @@ def reaction(id, r):
         if -r.sum_net == 0: pass
         elif -r.sum_net == 1: rcp_equilibrium_constant += '* C0'
         elif -r.sum_net == -1: rcp_equilibrium_constant += '* rcp_C0'
-        else: raise(f'Σnet {sum_net}')
+        else: raise(f'sum net {sum_net}')
         Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(r.products, "concentrations")}'
         R = f'({Rf} - {Rr})'
-    return f'''//{r.description}
-    {c};
-    const float cR{id} = c * {R};
-    //printf("%f ", cR{id});'''
+    return f'''//{id}: {r.description}
+    {kf};
+    const float cR{id} = kf * {R};
+    printf("{id}: %f\n", {kf});
+'''
 #}
 
 line= '\n\t'
@@ -407,7 +412,7 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 }}
 #endif
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* rates) {{
- float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
+ float kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
     {code([f"rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(len(active))])}
 }}

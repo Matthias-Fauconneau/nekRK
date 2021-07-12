@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     if(argc < 1) {
-        printf("Usage: ./bk1 mechanism SERIAL|CUDA|HIP nStates blockSize nRepetitions\n");
+        printf("Usage: ./bk1 mechanism SERIAL|CUDA|HIP nStates blockSize nRepetitions [transport]\n");
         return 1;
     }
     string mech = "LiDryer";
@@ -52,6 +52,8 @@ int main(int argc, char **argv) {
     if (argc > 4) { if(!is_number(argv[4])) assert(!argv[4]); blockSize = stoi(argv[4]); }
     int nRep = 0;
     if (argc>5) { if(!is_number(argv[5])) assert(!argv[5]); nRep = stoi(argv[5]); }
+    bool transport = false;
+    if (argc>6) { transport = true }
     const bool verbose = argc < 7;
 
     char deviceConfig[BUFSIZ];
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
         cerr << "active occa mode: " << device.mode() << '\n';
     }
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, /*transport:*/true, verbose);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD, transport, verbose);
     const int n_species = nekRK::species_names().size();
     for (int k=0; k<n_species; k++) { cout << nekRK::species_names()[k]; if (k<n_species-1) { cout << ' '; } }
     cout << '\n';
@@ -193,6 +195,7 @@ int main(int argc, char **argv) {
     const double energy_rate = (molar_heat_capacity_R * reference_pressure) / reference_time;
     //printf("HRR: %.3e\n", heat_release_rate[0] * energy_rate);
 
+    if (transport) {
     auto o_thermal_conductivity = device.malloc<double>(n_states);
     auto o_viscosity = device.malloc<double>(n_states);
     auto o_rho_Di = device.malloc<double>(n_species*n_states);
@@ -223,7 +226,7 @@ int main(int argc, char **argv) {
         //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
         printf("%.15e ", density_times_diffusion_coefficient/density);
     }
-
+    }
     MPI_Finalize();
     return 0;
 }

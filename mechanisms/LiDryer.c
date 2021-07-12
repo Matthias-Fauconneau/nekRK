@@ -331,7 +331,7 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
     //H + O2 (+M) <=> HO2 (+M)
     k_inf = exp2(-0.0 * rcp_T + 0.6 * log_T + 20.492283523798655);
             Pr = exp2(-381.0007723999002 * rcp_T - 1.72 * log_T + 29.245811916072732) * (2.0*C[0]+0.78*C[1]+11.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
-            logFcent = log2(0.19999999999999996 * exp2(-1.4426950408889633e+30*T) + 0.8 * exp2(-1.4426950408889633e-30*T) + exp2(0.0*rcp_T));
+            logFcent = log2(0.19999999999999996 * exp2(-1.4426950408889633e+30*T) + 0.8 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
@@ -364,7 +364,7 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
     //H2O2 (+M) <=> OH + OH (+M)
     k_inf = exp2(-35159.80832188866 * rcp_T + 0.0 * log_T + 48.06819724919299);
             Pr = exp2(-33032.65080829928 * rcp_T + 0.0 * log_T + 36.80664593981008) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
-            logFcent = log2(0.5 * exp2(-1.4426950408889633e+30*T) + 0.5 * exp2(-1.4426950408889633e-30*T) + exp2(0.0*rcp_T));
+            logFcent = log2(0.5 * exp2(-1.4426950408889633e+30*T) + 0.5 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));

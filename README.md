@@ -1,4 +1,4 @@
-# nekRK: nek reaction kinetics
+# nekRK: reaction kinetics
 
 nekRK is a software package for [nekRS](https://github.com/Nek5000/nekRS) to compute species production rates and transport properties for chemically reactive flows. The repository contains a modified version of the source code generation tool FUEGO (originally created by Michael Aivazis at CalTech) in order to support the inclusion of chemical models specified in the CHEMKIN-II format.
 
