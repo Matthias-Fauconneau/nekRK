@@ -334,16 +334,16 @@ def reaction(id, r):
         efficiency = f"({'+'.join([f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]' for specie, efficiency in enumerate(r.efficiencies)])})"
     match r.type:
         case 'elementary'|'irreversible':
-            c = f'kf = {arrhenius(r.rate_constant)}'
+            kf = f'kf = {arrhenius(r.rate_constant)}'
         case "three-body":
-            c = f'kf = {arrhenius(r.rate_constant)} * {efficiency}'
+            kf = f'kf = {arrhenius(r.rate_constant)} * {efficiency}'
         case "pressure-modification":
-            c = f'''C_k0 = {arrhenius(r.k0)} * {efficiency};
+            kf = f'''C_k0 = {arrhenius(r.k0)} * {efficiency};
             k_inf = {arrhenius(r.rate_constant)};
             kf = (C_k0 * k_inf) / (C_k0 + k_inf)'''
         case "falloff":
             A, T3, T1, T2 = r.troe.A, r.troe.T3, r.troe.T1, r.troe.T2
-            c = f'''k_inf = {arrhenius(r.rate_constant)};
+            kf = f'''k_inf = {arrhenius(r.rate_constant)};
             Pr = {arrhenius(r.k0)} * {efficiency} / k_inf;
             logFcent = log2({1.-A} * exp2({1./(-ln(2)*T3)}*T) + {A} * exp2({1./(-ln(2)*T1)}*T) {f'+ exp2({-T2/ln(2)}*rcp_T)' if T2 < float('inf') else ''});
             logPr_c = log2(Pr) - 0.67*logFcent - {0.4*log2(10)};
