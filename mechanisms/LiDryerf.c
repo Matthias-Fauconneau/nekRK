@@ -294,74 +294,74 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
     X[7] / (-0.0014840480595479473 + 0.0006836430065661665*ln_T - 8.478291111095687e-05*ln_T_2 + 4.010999449470027e-06*ln_T_3));
 }
 #endif
-void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float eG[], const float C[], float* _) {
- float cR, c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
-    _[0] = 0;
-    _[1] = 0;
-    _[2] = 0;
-    _[3] = 0;
-    _[4] = 0;
-    _[5] = 0;
-    _[6] = 0;
-    _[7] = 0;
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float eG[], const float C[], float* rates) {
+ float kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1, cR;
+    rates[0] = 0;
+    rates[1] = 0;
+    rates[2] = 0;
+    rates[3] = 0;
+    rates[4] = 0;
+    rates[5] = 0;
+    rates[6] = 0;
+    rates[7] = 0;
     float mixture_efficiency = C[0]+C[1]+C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8];
     //0: H + O2 <=> O + OH
     kf = exp2(-12050.746610262851 * rcp_T - 0.406 * log_T + 31.723952184259364);
     //printf("0: %f\n", kf);
     cR = kf * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
-    _[1] += -cR;
-    _[3] += -cR;
-    _[4] += cR;
-    _[5] += cR;
+    rates[1] += -cR;
+    rates[3] += -cR;
+    rates[4] += cR;
+    rates[5] += cR;
     //1: O + H2 <=> H + OH
     kf = exp2(-4566.491727125329 * rcp_T + 2.67 * log_T - 4.299027692777283);
     //printf("1: %f\n", kf);
     cR = kf * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
-    _[0] += -cR;
-    _[3] += cR;
-    _[4] += -cR;
-    _[5] += cR;
+    rates[0] += -cR;
+    rates[3] += cR;
+    rates[4] += -cR;
+    rates[5] += cR;
     //2: H2 + OH <=> H2O + H
     kf = exp2(-2490.1536763179456 * rcp_T + 1.51 * log_T + 7.754887502163468);
     //printf("2: %f\n", kf);
     cR = kf * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
-    _[0] += -cR;
-    _[2] += cR;
-    _[3] += cR;
-    _[5] += -cR;
+    rates[0] += -cR;
+    rates[2] += cR;
+    rates[3] += cR;
+    rates[5] += -cR;
     //3: O + H2O <=> OH + OH
     kf = exp2(-9728.297161125503 * rcp_T + 2.02 * log_T + 1.570462931026041);
     //printf("3: %f\n", kf);
     cR = kf * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
-    _[2] += -cR;
-    _[4] += -cR;
-    _[5] += 2*cR;
+    rates[2] += -cR;
+    rates[4] += -cR;
+    rates[5] += 2*cR;
     //4: H2 + M <=> H + H + M
     kf = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("4: %f\n", kf);
     cR = kf * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
-    _[0] += -cR;
-    _[3] += 2*cR;
+    rates[0] += -cR;
+    rates[3] += 2*cR;
     //5: O + O + M <=> O2 + M
     kf = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("5: %f\n", kf);
     cR = kf * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
-    _[1] += cR;
-    _[4] += -2*cR;
+    rates[1] += cR;
+    rates[4] += -2*cR;
     //6: O + H + M <=> OH + M
     kf = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("6: %f\n", kf);
     cR = kf * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
-    _[3] += -cR;
-    _[4] += -cR;
-    _[5] += cR;
+    rates[3] += -cR;
+    rates[4] += -cR;
+    rates[5] += cR;
     //7: H + OH + M <=> H2O + M
     kf = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("7: %f\n", kf);
     cR = kf * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
-    _[2] += cR;
-    _[3] += -cR;
-    _[5] += -cR;
+    rates[2] += cR;
+    rates[3] += -cR;
+    rates[5] += -cR;
     //8: H + O2 (+M) <=> HO2 (+M)
     k_inf = exp2(-0.0 * rcp_T + 0.6 * log_T + 20.492283523798655);
             Pr = exp2(-381.0007723999002 * rcp_T - 1.72 * log_T + 29.245811916072732) * (mixture_efficiency+1.0*C[0]-0.21999999999999997*C[1]+10.0*C[2]) / k_inf;
@@ -371,54 +371,54 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     //printf("8: %f\n", kf);
     cR = kf * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
-    _[1] += -cR;
-    _[3] += -cR;
-    _[6] += cR;
+    rates[1] += -cR;
+    rates[3] += -cR;
+    rates[6] += cR;
     //9: HO2 + H <=> H2 + O2
     kf = exp2(-597.4916838512156 * rcp_T + 0.0 * log_T + 23.984679905783736);
     //printf("9: %f\n", kf);
     cR = kf * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
-    _[0] += cR;
-    _[1] += cR;
-    _[3] += -cR;
-    _[6] += -cR;
+    rates[0] += cR;
+    rates[1] += cR;
+    rates[3] += -cR;
+    rates[6] += -cR;
     //10: HO2 + H <=> OH + OH
     kf = exp2(-214.16773600985246 * rcp_T + 0.0 * log_T + 26.07704223964188);
     //printf("10: %f\n", kf);
     cR = kf * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
-    _[3] += -cR;
-    _[5] += 2*cR;
-    _[6] += -cR;
+    rates[3] += -cR;
+    rates[5] += 2*cR;
+    rates[6] += -cR;
     //11: HO2 + O <=> O2 + OH
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 24.95393638235263);
     //printf("11: %f\n", kf);
     cR = kf * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
-    _[1] += cR;
-    _[4] += -cR;
-    _[5] += cR;
-    _[6] += -cR;
+    rates[1] += cR;
+    rates[4] += -cR;
+    rates[5] += cR;
+    rates[6] += -cR;
     //12: HO2 + OH <=> H2O + O2
     kf = exp2(360.8181857521921 * rcp_T + 0.0 * log_T + 24.78456615693749);
     //printf("12: %f\n", kf);
     cR = kf * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
-    _[1] += cR;
-    _[2] += cR;
-    _[5] += -cR;
-    _[6] += -cR;
+    rates[1] += cR;
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += -cR;
     //13: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(-8698.840043627297 * rcp_T + 0.0 * log_T + 28.645814086990296);
     //printf("13: %f\n", kf);
     cR = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    _[1] += cR;
-    _[6] += -2*cR;
-    _[7] += cR;
+    rates[1] += cR;
+    rates[6] += -2*cR;
+    rates[7] += cR;
     //14: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(1182.859295867297 * rcp_T + 0.0 * log_T + 16.98815209769054);
     //printf("14: %f\n", kf);
     cR = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    _[1] += cR;
-    _[6] += -2*cR;
-    _[7] += cR;
+    rates[1] += cR;
+    rates[6] += -2*cR;
+    rates[7] += cR;
     //15: H2O2 (+M) <=> OH + OH (+M)
     k_inf = exp2(-35159.80832188866 * rcp_T + 0.0 * log_T + 48.06819724919299);
             Pr = exp2(-33032.65080829928 * rcp_T + 0.0 * log_T + 36.80664593981008) * (mixture_efficiency+1.5*C[0]+11.0*C[2]) / k_inf;
@@ -428,47 +428,47 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     //printf("15: %f\n", kf);
     cR = kf * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
-    _[5] += 2*cR;
-    _[7] += -cR;
+    rates[5] += 2*cR;
+    rates[7] += -cR;
     //16: H2O2 + H <=> H2O + OH
     kf = exp2(-2882.189532064794 * rcp_T + 0.0 * log_T + 24.522529810666775);
     //printf("16: %f\n", kf);
     cR = kf * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
-    _[2] += cR;
-    _[3] += -cR;
-    _[5] += cR;
-    _[7] += -cR;
+    rates[2] += cR;
+    rates[3] += -cR;
+    rates[5] += cR;
+    rates[7] += -cR;
     //17: H2O2 + H <=> HO2 + H2
     kf = exp2(-5771.63898738416 * rcp_T + 0.0 * log_T + 25.522529810666775);
     //printf("17: %f\n", kf);
     cR = kf * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
-    _[0] += cR;
-    _[3] += -cR;
-    _[6] += cR;
-    _[7] += -cR;
+    rates[0] += cR;
+    rates[3] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //18: H2O2 + O <=> OH + HO2
     kf = exp2(-2882.189532064794 * rcp_T + 2.0 * log_T + 3.255500733148386);
     //printf("18: %f\n", kf);
     cR = kf * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
-    _[4] += -cR;
-    _[5] += cR;
-    _[6] += cR;
-    _[7] += -cR;
+    rates[4] += -cR;
+    rates[5] += cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //19: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 19.931568569324174);
     //printf("19: %f\n", kf);
     cR = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    _[2] += cR;
-    _[5] += -cR;
-    _[6] += cR;
-    _[7] += -cR;
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //20: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-6938.308654393763 * rcp_T + 0.0 * log_T + 29.11147765933911);
     //printf("20: %f\n", kf);
     cR = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    _[2] += cR;
-    _[5] += -cR;
-    _[6] += cR;
-    _[7] += -cR;
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
 }
 

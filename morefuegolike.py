@@ -362,7 +362,7 @@ def reaction(id, r):
     {kf};
     //printf("{id}: %f\\n", kf);
     cR = kf * {R};
-    {code(filter(None, [f"_[{specie}] += {mul(net,'cR')};" if net!=0 else None for specie, net in enumerate(r.net)]))}'''
+    {code(filter(None, [f"rates[{specie}] += {mul(net,'cR')};" if net!=0 else None for specie, net in enumerate(r.net)]))}'''
 
 line= '\n\t'
 print(f"""//{len(active)}
@@ -406,9 +406,9 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
     {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
 #endif
-void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float P0_RT, const float rcp_P0_RT, const float exp_Gibbs0_RT[], const float concentrations[], float* _) {{
- float cR, c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
-    {code([f"_[{specie}] = 0;" for specie in range(len(active))])}
+void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float exp_Gibbs0_RT[], const float concentrations[], float* rates) {{
+ float kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1, cR;
+    {code([f"rates[{specie}] = 0;" for specie in range(len(active))])}
     float mixture_efficiency = {'+'.join([f'concentrations[{specie}]' for specie in range(species.len)])};
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
 }}
