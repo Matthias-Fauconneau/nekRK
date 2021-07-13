@@ -25,8 +25,8 @@ Please ensure that the env-var `$OCCA_DIR` points to your OCCA installation.
 ### BK1: Species production rates
 
 ```sh
-Usage: ./bk1 SERIAL|CUDA|HIP nStates blockSize nRepetitions [mechanism]
->cd $NEKRK_PATH; bin/bk1 CUDA 100000 256 1000
+Usage: ./bk1 mechanism SERIAL|CUDA|HIP nStates blockSize nRepetitions
+>cd $NEKRK_PATH; bin/main LiDryer CUDA 100000 256 1000
 mechanism file: ./share/mechanisms/GRIMech-3.0.c
 nSpecies: 53
 avg throughput: 2.609 GDOF/s
