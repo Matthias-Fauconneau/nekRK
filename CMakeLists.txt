@@ -1,43 +1,49 @@
-cmake_minimum_required(VERSION 3.11)
-project(nekrk LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.12)
+project(nekRK LANGUAGES CXX)
 
-set(CMAKE_C_FLAGS "-g")
-set(CMAKE_CXX_FLAGS "-g")
-#set(CMAKE_C_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
-#set(CMAKE_CXX_FLAGS "-g -fstack-protector -fstack-protector-all -fsanitize=bounds -Werror -fsanitize=address")
-
-#find_package(OCCA REQUIRED)
-include_directories(${OCCA_DIR}/include)
-link_directories(${OCCA_DIR}/lib)
-#message(${OCCA_DIR}/lib)
-find_library(NAMES occa PATHS ${OCCA_DIR}/lib)
-
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_BINARY_DIR})
-include_directories(mechanisms)
+IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    SET(CMAKE_INSTALL_PREFIX $ENV{HOME}/.local/nekRK CACHE PATH "Default install path" FORCE)
+ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 #set(CMAKE_BUILD_TYPE Debug)
+
+if(${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+  MESSAGE(FATAL_ERROR "Error:  In-place builds are not supported. Please create a separate build directory")
+endif(${CMAKE_BINARY_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
+
+#Link:https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${CMAKE_INSTALL_PREFIX}/occa/lib")
+
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/3rd_party/occa")
+
+include_directories(mechanisms)
 
 add_library(nekrk SHARED
  # List of dependencies :
  src/lib.cpp
 )
 
-#find_package(OpenMP)
 find_package(MPI REQUIRED)
-include_directories(${MPI_INCLUDE_PATH})
+if(NOT MPI_FOUND)
+  message(FATAL_ERROR "MPI is not found for one of the languages: CXX")
+endif()
 
-set_property(TARGET nekrk PROPERTY CXX_STANDARD 20) # Will automatically decay to the latest supported standard
+set (CMAKE_CXX_STANDARD 14)
+
 target_include_directories (nekrk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (nekrk PUBLIC occa)
+target_link_libraries (nekrk PUBLIC libocca)
+
 install(TARGETS nekrk DESTINATION lib)
-install(FILES README.md DESTINATION share)
+install(FILES README.md DESTINATION .)
 install(FILES include/nekrk.h DESTINATION include)
 install(DIRECTORY okl DESTINATION .)
-install(DIRECTORY mechanisms DESTINATION .)
+install(DIRECTORY share/mechanisms DESTINATION share/)
 
-add_executable(main main.cc)
-target_link_libraries (main LINK_PUBLIC nekrk occa ${MPI_LIBRARIES})
-set_target_properties(main PROPERTIES COMPILE_FLAGS "${MPI_COMPILE_FLAGS}")
-set_target_properties(main PROPERTIES LINK_FLAGS "${MPI_LINK_FLAGS}")
-install(PROGRAMS ${CMAKE_BINARY_DIR}/main DESTINATION bin)
+add_executable(bk BK/bk.cpp)
+target_link_libraries (bk  PRIVATE nekrk libocca)
+
+install(TARGETS bk DESTINATION bin)

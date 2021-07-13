@@ -1,0 +1,22 @@
+ENVIROMENT VARIABLE:
+--------------------
+
+make sure that enviroment variable PYTHONPATH is set to
+your FUEGO installation and exists!
+
+TEST
+----
+
+fmc.py --name=gri.c
+should produce output like the following:
+
+loading 'GRIMech-3.0.ck2'
+... done (0.83 sec)
+saving in 'gri.c' as 'c' format
+... done (4.33 sec)
+
+commandline parameters:
+
+--name=<filename>: the name of the output file; default is stdout
+--mechanism=<filename>: the chemkin file to process (has to be located in ./mechanisms)
+--thermo=<filename>: the chemkin file to process (has to be located in ./mechanisms)

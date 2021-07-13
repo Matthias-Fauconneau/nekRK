@@ -11,19 +11,15 @@ namespace nekRK {
         occa::device device,
         occa::properties kernel_properties,
         int blockSize,
-        MPI_Comm comm,
-        bool transport,
-        bool verbose
+        MPI_Comm comm	
     );
 
     int number_of_species();
-    int number_of_active_species();
-    const std::vector<double> species_molar_mass();
-    const std::vector<std::string> species_names();
+    const double* molar_mass();
 
     double mean_specific_heat_at_CP_R(
-        double T,
-    vector<double> mole_fractions
+        double T, 
+    double* mole_fractions
     );
 
     void set_reference_parameters(
@@ -40,11 +36,9 @@ namespace nekRK {
         occa::memory temperature,
         occa::memory mass_fractions,
         occa::memory mass_rates,
-        occa::memory energy_rate
+        occa::memory energy_rate,
+        int fp32
     );
-
-    void transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, const double reference_temperature);
-
 }
 
 #endif
