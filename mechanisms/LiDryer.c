@@ -299,50 +299,42 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
     //0: H + O2 <=> O + OH
     kf = exp2(-12050.746610262851 * rcp_T - 0.406 * log_T + 31.723952184259364);
     const float cR0 = kf * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
-    //printf("0: %f
-", kf);
+    //printf("0: %f\n", kf);
 
     //1: O + H2 <=> H + OH
     kf = exp2(-4566.491727125329 * rcp_T + 2.67 * log_T - 4.299027692777283);
     const float cR1 = kf * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
-    //printf("1: %f
-", kf);
+    //printf("1: %f\n", kf);
 
     //2: H2 + OH <=> H2O + H
     kf = exp2(-2490.1536763179456 * rcp_T + 1.51 * log_T + 7.754887502163468);
     const float cR2 = kf * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
-    //printf("2: %f
-", kf);
+    //printf("2: %f\n", kf);
 
     //3: O + H2O <=> OH + OH
     kf = exp2(-9728.297161125503 * rcp_T + 2.02 * log_T + 1.570462931026041);
     const float cR3 = kf * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
-    //printf("3: %f
-", kf);
+    //printf("3: %f\n", kf);
 
     //4: H2 + M <=> H + H + M
     kf = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
     const float cR4 = kf * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
-    //printf("4: %f
-", kf);
+    //printf("4: %f\n", kf);
 
     //5: O + O + M <=> O2 + M
     kf = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
     const float cR5 = kf * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
-    //printf("5: %f
-", kf);
+    //printf("5: %f\n", kf);
 
     //6: O + H + M <=> OH + M
     kf = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
     const float cR6 = kf * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
-    //printf("6: %f
-", kf);
+    //printf("6: %f\n", kf);
 
     //7: H + OH + M <=> H2O + M
     kf = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
     const float cR7 = kf * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
-    //printf("7: %f
-", kf);
+    //printf("7: %f\n", kf);
 
     //8: H + O2 (+M) <=> HO2 (+M)
     k_inf = exp2(-0.0 * rcp_T + 0.6 * log_T + 20.492283523798655);
@@ -352,44 +344,37 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     const float cR8 = kf * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
-    //printf("8: %f
-", kf);
+    //printf("8: %f\n", kf);
 
     //9: HO2 + H <=> H2 + O2
     kf = exp2(-597.4916838512156 * rcp_T + 0.0 * log_T + 23.984679905783736);
     const float cR9 = kf * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
-    //printf("9: %f
-", kf);
+    //printf("9: %f\n", kf);
 
     //10: HO2 + H <=> OH + OH
     kf = exp2(-214.16773600985246 * rcp_T + 0.0 * log_T + 26.07704223964188);
     const float cR10 = kf * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
-    //printf("10: %f
-", kf);
+    //printf("10: %f\n", kf);
 
     //11: HO2 + O <=> O2 + OH
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 24.95393638235263);
     const float cR11 = kf * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
-    //printf("11: %f
-", kf);
+    //printf("11: %f\n", kf);
 
     //12: HO2 + OH <=> H2O + O2
     kf = exp2(360.8181857521921 * rcp_T + 0.0 * log_T + 24.78456615693749);
     const float cR12 = kf * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
-    //printf("12: %f
-", kf);
+    //printf("12: %f\n", kf);
 
     //13: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(-8698.840043627297 * rcp_T + 0.0 * log_T + 28.645814086990296);
     const float cR13 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    //printf("13: %f
-", kf);
+    //printf("13: %f\n", kf);
 
     //14: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(1182.859295867297 * rcp_T + 0.0 * log_T + 16.98815209769054);
     const float cR14 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    //printf("14: %f
-", kf);
+    //printf("14: %f\n", kf);
 
     //15: H2O2 (+M) <=> OH + OH (+M)
     k_inf = exp2(-35159.80832188866 * rcp_T + 0.0 * log_T + 48.06819724919299);
@@ -399,38 +384,32 @@ void fg_rates(const float log_T, const float T, const float T_2, const float T_4
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     const float cR15 = kf * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
-    //printf("15: %f
-", kf);
+    //printf("15: %f\n", kf);
 
     //16: H2O2 + H <=> H2O + OH
     kf = exp2(-2882.189532064794 * rcp_T + 0.0 * log_T + 24.522529810666775);
     const float cR16 = kf * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
-    //printf("16: %f
-", kf);
+    //printf("16: %f\n", kf);
 
     //17: H2O2 + H <=> HO2 + H2
     kf = exp2(-5771.63898738416 * rcp_T + 0.0 * log_T + 25.522529810666775);
     const float cR17 = kf * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
-    //printf("17: %f
-", kf);
+    //printf("17: %f\n", kf);
 
     //18: H2O2 + O <=> OH + HO2
     kf = exp2(-2882.189532064794 * rcp_T + 2.0 * log_T + 3.255500733148386);
     const float cR18 = kf * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
-    //printf("18: %f
-", kf);
+    //printf("18: %f\n", kf);
 
     //19: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 19.931568569324174);
     const float cR19 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    //printf("19: %f
-", kf);
+    //printf("19: %f\n", kf);
 
     //20: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-6938.308654393763 * rcp_T + 0.0 * log_T + 29.11147765933911);
     const float cR20 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    //printf("20: %f
-", kf);
+    //printf("20: %f\n", kf);
 
     rates[0] = -cR1-cR2-cR4+cR9+cR17;
     rates[1] = -cR0+cR5-cR8+cR9+cR11+cR12+cR13+cR14;
