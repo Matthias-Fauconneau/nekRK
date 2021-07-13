@@ -16,7 +16,7 @@ vector<string> split (string s, string delimiter) {
     res.push_back (s.substr (pos_start));
     return res;
 }
-bool is_number(const std::string &s) { return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit); }
+//bool is_number(const std::string &s) { return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit); }
 #include <fenv.h>
 #include <cstddef>
 #include <cassert>
@@ -47,11 +47,11 @@ int main(int argc, char **argv) {
     string threadModel = "SERIAL";
     if (argc > 2) { threadModel = strdup(argv[2]); }
     int n_states = 1;
-    if (argc > 3) { if(!is_number(argv[3])) assert(!argv[3]); n_states = stoi(argv[3])/size; }
+    if (argc > 3) { /*if(!is_number(argv[3])) assert(!argv[3]);*/ n_states = stoi(argv[3])/size; }
     int blockSize = 1;
-    if (argc > 4) { if(!is_number(argv[4])) assert(!argv[4]); blockSize = stoi(argv[4]); }
+    if (argc > 4) { /*if(!is_number(argv[4])) assert(!argv[4]);*/ blockSize = stoi(argv[4]); }
     int nRep = 0;
-    if (argc>5) { if(!is_number(argv[5])) assert(!argv[5]); nRep = stoi(argv[5]); }
+    if (argc>5) { /*if(!is_number(argv[5])) assert(!argv[5]);*/ nRep = stoi(argv[5]); }
     bool transport = false;
     if (argc>6) { transport = true }
     const bool verbose = argc < 7;
