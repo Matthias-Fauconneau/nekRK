@@ -364,8 +364,8 @@ def reaction(id, r):
         R = f'({Rf} - {Rr})'
     return f'''//{id}: {r.description}
     {kf};
-    const float cR{id} = kf * {R};
     //printf("{id}: %f\\n", kf);
+    const float cR{id} = kf * {R};
 '''
 #}
 

@@ -32,7 +32,6 @@ vector<string> split (string s, string delimiter) {
 #include <nekrk.h>
 
 int main(int argc, char **argv) {
-    for(int i=1; i<argc; i++) printf("%d:%s ", i, argv[i]);
     feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
     MPI_Init(&argc, &argv);
     int rank = 0, size = 0;
