@@ -295,101 +295,143 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
 }
 #endif
 void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float eG[], const float C[], float* rates) {
- float c, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
-    //H + O2 <=> O + OH
-    c = exp2(-12050.746610262851 * rcp_T - 0.406 * log_T + 31.723952184259364);
-    const float cR0 = c * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
-    //printf("%f ", cR0);
-    //O + H2 <=> H + OH
-    c = exp2(-4566.491727125329 * rcp_T + 2.67 * log_T - 4.299027692777283);
-    const float cR1 = c * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
-    //printf("%f ", cR1);
-    //H2 + OH <=> H2O + H
-    c = exp2(-2490.1536763179456 * rcp_T + 1.51 * log_T + 7.754887502163468);
-    const float cR2 = c * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
-    //printf("%f ", cR2);
-    //O + H2O <=> OH + OH
-    c = exp2(-9728.297161125503 * rcp_T + 2.02 * log_T + 1.570462931026041);
-    const float cR3 = c * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
-    //printf("%f ", cR3);
-    //H2 + M <=> H + H + M
-    c = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
-    const float cR4 = c * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
-    //printf("%f ", cR4);
-    //O + O + M <=> O2 + M
-    c = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
-    const float cR5 = c * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
-    //printf("%f ", cR5);
-    //O + H + M <=> OH + M
-    c = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
-    const float cR6 = c * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
-    //printf("%f ", cR6);
-    //H + OH + M <=> H2O + M
-    c = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
-    const float cR7 = c * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
-    //printf("%f ", cR7);
-    //H + O2 (+M) <=> HO2 (+M)
+ float kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
+    //0: H + O2 <=> O + OH
+    kf = exp2(-12050.746610262851 * rcp_T - 0.406 * log_T + 31.723952184259364);
+    const float cR0 = kf * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
+    //printf("0: %f
+", kf);
+
+    //1: O + H2 <=> H + OH
+    kf = exp2(-4566.491727125329 * rcp_T + 2.67 * log_T - 4.299027692777283);
+    const float cR1 = kf * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
+    //printf("1: %f
+", kf);
+
+    //2: H2 + OH <=> H2O + H
+    kf = exp2(-2490.1536763179456 * rcp_T + 1.51 * log_T + 7.754887502163468);
+    const float cR2 = kf * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
+    //printf("2: %f
+", kf);
+
+    //3: O + H2O <=> OH + OH
+    kf = exp2(-9728.297161125503 * rcp_T + 2.02 * log_T + 1.570462931026041);
+    const float cR3 = kf * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
+    //printf("3: %f
+", kf);
+
+    //4: H2 + M <=> H + H + M
+    kf = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    const float cR4 = kf * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
+    //printf("4: %f
+", kf);
+
+    //5: O + O + M <=> O2 + M
+    kf = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    const float cR5 = kf * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
+    //printf("5: %f
+", kf);
+
+    //6: O + H + M <=> OH + M
+    kf = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    const float cR6 = kf * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
+    //printf("6: %f
+", kf);
+
+    //7: H + OH + M <=> H2O + M
+    kf = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    const float cR7 = kf * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
+    //printf("7: %f
+", kf);
+
+    //8: H + O2 (+M) <=> HO2 (+M)
     k_inf = exp2(-0.0 * rcp_T + 0.6 * log_T + 20.492283523798655);
             Pr = exp2(-381.0007723999002 * rcp_T - 1.72 * log_T + 29.245811916072732) * (2.0*C[0]+0.78*C[1]+11.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
             logFcent = log2(0.19999999999999996 * exp2(-1.4426950408889633e+30*T) + 0.8 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
-            c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
-    const float cR8 = c * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
-    //printf("%f ", cR8);
-    //HO2 + H <=> H2 + O2
-    c = exp2(-597.4916838512156 * rcp_T + 0.0 * log_T + 23.984679905783736);
-    const float cR9 = c * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
-    //printf("%f ", cR9);
-    //HO2 + H <=> OH + OH
-    c = exp2(-214.16773600985246 * rcp_T + 0.0 * log_T + 26.07704223964188);
-    const float cR10 = c * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
-    //printf("%f ", cR10);
-    //HO2 + O <=> O2 + OH
-    c = exp2(-0.0 * rcp_T + 0.0 * log_T + 24.95393638235263);
-    const float cR11 = c * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
-    //printf("%f ", cR11);
-    //HO2 + OH <=> H2O + O2
-    c = exp2(360.8181857521921 * rcp_T + 0.0 * log_T + 24.78456615693749);
-    const float cR12 = c * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
-    //printf("%f ", cR12);
-    //HO2 + HO2 <=> H2O2 + O2
-    c = exp2(-8698.840043627297 * rcp_T + 0.0 * log_T + 28.645814086990296);
-    const float cR13 = c * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    //printf("%f ", cR13);
-    //HO2 + HO2 <=> H2O2 + O2
-    c = exp2(1182.859295867297 * rcp_T + 0.0 * log_T + 16.98815209769054);
-    const float cR14 = c * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-    //printf("%f ", cR14);
-    //H2O2 (+M) <=> OH + OH (+M)
+            kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
+    const float cR8 = kf * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
+    //printf("8: %f
+", kf);
+
+    //9: HO2 + H <=> H2 + O2
+    kf = exp2(-597.4916838512156 * rcp_T + 0.0 * log_T + 23.984679905783736);
+    const float cR9 = kf * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
+    //printf("9: %f
+", kf);
+
+    //10: HO2 + H <=> OH + OH
+    kf = exp2(-214.16773600985246 * rcp_T + 0.0 * log_T + 26.07704223964188);
+    const float cR10 = kf * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
+    //printf("10: %f
+", kf);
+
+    //11: HO2 + O <=> O2 + OH
+    kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 24.95393638235263);
+    const float cR11 = kf * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
+    //printf("11: %f
+", kf);
+
+    //12: HO2 + OH <=> H2O + O2
+    kf = exp2(360.8181857521921 * rcp_T + 0.0 * log_T + 24.78456615693749);
+    const float cR12 = kf * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
+    //printf("12: %f
+", kf);
+
+    //13: HO2 + HO2 <=> H2O2 + O2
+    kf = exp2(-8698.840043627297 * rcp_T + 0.0 * log_T + 28.645814086990296);
+    const float cR13 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
+    //printf("13: %f
+", kf);
+
+    //14: HO2 + HO2 <=> H2O2 + O2
+    kf = exp2(1182.859295867297 * rcp_T + 0.0 * log_T + 16.98815209769054);
+    const float cR14 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
+    //printf("14: %f
+", kf);
+
+    //15: H2O2 (+M) <=> OH + OH (+M)
     k_inf = exp2(-35159.80832188866 * rcp_T + 0.0 * log_T + 48.06819724919299);
             Pr = exp2(-33032.65080829928 * rcp_T + 0.0 * log_T + 36.80664593981008) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
             logFcent = log2(0.5 * exp2(-1.4426950408889633e+30*T) + 0.5 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
-            c = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
-    const float cR15 = c * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
-    //printf("%f ", cR15);
-    //H2O2 + H <=> H2O + OH
-    c = exp2(-2882.189532064794 * rcp_T + 0.0 * log_T + 24.522529810666775);
-    const float cR16 = c * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
-    //printf("%f ", cR16);
-    //H2O2 + H <=> HO2 + H2
-    c = exp2(-5771.63898738416 * rcp_T + 0.0 * log_T + 25.522529810666775);
-    const float cR17 = c * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
-    //printf("%f ", cR17);
-    //H2O2 + O <=> OH + HO2
-    c = exp2(-2882.189532064794 * rcp_T + 2.0 * log_T + 3.255500733148386);
-    const float cR18 = c * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
-    //printf("%f ", cR18);
-    //H2O2 + OH <=> HO2 + H2O
-    c = exp2(-0.0 * rcp_T + 0.0 * log_T + 19.931568569324174);
-    const float cR19 = c * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    //printf("%f ", cR19);
-    //H2O2 + OH <=> HO2 + H2O
-    c = exp2(-6938.308654393763 * rcp_T + 0.0 * log_T + 29.11147765933911);
-    const float cR20 = c * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-    //printf("%f ", cR20);
+            kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
+    const float cR15 = kf * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
+    //printf("15: %f
+", kf);
+
+    //16: H2O2 + H <=> H2O + OH
+    kf = exp2(-2882.189532064794 * rcp_T + 0.0 * log_T + 24.522529810666775);
+    const float cR16 = kf * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
+    //printf("16: %f
+", kf);
+
+    //17: H2O2 + H <=> HO2 + H2
+    kf = exp2(-5771.63898738416 * rcp_T + 0.0 * log_T + 25.522529810666775);
+    const float cR17 = kf * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
+    //printf("17: %f
+", kf);
+
+    //18: H2O2 + O <=> OH + HO2
+    kf = exp2(-2882.189532064794 * rcp_T + 2.0 * log_T + 3.255500733148386);
+    const float cR18 = kf * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
+    //printf("18: %f
+", kf);
+
+    //19: H2O2 + OH <=> HO2 + H2O
+    kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 19.931568569324174);
+    const float cR19 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
+    //printf("19: %f
+", kf);
+
+    //20: H2O2 + OH <=> HO2 + H2O
+    kf = exp2(-6938.308654393763 * rcp_T + 0.0 * log_T + 29.11147765933911);
+    const float cR20 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
+    //printf("20: %f
+", kf);
+
     rates[0] = -cR1-cR2-cR4+cR9+cR17;
     rates[1] = -cR0+cR5-cR8+cR9+cR11+cR12+cR13+cR14;
     rates[2] = cR2-cR3+cR7+cR12+cR16+cR19+cR20;

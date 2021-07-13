@@ -359,13 +359,13 @@ def reaction(id, r):
         if -r.sum_net == 0: pass
         elif -r.sum_net == 1: rcp_equilibrium_constant += '* C0'
         elif -r.sum_net == -1: rcp_equilibrium_constant += '* rcp_C0'
-        else: raise(f'sum net {sum_net}')
+        else: raise(f'sum net {r.sum_net}')
         Rr = f'{rcp_equilibrium_constant} * {product_of_exponentiations(r.products, "concentrations")}'
         R = f'({Rf} - {Rr})'
     return f'''//{id}: {r.description}
     {kf};
     const float cR{id} = kf * {R};
-    printf("{id}: %f\n", {kf});
+    //printf("{id}: %f\n", kf);
 '''
 #}
 
