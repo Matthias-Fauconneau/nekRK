@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     int nRep = 0;
     if (argc>5) { /*if(!is_number(argv[5])) assert(!argv[5]);*/ nRep = stoi(argv[5]); }
     bool transport = false;
-    if (argc>6) { transport = true }
+    if (argc>6) { transport = true; }
     const bool verbose = argc < 7;
 
     char deviceConfig[BUFSIZ];
