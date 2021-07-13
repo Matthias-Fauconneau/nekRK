@@ -17,7 +17,7 @@ vector<string> split (string s, string delimiter) {
     res.push_back (s.substr (pos_start));
     return res;
 }
-bool is_number(const std::string &s) { return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit); }
+//bool is_number(const std::string &s) { return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit); }
 #include <fstream>
 string read(string path) {
     ifstream input_file(path);
@@ -78,7 +78,7 @@ void setup(const char* mechanism_code_file_path_ptr, occa::device _device, occa:
 
     vector<string> lines = split(read(mechanism_code_file_path),"\n");
     assert(lines.size() > 2);
-    assert(is_number(lines[0].substr(2)));
+    //assert(is_number(lines[0].substr(2)));
     number_of_active_species = stoi(lines[0].substr(2));
     species_names = split(lines[1].substr(2)," ");
     //for(auto&& value: species_names) cout <<"\""<< value << "\"\n";
