@@ -162,7 +162,8 @@ int main(int argc, char **argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0 && nRep>0) {
-        cerr<<"average throughput: "<<((size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9)<<" GDOF/s\n";
+        assert(size==1);
+        fprintf(stderr,"%d: %.0fK in %fms = %.0fns, %.2f M/s\n", blockSize, n_states/1e3, elapsedTime*1e3, elapsedTime/double(n_states)*1e9, (size*(double)(n_states))*nRep/elapsedTime/1e6); //*(n_species+1
     }
 
     // get results from device

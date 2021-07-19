@@ -1,3 +1,13 @@
+description: |-
+  ---------------------------------------------------------------------------
+
+  ---------------------------------------------------------------------------
+
+generator: ck2yaml
+input-files: [gri27spec.inp, tran.dat]
+cantera-version: 2.5.0b1
+date: Fri, 25 Jun 2021 11:40:05 +0200
+
 units: {length: cm, time: s, quantity: mol, activation-energy: cal/mol}
 
 phases:
@@ -5,10 +15,10 @@ phases:
   thermo: ideal-gas
   elements: [H, O, C, N, Ar]
   species: [H2, H, O, O2, OH, H2O, HO2, H2O2, C, CH, CH2, CH2(S), CH3, CH4,
-    CO, CO2, HCO, CH2O, CH2OH, CH3O, C2H3, C2H6, HCCO, CH2CHO, CH3CHO,N2, AR]
+    CO, CO2, HCO, CH2O, CH2OH, CH3O, C2H3, C2H6, HCCO, N2, AR, CH2CHO, CH3CHO]
   kinetics: gas
   transport: mixture-averaged
-  state: {T: 1000.0, P: 1 atm}
+  state: {T: 300.0, P: 1 atm}
 
 species:
 - name: H2
@@ -382,6 +392,36 @@ species:
     diameter: 2.5
     rotational-relaxation: 1.0
     note: '*'
+- name: N2
+  composition: {N: 2}
+  thermo:
+    model: NASA7
+    temperature-ranges: [300.0, 1000.0, 5000.0]
+    data:
+    - [3.298677, 1.4082404e-03, -3.963222e-06, 5.641515e-09, -2.444854e-12,
+      -1020.8999, 3.950372]
+    - [2.92664, 1.4879768e-03, -5.68476e-07, 1.0097038e-10, -6.753351e-15,
+      -922.7977, 5.980528]
+  transport:
+    model: gas
+    geometry: linear
+    well-depth: 97.53
+    diameter: 3.621
+    polarizability: 1.76
+    rotational-relaxation: 4.0
+- name: AR
+  composition: {Ar: 1}
+  thermo:
+    model: NASA7
+    temperature-ranges: [300.0, 1000.0, 5000.0]
+    data:
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.366]
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.366]
+  transport:
+    model: gas
+    geometry: atom
+    well-depth: 136.5
+    diameter: 3.33
 - name: CH2CHO
   composition: {C: 2, H: 3, O: 1}
   thermo:
@@ -414,36 +454,6 @@ species:
     well-depth: 436.0
     diameter: 3.97
     rotational-relaxation: 2.0
-- name: N2
-  composition: {N: 2}
-  thermo:
-    model: NASA7
-    temperature-ranges: [300.0, 1000.0, 5000.0]
-    data:
-    - [3.298677, 1.4082404e-03, -3.963222e-06, 5.641515e-09, -2.444854e-12,
-      -1020.8999, 3.950372]
-    - [2.92664, 1.4879768e-03, -5.68476e-07, 1.0097038e-10, -6.753351e-15,
-      -922.7977, 5.980528]
-  transport:
-    model: gas
-    geometry: linear
-    well-depth: 97.53
-    diameter: 3.621
-    polarizability: 1.76
-    rotational-relaxation: 4.0
-- name: AR
-  composition: {Ar: 1}
-  thermo:
-    model: NASA7
-    temperature-ranges: [300.0, 1000.0, 5000.0]
-    data:
-    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.366]
-    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.366]
-  transport:
-    model: gas
-    geometry: atom
-    well-depth: 136.5
-    diameter: 3.33
 
 reactions:
 - equation: 2 O + M <=> O2 + M  # Reaction 1
