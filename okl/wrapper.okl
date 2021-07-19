@@ -1,0 +1,121 @@
+#if CFG_FEATURE_TRANSPORT
+@kernel void transport(
+    const int n_states,
+    const float pressure_Pa,
+    @restrict const float* temperature_normalized,
+    @restrict const float* mass_fractions,
+    @restrict float* thermal_conductivity,
+    @restrict float* viscosity,
+    @restrict float* rho_Di,
+    const float reference_temperature
+)
+{
+    for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
+        const float T = reference_temperature * temperature_normalized[id];
+        float mass_fraction[n_species];
+        for(int k=0;k<n_species;k++) {
+            mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
+        }
+        float mean_rcp_molar_mass = 0.;
+        for(int i=0; i<n_species; i++) {
+            mean_rcp_molar_mass += fg_rcp_molar_mass[i]*mass_fractions[i];
+        }
+        float mean_molar_mass = 1./mean_rcp_molar_mass;
+        float mole_fractions[n_species];
+        for(int i=0; i<n_species; i++) {
+            mole_fractions[i] = mean_molar_mass*fg_rcp_molar_mass[i]*mass_fractions[i];
+        }
+
+        float T_12 =	sqrt(T);
+        float ln_T = log(T);
+        float ln_T_2 = ln_T*ln_T;
+        float ln_T_3 = ln_T_2*ln_T;
+        thermal_conductivity[id] = T_12/2.*fg_thermal_conductivity_T_12_2(ln_T, ln_T_2, ln_T_3, mole_fractions);
+        viscosity[id] = T_12*fg_viscosity_T_12(ln_T, ln_T_2, ln_T_3, mole_fractions);
+
+        float T_32 = T*T_12;
+        float P_T_32_mixture_diffusion_coefficients[n_species];
+        fg_P_T_32_mixture_diffusion_coefficients(ln_T, ln_T_2, ln_T_3, mole_fractions, mass_fractions, /*->*/ P_T_32_mixture_diffusion_coefficients);
+        const float K = 1.380649e-23; // J / K
+        const float NA = 6.02214076e23;
+        const float R = K*NA;
+        float concentration = pressure_Pa/R/T;
+        float density_T_32_P = concentration * mean_molar_mass * T_32 / pressure_Pa;
+        for(int k=0;k<n_species;k++) {
+            rho_Di[k*n_states + id] = density_T_32_P * P_T_32_mixture_diffusion_coefficients[k];
+        }
+    }
+}
+#else
+@kernel void production_rates(
+    const int n_states,
+    const double pressure_R,
+    @restrict const double* temperature,
+    @restrict const double* mass_fractions,
+    @restrict double* mass_rates,
+    @restrict double* energy_rate,
+    const double reference_temperature,
+    const double rcp_mass_rate,
+    const double rcp_energy_rate)
+{
+  for(int id=0;id<n_states;++id;@tile(p_BLOCKSIZE,@outer,@inner)) {
+        dfloat wrk[n_species];
+        dfloat molar_rates[n_species] = {0};
+
+    const double T = reference_temperature * temperature[id];
+    dfloat tc[6];
+    tc[0] = log(T);
+    tc[1] = T;
+    tc[2] = T*T;
+    tc[3] = T*T*T;
+    tc[4] = T*T*T*T;
+    tc[5] = 1./T;
+
+    double sum_active_mass_fractions = 0.;
+    double mean_rcp_molar_mass = 0.;
+        for(int k=0;k<n_species-1;k++) {
+        const double mass_fraction = fmax(0., mass_fractions[k*n_states + id]);
+        wrk[k] = mass_fraction*fg_rcp_molar_mass[k];;
+        sum_active_mass_fractions += mass_fraction;
+        mean_rcp_molar_mass += wrk[k];
+    }
+    wrk[n_species-1] = (1 - sum_active_mass_fractions) * fg_rcp_molar_mass[n_species-1];
+        mean_rcp_molar_mass += wrk[n_species-1];
+    const double fac = pressure_R * tc[5] * 1/mean_rcp_molar_mass;
+        for(int k=0;k<n_species;k++) wrk[k] *= fac;
+
+    fg_rates(wrk, tc, molar_rates);
+    fg_speciesEnthalpy_RT(wrk, tc);
+
+    double energy_rate_RT = 0.0;
+        for(int k=0;k<n_species;k++) {
+        mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
+        energy_rate_RT += molar_rates[k] * wrk[k];
+    }
+    energy_rate[id] = rcp_energy_rate * tc[1] * energy_rate_RT;
+  }
+}
+#endif
+
+@kernel void number_of_species(@restrict int* nSpecies)
+{
+    for(int id=0;id<1;++id;@tile(p_BLOCKSIZE,@outer,@inner)) {
+            nSpecies[0] = n_species;
+    }
+}
+
+@kernel void mean_specific_heat_at_CP_R(const double T,
+                                        @restrict const double* mole_fractions,
+                                        @restrict double* mcp)
+{
+    for(int id=0;id<1;++id;@tile(p_BLOCKSIZE,@outer,@inner)) {
+      mcp[0] = fg_mean_specific_heat_at_CP_R(T, mole_fractions);
+    }
+}
+
+@kernel void molar_mass(@restrict double* mm)
+{
+    for(int id=0;id<1;++id;@tile(p_BLOCKSIZE,@outer,@inner)) {
+            for(int i=0;i<n_species;i++) mm[i] = fg_molar_mass[i];
+    }
+}

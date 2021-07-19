@@ -1,0 +1,44 @@
+#define __FG_NSPECIES__ n_species
+
+void fg_rates(const dfloat concentrations[], const dfloat tc[], dfloat* molar_rates) {
+    const dfloat log_T = tc[0];
+    const dfloat T = tc[1];
+    const dfloat T2 = tc[2];
+    const dfloat T3 = tc[3];
+    const dfloat T4 = tc[4];
+    const dfloat rcp_T = tc[5];
+    const dfloat kB = 1.380649e-23; // J/kelvin
+    const dfloat NA = 6.02214076e23; // /mole
+    const dfloat reference_pressure = 101325. / (kB*NA);
+    const dfloat C0 = reference_pressure * rcp_T;
+    const dfloat rcp_C0 = (1./reference_pressure) * T;
+    dfloat exp_Gibbs0_RT[n_active_species];
+    fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
+    const dfloat rcp_T2 = rcp_T*rcp_T;
+    rates(log_T,T,T2,T4,rcp_T,rcp_T2, C0,rcp_C0, exp_Gibbs0_RT, concentrations, /*->*/ molar_rates);
+}
+
+void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat tc[]) {
+    const dfloat log_T = tc[0];
+    const dfloat T = tc[1];
+    const dfloat T2 = tc[2];
+    const dfloat T3 = tc[3];
+    const dfloat T4 = tc[4];
+    const dfloat rcp_T = tc[5];
+    fg_enthalpy_RT(log_T, T, T2, T3, T4, rcp_T, /*->*/ _);
+}
+
+dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat mole_fractions[]) {
+    const dfloat log_T = log2(T);
+    const dfloat T2 = T*T;
+    const dfloat T3 = T*T2;
+    const dfloat T4 = T*T3;
+    const dfloat rcp_T = 1./T;
+    dfloat Cp_R[n_species];
+    fg_molar_heat_capacity_at_constant_pressure_R(log_T,T,T2,T3,T4,rcp_T, /*->*/ Cp_R);
+    dfloat sum = 0;
+    for(int k=0; k<n_species; k++) {
+        sum += Cp_R[k] * mole_fractions[k];
+    }
+    return sum;
+}
