@@ -53,7 +53,7 @@
 @kernel void production_rates(
     const int n_states,
     const double pressure_R,
-    @restrict const double* temperature,
+        @restrict const double* temperature_normalized,
     @restrict const double* mass_fractions,
     @restrict double* mass_rates,
     @restrict double* energy_rate,
@@ -65,7 +65,7 @@
         dfloat wrk[n_species];
         dfloat molar_rates[n_active_species] = {0};
 
-    const double T = reference_temperature * temperature[id];
+        const double T = reference_temperature * temperature_normalized[id];
     dfloat tc[6];
     tc[0] = log(T);
     tc[1] = T;

@@ -1,6 +1,5 @@
 #!/bin/env python
 # TODO: display parameters
-# TODO: automatic code regeneration when needed
 from sys import argv
 from os import environ
 from os.path import dirname, realpath
@@ -8,6 +7,11 @@ import subprocess
 
 print('NekRK')
 nekRK = dirname(realpath(argv[0]))
+
+yaml = f'/usr/share/cantera/data/{argv[1]}.yaml'
+command = f'./main.py {yaml} > share/mechanisms/{argv[1]}.c' # TODO: only when needed
+print(command)
+#build = subprocess.run(cwd=nekRK, args=['sh','-c',command])
 
 build = subprocess.run(cwd=nekRK, args=['make',"-Cbuild",'install'])
 build.check_returncode()
@@ -33,7 +37,6 @@ _species, nekRK_transport = run.stdout.decode().splitlines()
 nekRK_transport = [float(s) for s in nekRK_transport.split()]
 
 print('Cantera')
-yaml = f'/usr/share/cantera/data/{argv[1]}.yaml'
 cantera_species, cantera, cantera_transport = subprocess.run([nekRK+'/gas.py', yaml], capture_output=True).stdout.decode().splitlines();
 cantera_species = cantera_species.split()
 cantera = cantera.split()
