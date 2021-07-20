@@ -4,46 +4,46 @@
 #if CFG_FEATURE_TRANSPORT
 @kernel void transport(
     const int n_states,
-    const float pressure_Pa,
-    @restrict const float* temperature_normalized,
-    @restrict const float* mass_fractions,
-    @restrict float* thermal_conductivity,
-    @restrict float* viscosity,
-    @restrict float* rho_Di,
-    const float reference_temperature
+    const dfloat pressure_Pa,
+    @restrict const dfloat* temperature_normalized,
+    @restrict const dfloat* mass_fractions,
+    @restrict dfloat* thermal_conductivity,
+    @restrict dfloat* viscosity,
+    @restrict dfloat* rho_Di,
+    const dfloat reference_temperature
 )
 {
-    for(int id=0;id<n_states;++id;@tile(p_blockSize,@outer,@inner)) {
-        const float T = reference_temperature * temperature_normalized[id];
-        float mass_fraction[n_species];
+    for(int id=0;id<n_states;++id;@tile(p_BLOCKSIZE,@outer,@inner)) {
+        const dfloat T = reference_temperature * temperature_normalized[id];
+        dfloat mass_fraction[n_species];
         for(int k=0;k<n_species;k++) {
             mass_fraction[k] = fmax(0., mass_fractions[k*n_states + id]);
         }
-        float mean_rcp_molar_mass = 0.;
+        dfloat mean_rcp_molar_mass = 0.;
         for(int i=0; i<n_species; i++) {
             mean_rcp_molar_mass += fg_rcp_molar_mass[i]*mass_fractions[i];
         }
-        float mean_molar_mass = 1./mean_rcp_molar_mass;
-        float mole_fractions[n_species];
+        dfloat mean_molar_mass = 1./mean_rcp_molar_mass;
+        dfloat mole_fractions[n_species];
         for(int i=0; i<n_species; i++) {
             mole_fractions[i] = mean_molar_mass*fg_rcp_molar_mass[i]*mass_fractions[i];
         }
 
-        float T_12 =	sqrt(T);
-        float ln_T = log(T);
-        float ln_T_2 = ln_T*ln_T;
-        float ln_T_3 = ln_T_2*ln_T;
+        dfloat T_12 =	sqrt(T);
+        dfloat ln_T = log(T);
+        dfloat ln_T_2 = ln_T*ln_T;
+        dfloat ln_T_3 = ln_T_2*ln_T;
         thermal_conductivity[id] = T_12/2.*fg_thermal_conductivity_T_12_2(ln_T, ln_T_2, ln_T_3, mole_fractions);
         viscosity[id] = T_12*fg_viscosity_T_12(ln_T, ln_T_2, ln_T_3, mole_fractions);
 
-        float T_32 = T*T_12;
-        float P_T_32_mixture_diffusion_coefficients[n_species];
+        dfloat T_32 = T*T_12;
+        dfloat P_T_32_mixture_diffusion_coefficients[n_species];
         fg_P_T_32_mixture_diffusion_coefficients(ln_T, ln_T_2, ln_T_3, mole_fractions, mass_fractions, /*->*/ P_T_32_mixture_diffusion_coefficients);
-        const float K = 1.380649e-23; // J / K
-        const float NA = 6.02214076e23;
-        const float R = K*NA;
-        float concentration = pressure_Pa/R/T;
-        float density_T_32_P = concentration * mean_molar_mass * T_32 / pressure_Pa;
+        const dfloat K = 1.380649e-23; // J / K
+        const dfloat NA = 6.02214076e23;
+        const dfloat R = K*NA;
+        dfloat concentration = pressure_Pa/R/T;
+        dfloat density_T_32_P = concentration * mean_molar_mass * T_32 / pressure_Pa;
         for(int k=0;k<n_species;k++) {
             rho_Di[k*n_states + id] = density_T_32_P * P_T_32_mixture_diffusion_coefficients[k];
         }

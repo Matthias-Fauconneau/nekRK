@@ -11,14 +11,15 @@ namespace nekRK {
         occa::device device,
         occa::properties kernel_properties,
         int blockSize,
-        MPI_Comm comm	
+        MPI_Comm comm
+        //,bool transport
     );
 
     int number_of_species();
     const double* molar_mass();
 
     double mean_specific_heat_at_CP_R(
-        double T, 
+        double T,
     double* mole_fractions
     );
 
@@ -39,6 +40,8 @@ namespace nekRK {
         occa::memory energy_rate,
         int fp32
     );
+
+        void transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, const double reference_temperature);
 }
 
 #endif

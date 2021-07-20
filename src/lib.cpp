@@ -9,6 +9,7 @@ static const double R = 1.380649e-23 * 6.02214076e23;
 
 namespace {
     occa::kernel production_rates_kernel, production_rates_fp32_kernel;
+        occa::kernel transportCoeffs_kernel;
     occa::kernel number_of_species_kernel;
     occa::kernel mean_specific_heat_at_CP_R_kernel;
     occa::kernel molar_mass_kernel;
@@ -43,7 +44,7 @@ void set_molar_mass()
 }
 
 void setup(const char* mech, occa::device _device, occa::properties kernel_properties,
-       int _group_size, MPI_Comm _comm)
+       int _group_size, MPI_Comm _comm/*, bool transport*/)
 {
     comm   = _comm;
     device = _device;
@@ -105,7 +106,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
         kernel_properties["compiler_flags"] += " -D__FG_POW_APPROX__=powf";
         kernel_properties["compiler_flags"] += " -D__FG_LOG10_APPROX__=log10f";
 
-    group_size = 1;
+                group_size = 1;
       }
     }
 
@@ -139,11 +140,20 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     for (int r = 0; r < 2; r++) {
       if ((r == 0 && rank == 0) || (r == 1 && rank > 0)) {
         const std::string okl_path = std::string(getenv("NEKRK_PATH") ?: ".")+"/okl/wrapper.okl";
+                /*if (verbose)*/ { std::cerr<<"Rates\n"; }
         production_rates_kernel           = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties);
         production_rates_fp32_kernel      = device.buildKernel(okl_path.c_str(), "production_rates", kernel_properties_fp32);
         number_of_species_kernel          = device.buildKernel(okl_path.c_str(), "number_of_species", kernel_properties);
         mean_specific_heat_at_CP_R_kernel = device.buildKernel(okl_path.c_str(), "mean_specific_heat_at_CP_R", kernel_properties);
         molar_mass_kernel                 = device.buildKernel(okl_path.c_str(), "molar_mass", kernel_properties);
+                /*if (transport)*/ {
+                    kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "1";
+                    kernel_properties["compiler_flags"] += " -DCFG_FEATURE_TRANSPORT=1";
+                    /*if (verbose)*/ { std::cerr<<"Transport\n"; }
+                    transportCoeffs_kernel           = device.buildKernel(okl_path.c_str(), "transport", kernel_properties);
+                }
+                kernel_properties["defines/CFG_FEATURE_TRANSPORT"] = "0";
+                kernel_properties["compiler_flags"] += " -DCFG_FEATURE_TRANSPORT=0";
       }
       MPI_Barrier(comm);
     }
@@ -166,9 +176,9 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 /* API */
 
 void nekRK::init(const char* model_path, occa::device device,
-      occa::properties kernel_properties, int group_size, MPI_Comm comm)
+      occa::properties kernel_properties, int group_size, MPI_Comm comm/*, bool transport*/)
 {
-  setup(model_path, device, kernel_properties, group_size, comm);
+    setup(model_path, device, kernel_properties, group_size, comm/*, bool transport*/);
 }
 
 double nekRK::mean_specific_heat_at_CP_R(double T, double* mole_fractions)
@@ -243,4 +253,18 @@ const double* nekRK::molar_mass()
 {
   assert(initialized);
   return (const double*) m_molar;
+}
+
+void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory lambda, occa::memory mue, occa::memory rho_Di, double reference_temperature)
+{
+    transportCoeffs_kernel(
+        nStates,
+        pressure_Pa,
+        T,
+        Yi,
+        lambda,
+        mue,
+        rho_Di,
+        reference_temperature
+    );
 }

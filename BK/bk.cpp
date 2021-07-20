@@ -28,13 +28,13 @@ int main(int argc, char **argv) {
     int n_states;
     int mode = 0;
     int blockSize = 512;
-    int nRep = 1; 
+    int nRep = 1;
     int fp32 = 0;
     int ci = 0;
     int deviceId = 0;
     int deviceIdFlag = 0;
     std::string mech("GRIMech-3.0");
-      
+
     while(1) {
       static struct option long_options[] =
       {
@@ -51,10 +51,10 @@ int main(int argc, char **argv) {
       };
       int option_index = 0;
       int c = getopt_long (argc, argv, "s:", long_options, &option_index);
- 
+
       if (c == -1)
         break;
- 
+
       switch(c) {
         case 'e':
           mode = std::stoi(optarg);
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 
     if(err > 0) {
         if(rank == 0)
-          printf("Usage: ./bk --mode 1|2 --backend SERIAL|CUDA|HIP|OPENCL --n-states n " 
+          printf("Usage: ./bk --mode 1|2 --backend SERIAL|CUDA|HIP|OPENCL --n-states n "
                  "[--repetitions n] [--fp32] [--ci] [--mechanism-name] [--block-size  n] [--device-id  n]\n");
         exit(EXIT_FAILURE);
     }
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
       std::cout << "number of repetitions: " << nRep << '\n';
     }
 
-    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD);
+    nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD/*,*/ /*transport*//*mode==2*/);
     const int n_species = nekRK::number_of_species();
 
     // setup reference quantities
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
     for(int k=0; k<n_species; k++) molar_mass += mole_fractions[k] * molar_mass_species[k];
 
     auto reference_mass_fractions = new double[n_species];
-    for(int k=0; k<n_species; k++) { 
+    for(int k=0; k<n_species; k++) {
       reference_mass_fractions[k] = mole_fractions[k] * molar_mass_species[k]  / molar_mass;
     }
     const double reference_length = 1.;
@@ -155,10 +155,10 @@ int main(int argc, char **argv) {
     const double reference_pressure = pressure_Pa;
     const double reference_temperature = temperature_K;
 
-    nekRK::set_reference_parameters(reference_pressure, 
-                            reference_temperature, 
-                    reference_length, 
-                    reference_velocity, 
+    nekRK::set_reference_parameters(reference_pressure,
+                            reference_temperature,
+                    reference_length,
+                    reference_velocity,
                     reference_mass_fractions);
 
     // populate state vector
@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
 
     auto temperatures = new double[n_states];
     for (int i=0; i<n_states; i++) temperatures[i] = temperature_K / reference_temperature;
-    auto o_temperature = device.malloc<double>(n_states, temperatures);
+        auto o_temperature_normalized = device.malloc<double>(n_states, temperatures);
 
     const double pressure = pressure_Pa / reference_pressure;
 
@@ -180,26 +180,26 @@ int main(int argc, char **argv) {
     if(mode == 1 && n_states) {
       auto o_rates = device.malloc<double>(n_species*n_states);
       auto o_hrr = device.malloc<double>(n_states);
-  
+
       // warm up
-      nekRK::production_rates(n_states, 
-                              pressure, 
-                          o_temperature, 
-                          o_mass_fractions, 
-                          o_rates, 
+      nekRK::production_rates(n_states,
+                              pressure,
+                                                            o_temperature_normalized,
+                          o_mass_fractions,
+                          o_rates,
                           o_hrr,
                       fp32);
- 
-      // actual run 
+
+      // actual run
       device.finish();
       MPI_Barrier(MPI_COMM_WORLD);
       const auto startTime = MPI_Wtime();
       for(int i=0; i<nRep; i++) {
-          nekRK::production_rates(n_states, 
-                        pressure, 
-                    o_temperature, 
-                    o_mass_fractions, 
-                    o_rates, 
+          nekRK::production_rates(n_states,
+                        pressure,
+                                            o_temperature_normalized,
+                    o_mass_fractions,
+                    o_rates,
                     o_hrr,
                     fp32);
       }
@@ -219,8 +219,8 @@ int main(int argc, char **argv) {
         o_rates.copyTo(rates);
         auto hrr = new double[n_states];
         o_hrr.copyTo(hrr);
- 
-    const double rtol = (fp32) ? 2e-5 : 1e-14;    
+
+    const double rtol = (fp32) ? 2e-5 : 1e-14;
     double errInf = fmax(abs((hrr[0] - refBK1Data[0])/(refBK1Data[0])), 0);
         for (int k=0; k < n_species; k++) {
       if(refBK1Data[k+1] > 1e-15)
@@ -228,13 +228,48 @@ int main(int argc, char **argv) {
     }
     const int passed = (errInf < rtol);
     printf("BK1 error_inf: %g (%s)\n", errInf, (passed) ? "passed" : "failed");
-        if(!passed) (EXIT_FAILURE);	
+        if(!passed) (EXIT_FAILURE);
       }
     }
 
     if(mode == 2) {
-      printf("BK2 not implemented yet!\n"); 
-      exit(EXIT_FAILURE);
+            auto o_thermal_conductivity = device.malloc<double>(n_states);
+            auto o_viscosity = device.malloc<double>(n_states);
+            auto o_rho_Di = device.malloc<double>(n_species*n_states);
+
+            nekRK::transportCoeffs(n_states,
+                                                         pressure_Pa,
+                                                    o_temperature_normalized,
+                                                    o_mass_fractions,
+                                                    o_thermal_conductivity,
+                                                    o_viscosity,
+                                                    o_rho_Di,
+                                                    reference_temperature);
+
+            auto conductivity = new double[n_states];
+            o_thermal_conductivity.copyTo(conductivity);
+            printf("%15e ", conductivity[0]);
+            auto viscosity = new double[n_states];
+            o_viscosity.copyTo(viscosity);
+            //printf("μ: %1.3e, ", viscosity[0])	;
+            printf("%.15e ", viscosity[0])	;
+            auto rho_Di = new double[n_species*n_states];
+            o_rho_Di.copyTo(rho_Di);
+            // print results
+            const double K = 1.380649e-23; // J/kelvin
+            const double NA = 6.02214076e23; // /mole
+            const double R = K*NA;
+            const double concentration = reference_pressure / R / reference_temperature;
+            const double reference_density = concentration * molar_mass;
+            const double reference_time = reference_length / reference_velocity;
+
+            double density = concentration * molar_mass;
+            //printf("D: ");
+            for (int k=0; k<n_species; k++) {
+                double density_times_diffusion_coefficient = rho_Di[k*n_states+0];
+                //if(rank==0 && argc > 5) printf("species %5zu density_times_diffusion_coefficient=%.15e\n", k+1, density_times_diffusion_coefficient);
+                printf("%.15e ", density_times_diffusion_coefficient/density);
+            }
     }
 
     MPI_Finalize();

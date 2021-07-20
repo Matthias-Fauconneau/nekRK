@@ -9348,7 +9348,7 @@ __FG_DEVICE__ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const double X[]) {
     fg_molar_heat_capacity_at_constant_pressure_R(log_T,T,T2,T3,T4,rcp_T, /*->*/ Cp_R);
     dfloat sum = 0;
     for(int k=0; k<n_species; k++) {
-        sum += Cp_R[k] * X[k];
+            sum += Cp_R[k] * X[k];
     }
     return sum;
 }
