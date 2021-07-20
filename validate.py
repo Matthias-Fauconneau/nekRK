@@ -13,16 +13,22 @@ build = subprocess.run(cwd=nekRK, args=['make',"-Cbuild",'install'])
 build.check_returncode()
 
 #$NEKRK_PATH/bin
-args = f'build/bk --mechanism-name {argv[1]} --backend Serial --n-states 1 --repetitions 0 --mode 1'
+args = f'build/bk --mechanism-name {argv[1]} --backend Serial --n-states 1 --repetitions 0 --mode 1 --ci'
 print(args)
 run = subprocess.run(cwd=nekRK, args=args.split(), capture_output=True)
-run.check_returncode() #assert len(run.stderr)==0, run.stderr
+run.check_returncode()
+print(run.stderr.decode())
+print(run.stdout.decode())
 species, rates = run.stdout.decode().splitlines()
 species = species.split()
 rates = [float(s) for s in rates.split()]
 
-run = subprocess.run(cwd=nekRK, args=['build/bk',"--mechanism-name",argv[1], '--backend','Serial','--n-states','1','--repetitions','0','--mode','2'], capture_output=True)
+args = f'build/bk --mechanism-name {argv[1]} --backend Serial --n-states 1 --repetitions 0 --mode 2'
+print(args)
+run = subprocess.run(cwd=nekRK, args=args.split(), capture_output=True)
 run.check_returncode() #assert len(run.stderr)==0, run.stderr
+print(run.stderr.decode())
+print(run.stdout.decode())
 _species, nekRK_transport = run.stdout.decode().splitlines()
 nekRK_transport = [float(s) for s in nekRK_transport.split()]
 

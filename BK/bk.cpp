@@ -181,6 +181,13 @@ int main(int argc, char **argv) {
 
     const double pressure = pressure_Pa / reference_pressure;
 
+        const double K = 1.380649e-23; // J/kelvin
+        const double NA = 6.02214076e23; // /mole
+        const double R = K*NA;
+        const double concentration = reference_pressure / R / reference_temperature;
+        const double reference_density = concentration * molar_mass;
+        const double reference_time = reference_length / reference_velocity;
+
     // run benchmarks
     if(mode == 1 && n_states) {
       auto o_rates = device.malloc<double>(n_species*n_states);
@@ -225,14 +232,24 @@ int main(int argc, char **argv) {
         auto hrr = new double[n_states];
         o_hrr.copyTo(hrr);
 
-    const double rtol = (fp32) ? 2e-5 : 1e-14;
-    double errInf = fmax(abs((hrr[0] - refBK1Data[0])/(refBK1Data[0])), 0);
+                const double rtol = (fp32) ? 2e-5 : 1e-14;
+                double errInf = fmax(abs((hrr[0] - refBK1Data[0])/(refBK1Data[0])), 0);
         for (int k=0; k < n_species; k++) {
-      if(refBK1Data[k+1] > 1e-15)
-        errInf = fmax(abs((rates[k*n_states+0] - refBK1Data[k+1])/refBK1Data[k+1]), errInf);
-    }
-    const int passed = (errInf < rtol);
-    fprintf(stderr, "BK1 error_inf: %g (%s)\n", errInf, (passed) ? "passed" : "failed");
+                    if(refBK1Data[k+1] > 1e-15) {
+                        errInf = fmax(abs((rates[k*n_states+0] - refBK1Data[k+1])/refBK1Data[k+1]), errInf);
+                    }
+                    double mass_production_rate = rates[k*n_states+0];
+                    // mass_rates[k*n_states + id] = rcp_mass_rate * fg_molar_mass[k] * molar_rates[k];
+                    double reference_mass_rate = reference_density / reference_time;
+                    double rcp_mass_rate = 1./reference_mass_rate;
+                    auto species_molar_mass = molar_mass_species;
+                    double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
+                    printf("%.15e", molar_rate);
+                    auto n_active_species = n_species; // FIXME
+                    if (k<n_active_species-1) { cout<<' '; }
+                }
+                const int passed = (errInf < rtol);
+                fprintf(stderr, "BK1 error_inf: %g (%s)\n", errInf, (passed) ? "passed" : "failed");
         if(!passed) (EXIT_FAILURE);
       }
     }
@@ -261,12 +278,6 @@ int main(int argc, char **argv) {
             auto rho_Di = new double[n_species*n_states];
             o_rho_Di.copyTo(rho_Di);
             // print results
-            const double K = 1.380649e-23; // J/kelvin
-            const double NA = 6.02214076e23; // /mole
-            const double R = K*NA;
-            const double concentration = reference_pressure / R / reference_temperature;
-            const double reference_density = concentration * molar_mass;
-            const double reference_time = reference_length / reference_velocity;
 
             double density = concentration * molar_mass;
             //printf("D: ");
