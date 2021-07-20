@@ -11,7 +11,7 @@ Dependencies:
 
 ```sh
 export NEKRK_PATH=$HOME/.local/nekRK
-fuego/run.sh GRIMech-3.0.ck2 (only required if mechanism does not exist in share/mechanism)
+./main.py /usr/share/cantera/data/gri30.yaml > share/mechanisms/gri30.c (only required if not commited)
 cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$NEKRK_PATH ..
 module load spectrum_mpi
 make -Cbuild -j install

@@ -248,14 +248,10 @@ def reaction_from_model(species_names, r):
         _.preexponential_factor = rate_constant['A'] * pow(1e-6, concentration_cm3_unit_conversion_factor_exponent)
         _.temperature_exponent = rate_constant['b']
         Ea = rate_constant['Ea']
-        """match units['activation-energy']:
+        match units['activation-energy']:
             case 'K': _.activation_temperature = Ea
             case 'cal/mol': _.activation_temperature = Ea * J_per_cal / (kB*NA)
-            case _: exit('activation-energy')"""
-        match = units['activation-energy']
-        if match == 'K': _.activation_temperature = Ea
-        elif match == 'cal/mol': _.activation_temperature = Ea * J_per_cal / (kB*NA)
-        else: exit('activation-energy')
+            case _: exit('activation-energy')
         #
         return _
     #
@@ -331,7 +327,7 @@ arrhenius = lambda r: f'exp2({-r.activation_temperature/ln(2)} * rcp_T + {r.temp
 
 def reaction(id, r):
     if hasattr(r, 'efficiencies'):
-        efficiency = f"({'+'.join([f'concentrations[{specie}]' if efficiency == 1. else f'{efficiency}*concentrations[{specie}]' for specie, efficiency in enumerate(r.efficiencies)])})"
+        efficiency = f"(mixture_efficiency+{'+'.join(filter(None, [f'{efficiency-1}*concentrations[{specie}]' if efficiency!=1 else None for specie, efficiency in enumerate(r.efficiencies)]))})"
     match r.type:
         case 'elementary'|'irreversible':
             kf = f'kf = {arrhenius(r.rate_constant)}'
@@ -365,7 +361,8 @@ def reaction(id, r):
     return f'''//{id}: {r.description}
     {kf};
     //printf("{id}: %f\\n", kf);
-    const dfloat cR{id} = kf * {R};
+    cR = kf * {R};
+    {code(filter(None, [f"rates[{specie}] += {mul(net,'cR')};" if net!=0 else None for specie, net in enumerate(r.net)]))}
 '''
 #}
 
@@ -412,10 +409,11 @@ __FG_DEVICE__ void fg_P_T_32_mixture_diffusion_coefficients(dfloat ln_T, dfloat 
     {('+'+line).join([(lambda P: f"mole_fractions[{j}] / ({P[0]} + {P[1]}*ln_T + {P[2]}*ln_T_2 + {P[3]}*ln_T_3)")(transport_polynomials.binary_thermal_diffusion_coefficients_T32[k if k>j else j][j if k>j else k]) for j in list(range(k))+list(range(k+1,species.len))])});''' for k in range(species.len))}
 }}
 #endif
-__FG_DEVICE__ void fg_rates(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat C0, const dfloat rcp_C0, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* rates) {{
- dfloat kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
+__FG_DEVICE__ void rates(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat C0, const dfloat rcp_C0, const dfloat exp_Gibbs0_RT[], const dfloat concentrations[], dfloat* rates) {{
+ dfloat kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1, cR;
+    {code([f"rates[{specie}] = 0;" for specie in range(len(active))])}
+    float mixture_efficiency = {'+'.join([f'concentrations[{specie}]' for specie in range(species.len)])};
     {code([reaction(i, r) for i, r in enumerate(reactions)])}
-    {code([f"rates[{specie}] = {'+'.join(filter(None, [mul(r.net[specie],f'cR{i}') for i, r in enumerate(reactions)]))};" for specie in range(len(active))])}
 }}
 
 
@@ -449,7 +447,7 @@ __FG_DEVICE__ void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat 
     fg_enthalpy_RT(log_T, T, T2, T3, T4, rcp_T, /*->*/ _);
 }}
 
-__FG_DEVICE__ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat mole_fractions[]) {{
+__FG_DEVICE__ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const double mole_fractions[]) {{
     const dfloat log_T = log2(T);
     const dfloat T2 = T*T;
     const dfloat T3 = T*T2;
@@ -463,4 +461,5 @@ __FG_DEVICE__ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat mole_f
     }}
     return sum;
 }}
+#endif
 """.replace('- -','+ ').replace('+ -','- ').replace('+-','-').replace('concentrations','C').replace('exp_Gibbs0_RT','eG').replace('mole_fractions','X'))
