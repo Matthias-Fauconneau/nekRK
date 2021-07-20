@@ -1,3 +1,6 @@
+#ifndef n_species
+#define n_species __FG_NSPECIES__
+#endif
 #if CFG_FEATURE_TRANSPORT
 @kernel void transport(
     const int n_states,
