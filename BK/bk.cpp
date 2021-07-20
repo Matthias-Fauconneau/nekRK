@@ -136,6 +136,7 @@ int main(int argc, char **argv) {
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD/*,*/ /*transport*//*mode==2*/);
     const int n_species = nekRK::number_of_species();
+        const int n_active_species = nekRK::number_of_active_species();
 
         for (int k=0; k<n_species; k++) { cout << nekRK::species_names()[k]; if (k<n_species-1) { cout << ' '; } }
         cout << '\n';
@@ -190,7 +191,7 @@ int main(int argc, char **argv) {
 
     // run benchmarks
     if(mode == 1 && n_states) {
-      auto o_rates = device.malloc<double>(n_species*n_states);
+            auto o_rates = device.malloc<double>(n_active_species*n_states);
       auto o_hrr = device.malloc<double>(n_states);
 
       // warm up
@@ -227,14 +228,14 @@ int main(int argc, char **argv) {
       // validate results
       if(ci && rank == 0) {
         // get results from device
-        auto rates = new double[n_species*n_states];
+                auto rates = new double[n_active_species*n_states];
         o_rates.copyTo(rates);
         auto hrr = new double[n_states];
         o_hrr.copyTo(hrr);
 
                 const double rtol = (fp32) ? 2e-5 : 1e-14;
                 double errInf = fmax(abs((hrr[0] - refBK1Data[0])/(refBK1Data[0])), 0);
-        for (int k=0; k < n_species; k++) {
+                for (int k=0; k < n_active_species; k++) {
                     if(refBK1Data[k+1] > 1e-15) {
                         errInf = fmax(abs((rates[k*n_states+0] - refBK1Data[k+1])/refBK1Data[k+1]), errInf);
                     }
@@ -245,7 +246,6 @@ int main(int argc, char **argv) {
                     auto species_molar_mass = molar_mass_species;
                     double molar_rate = mass_production_rate / (rcp_mass_rate * species_molar_mass[k]);
                     printf("%.15e", molar_rate);
-                    auto n_active_species = n_species; // FIXME
                     if (k<n_active_species-1) { cout<<' '; }
                 }
                 const int passed = (errInf < rtol);

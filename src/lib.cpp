@@ -51,6 +51,7 @@ namespace {
     MPI_Comm comm;
     int initialized = 0;
 
+        uint number_of_active_species = -1;
         std::vector<std::string> species_names;
 };
 
@@ -200,7 +201,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
         vector<string> lines = split(read(mechanism_code_file_path),"\n");
         if (lines.size() < 2) { cerr<<"Invalid mechanism code file:"<<mechanism_code_file_path; abort(); }
         //assert(is_number(lines[0].substr(2)));
-        //number_of_active_species = stoi(lines[0].substr(2));
+        ::number_of_active_species = stoi(lines[0].substr(2));
         species_names = split(lines[1].substr(2)," ");
 }
 
@@ -305,4 +306,10 @@ void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occ
 const std::vector<std::string> nekRK::species_names()
 {
     return ::species_names;
+}
+
+uint nekRK::number_of_active_species()
+{
+    assert(::number_of_active_species != UINT_MAX);
+    return ::number_of_active_species;
 }

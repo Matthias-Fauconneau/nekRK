@@ -44,6 +44,6 @@ cantera_transport = conductivity, viscosity, *diffusion
 
 error = lambda a,b: abs(a-b)/abs(b) if min(abs(a),abs(b)) > 0 else 0 #min(abs(a),abs(b))
 
-print(f"{'':6}: {'NekRK':8} {'Cantera':8} abs rel")
+print(f"{'':6}: {'NekRK':8} {'Cantera':8} {'abs':6} rel")
 print('\n'.join([f'{name:6}: {a/1e6:+8.2f} {b/1e6:+8.2f} {abs(a-b)/1e6:.0e} {error(a,b):.0e} ' for (name, a, b) in zip(species, rates, cantera) if a != 0 and b != 0]))
 print('\n'.join([f'{name:6}: {a:.2e} {b:.2e} {abs(a-b):.0e} {error(a,b):.0e}' for (name, a, b) in zip(['λ','μ']+species, nekRK_transport, cantera_transport) if a != 0 and b != 0]))
