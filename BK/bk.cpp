@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
     int n_states;
     int mode = 0;
     int blockSize = 512;
-    int nRep = 1000; 
+    int nRep = 1; 
     int fp32 = 0;
     int ci = 0;
     int deviceId = 0;
@@ -114,9 +114,9 @@ int main(int argc, char **argv) {
         sprintf(deviceConfig, "{mode: 'CUDA', device_id: %d}",deviceId);
     }else if(strstr(threadModel.c_str(),  "HIP")) {
         sprintf(deviceConfig, "{mode: 'HIP', device_id: %d}",deviceId);
-    }else if(strstr(threadModel.c_str(),  "OPENCL")) {
+    }else if(strstr(threadModel.c_str(),  "OpenCL")) {
         sprintf(deviceConfig, "{mode: 'OpenCL', device_id: %d, platform_id: %d}", deviceId, platformId);
-    }else if(strstr(threadModel.c_str(),  "OPENMP")) {
+    }else if(strstr(threadModel.c_str(),  "OpenMP")) {
         sprintf(deviceConfig, "{mode: 'OpenMP'}");
     }else {
         sprintf(deviceConfig, "{mode: 'Serial'}");

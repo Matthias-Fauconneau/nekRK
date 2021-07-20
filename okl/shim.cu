@@ -1,6 +1,6 @@
 #define __FG_NSPECIES__ n_species
 
-void fg_rates(const dfloat concentrations[], const dfloat tc[], dfloat* molar_rates) {
+__FG_DEVICE__ void fg_rates(const dfloat concentrations[], const dfloat tc[], dfloat* molar_rates) {
     const dfloat log_T = tc[0];
     const dfloat T = tc[1];
     const dfloat T2 = tc[2];
@@ -18,7 +18,7 @@ void fg_rates(const dfloat concentrations[], const dfloat tc[], dfloat* molar_ra
     rates(log_T,T,T2,T4,rcp_T,rcp_T2, C0,rcp_C0, exp_Gibbs0_RT, concentrations, /*->*/ molar_rates);
 }
 
-void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat tc[]) {
+__FG_DEVICE__ void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat tc[]) {
     const dfloat log_T = tc[0];
     const dfloat T = tc[1];
     const dfloat T2 = tc[2];
@@ -28,7 +28,7 @@ void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat tc[]) {
     fg_enthalpy_RT(log_T, T, T2, T3, T4, rcp_T, /*->*/ _);
 }
 
-dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat mole_fractions[]) {
+__FG_DEVICE__ dfloat fg_mean_specific_heat_at_CP_R(dfloat T, const dfloat mole_fractions[]) {
     const dfloat log_T = log2(T);
     const dfloat T2 = T*T;
     const dfloat T3 = T*T2;

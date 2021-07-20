@@ -1,12 +1,13 @@
 //8
 //H2 O2 H2O H O OH HO2 H2O2 N2
 //0.002016 0.031998 0.018015 0.001008 0.015999 0.017006999999999998 0.033006 0.034013999999999996 0.028014
-float sq(float x) { return x*x; }
+#ifdef __FG_ENABLE__
+dfloat sq(dfloat x) { return x*x; }
 #define n_species 9
 #define n_active_species 8
-const float fg_molar_mass[9] = {0.002016, 0.031998, 0.018015, 0.001008, 0.015999, 0.017006999999999998, 0.033006, 0.034013999999999996, 0.028014};
-const float fg_rcp_molar_mass[9] = {496.031746031746, 31.251953247077942, 55.50929780738274, 992.063492063492, 62.503906494155885, 58.79931792791204, 30.297521662727988, 29.39965896395602, 35.69643749553794};
-void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {
+__FG_CONST__ dfloat fg_molar_mass[9] = {0.002016, 0.031998, 0.018015, 0.001008, 0.015999, 0.017006999999999998, 0.033006, 0.034013999999999996, 0.028014};
+__FG_CONST__ dfloat fg_rcp_molar_mass[9] = {496.031746031746, 31.251953247077942, 55.50929780738274, 992.063492063492, 62.503906494155885, 58.79931792791204, 30.297521662727988, 29.39965896395602, 35.69643749553794};
+__FG_DEVICE__ void fg_molar_heat_capacity_at_constant_pressure_R(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* _) {
  if (T <= 1000.0) {
     _[0] = 3.29812431 + 0.000824944174 * T - 8.14301529e-07 * T_2 - 9.47543433e-11 * T_3 + 4.13487224e-13 * T_4;
     _[1] = 3.2129364 + 0.00112748635 * T - 5.75615047e-07 * T_2 + 1.31387723e-09 * T_3 - 8.76855392e-13 * T_4;
@@ -29,7 +30,7 @@ void fg_molar_heat_capacity_at_constant_pressure_R(const float log_T, const floa
     _[8] = 2.92664 + 0.001487977 * T - 5.684761e-07 * T_2 + 1.009704e-10 * T_3 - 6.753351e-15 * T_4;
  }
 }
-void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {
+__FG_DEVICE__ void fg_enthalpy_RT(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* _) {
  if (T <= 1000.0) {
     _[0] = 3.29812431 + 0.000412472087 * T - 2.71433843e-07 * T_2 - 2.3688585825e-11 * T_3 + 8.26974448e-14 * T_4 - 1012.52087 * rcp_T;
     _[1] = 3.2129364 + 0.000563743175 * T - 1.9187168233333332e-07 * T_2 + 3.284693075e-10 * T_3 - 1.753710784e-13 * T_4 - 1005.24902 * rcp_T;
@@ -50,7 +51,7 @@ void fg_enthalpy_RT(const float log_T, const float T, const float T_2, const flo
     _[7] = 4.57316685 + 0.002168068195 * T - 4.9156294e-07 * T_2 + 5.872258925e-11 * T_3 - 2.86330712e-15 * T_4 - 18006.9609 * rcp_T;
  }
 }
-void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const float T_3, const float T_4, const float rcp_T, float* _) {
+__FG_DEVICE__ void fg_exp_Gibbs_RT(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_3, const dfloat T_4, const dfloat rcp_T, dfloat* _) {
  if (T <= 1000.0) {
     _[0] = exp2(-1460.7588379455788 * rcp_T + 9.510560794136978 - 3.29812431 * log_T - 0.0005950714344200211 * T + 1.9579812961276678e-07 * T_2 + 1.1391801765133363e-11 * T_3 - 2.9826798376787193e-14 * T_4);
     _[1] = exp2(-1450.2677760124905 * rcp_T - 4.070998583187576 - 3.2129364 * log_T - 0.000813309482907499 * T + 1.3840616229466128e-07 * T_2 - 1.579603470048273e-10 * T_3 + 6.325174628075739e-14 * T_4);
@@ -72,25 +73,25 @@ void fg_exp_Gibbs_RT(const float log_T, const float T, const float T_2, const fl
  }
 }
 #if CFG_FEATURE_TRANSPORT
-float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float X[]) {
-    float sqrt_viscosity_T14_0 = 0.0002591877549794628 + 0.00012525491303034725*ln_T - 1.1247429949631285e-05*ln_T_2 + 6.10197004145455e-07*ln_T_3;
-    float sqrt_viscosity_T14_1 = -0.002019539772550241 + 0.001165245415265751*ln_T - 0.00014687058756641732*ln_T_2 + 6.704048980736697e-06*ln_T_3;
-    float sqrt_viscosity_T14_2 = 0.005215111783988409 - 0.002417471513728684*ln_T + 0.000401695114640695*ln_T_2 - 2.006259219812297e-05*ln_T_3;
-    float sqrt_viscosity_T14_3 = -0.0022325762161339428 + 0.0011242523413311286*ln_T - 0.00014185928082179554*ln_T_2 + 6.339603148658646e-06*ln_T_3;
-    float sqrt_viscosity_T14_4 = -0.0010868912885894073 + 0.0008286730454368922*ln_T - 0.00010227967610174851*ln_T_2 + 4.776662053650597e-06*ln_T_3;
-    float sqrt_viscosity_T14_5 = -0.001103620670851278 + 0.0008414279440119821*ln_T - 0.00010385396031690474*ln_T_2 + 4.8501842230473625e-06*ln_T_3;
-    float sqrt_viscosity_T14_6 = -0.0020352601339010245 + 0.0011743158377647564*ln_T - 0.00014801384740202247*ln_T_2 + 6.75623417358289e-06*ln_T_3;
-    float sqrt_viscosity_T14_7 = -0.0020506244387054006 + 0.00118318082075502*ln_T - 0.0001491312131032696*ln_T_2 + 6.807237403805444e-06*ln_T_3;
-    float sqrt_viscosity_T14_8 = -0.0015449284268799171 + 0.0009539307673416461*ln_T - 0.00011971766815521921*ln_T_2 + 5.502839523020781e-06*ln_T_3;
-    float rcp_sqrt_viscosity_T14_0 = 1./sqrt_viscosity_T14_0;
-    float rcp_sqrt_viscosity_T14_1 = 1./sqrt_viscosity_T14_1;
-    float rcp_sqrt_viscosity_T14_2 = 1./sqrt_viscosity_T14_2;
-    float rcp_sqrt_viscosity_T14_3 = 1./sqrt_viscosity_T14_3;
-    float rcp_sqrt_viscosity_T14_4 = 1./sqrt_viscosity_T14_4;
-    float rcp_sqrt_viscosity_T14_5 = 1./sqrt_viscosity_T14_5;
-    float rcp_sqrt_viscosity_T14_6 = 1./sqrt_viscosity_T14_6;
-    float rcp_sqrt_viscosity_T14_7 = 1./sqrt_viscosity_T14_7;
-    float rcp_sqrt_viscosity_T14_8 = 1./sqrt_viscosity_T14_8;
+__FG_DEVICE__ dfloat fg_viscosity_T_12(dfloat ln_T, dfloat ln_T_2, dfloat ln_T_3, const dfloat X[]) {
+    dfloat sqrt_viscosity_T14_0 = 0.0002591877549794628 + 0.00012525491303034725*ln_T - 1.1247429949631285e-05*ln_T_2 + 6.10197004145455e-07*ln_T_3;
+    dfloat sqrt_viscosity_T14_1 = -0.002019539772550241 + 0.001165245415265751*ln_T - 0.00014687058756641732*ln_T_2 + 6.704048980736697e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_2 = 0.005215111783988409 - 0.002417471513728684*ln_T + 0.000401695114640695*ln_T_2 - 2.006259219812297e-05*ln_T_3;
+    dfloat sqrt_viscosity_T14_3 = -0.0022325762161339428 + 0.0011242523413311286*ln_T - 0.00014185928082179554*ln_T_2 + 6.339603148658646e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_4 = -0.0010868912885894073 + 0.0008286730454368922*ln_T - 0.00010227967610174851*ln_T_2 + 4.776662053650597e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_5 = -0.001103620670851278 + 0.0008414279440119821*ln_T - 0.00010385396031690474*ln_T_2 + 4.8501842230473625e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_6 = -0.0020352601339010245 + 0.0011743158377647564*ln_T - 0.00014801384740202247*ln_T_2 + 6.75623417358289e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_7 = -0.0020506244387054006 + 0.00118318082075502*ln_T - 0.0001491312131032696*ln_T_2 + 6.807237403805444e-06*ln_T_3;
+    dfloat sqrt_viscosity_T14_8 = -0.0015449284268799171 + 0.0009539307673416461*ln_T - 0.00011971766815521921*ln_T_2 + 5.502839523020781e-06*ln_T_3;
+    dfloat rcp_sqrt_viscosity_T14_0 = 1./sqrt_viscosity_T14_0;
+    dfloat rcp_sqrt_viscosity_T14_1 = 1./sqrt_viscosity_T14_1;
+    dfloat rcp_sqrt_viscosity_T14_2 = 1./sqrt_viscosity_T14_2;
+    dfloat rcp_sqrt_viscosity_T14_3 = 1./sqrt_viscosity_T14_3;
+    dfloat rcp_sqrt_viscosity_T14_4 = 1./sqrt_viscosity_T14_4;
+    dfloat rcp_sqrt_viscosity_T14_5 = 1./sqrt_viscosity_T14_5;
+    dfloat rcp_sqrt_viscosity_T14_6 = 1./sqrt_viscosity_T14_6;
+    dfloat rcp_sqrt_viscosity_T14_7 = 1./sqrt_viscosity_T14_7;
+    dfloat rcp_sqrt_viscosity_T14_8 = 1./sqrt_viscosity_T14_8;
  return
     X[0] * sq(sqrt_viscosity_T14_0) / (
         X[0] * sq(0.49999999999999994 + 0.49999999999999994 * sqrt_viscosity_T14_0 * rcp_sqrt_viscosity_T14_0)+
@@ -193,16 +194,16 @@ float fg_viscosity_T_12(float ln_T, float ln_T_2, float ln_T_3, const float X[])
     );
 }
 
-float fg_thermal_conductivity_T_12_2(float ln_T, float ln_T_2, float ln_T_3, const float X[]) {
-    float conductivity_T12_0 = -0.05078528684759092 + 0.030440672076290077*ln_T - 0.0052649830678236555*ln_T_2 + 0.0003196499960176637*ln_T_3;
-    float conductivity_T12_1 = -0.00037968254622505775 - 3.5107925477191344e-07*ln_T + 6.835229522089638e-05*ln_T_2 - 1.7069797809680164e-06*ln_T_3;
-    float conductivity_T12_2 = 0.025588031605349913 - 0.009629850139035522*ln_T + 0.001012640167241327*ln_T_2 - 1.1210460217146736e-05*ln_T_3;
-    float conductivity_T12_3 = -0.11252693469433128 + 0.048627655008517026*ln_T - 0.006136727715523753*ln_T_2 + 0.000279110538298003*ln_T_3;
-    float conductivity_T12_4 = -0.004238388492341393 + 0.0027085348266534604*ln_T - 0.00036858033982275676*ln_T_2 + 1.998400603104473e-05*ln_T_3;
-    float conductivity_T12_5 = 0.01619100471994343 - 0.004963158540512301*ln_T + 0.0005127450787183543*ln_T_2 - 5.985744863878566e-06*ln_T_3;
-    float conductivity_T12_6 = 0.0037979505776288796 - 0.0019541061203881683*ln_T + 0.00033398394247268046*ln_T_2 - 9.805287029150764e-06*ln_T_3;
-    float conductivity_T12_7 = 0.018256348641422917 - 0.009193832357864352*ln_T + 0.0015151920030168154*ln_T_2 - 6.987942251784046e-05*ln_T_3;
-    float conductivity_T12_8 = 0.020625022721904657 - 0.009037069887154633*ln_T + 0.0013572858619093752*ln_T_2 - 6.308280594514888e-05*ln_T_3;
+__FG_DEVICE__ dfloat fg_thermal_conductivity_T_12_2(dfloat ln_T, dfloat ln_T_2, dfloat ln_T_3, const dfloat X[]) {
+    dfloat conductivity_T12_0 = -0.05078528684759092 + 0.030440672076290077*ln_T - 0.0052649830678236555*ln_T_2 + 0.0003196499960176637*ln_T_3;
+    dfloat conductivity_T12_1 = -0.00037968254622505775 - 3.5107925477191344e-07*ln_T + 6.835229522089638e-05*ln_T_2 - 1.7069797809680164e-06*ln_T_3;
+    dfloat conductivity_T12_2 = 0.025588031605349913 - 0.009629850139035522*ln_T + 0.001012640167241327*ln_T_2 - 1.1210460217146736e-05*ln_T_3;
+    dfloat conductivity_T12_3 = -0.11252693469433128 + 0.048627655008517026*ln_T - 0.006136727715523753*ln_T_2 + 0.000279110538298003*ln_T_3;
+    dfloat conductivity_T12_4 = -0.004238388492341393 + 0.0027085348266534604*ln_T - 0.00036858033982275676*ln_T_2 + 1.998400603104473e-05*ln_T_3;
+    dfloat conductivity_T12_5 = 0.01619100471994343 - 0.004963158540512301*ln_T + 0.0005127450787183543*ln_T_2 - 5.985744863878566e-06*ln_T_3;
+    dfloat conductivity_T12_6 = 0.0037979505776288796 - 0.0019541061203881683*ln_T + 0.00033398394247268046*ln_T_2 - 9.805287029150764e-06*ln_T_3;
+    dfloat conductivity_T12_7 = 0.018256348641422917 - 0.009193832357864352*ln_T + 0.0015151920030168154*ln_T_2 - 6.987942251784046e-05*ln_T_3;
+    dfloat conductivity_T12_8 = 0.020625022721904657 - 0.009037069887154633*ln_T + 0.0013572858619093752*ln_T_2 - 6.308280594514888e-05*ln_T_3;
  return (
     X[0]*conductivity_T12_0 + X[1]*conductivity_T12_1 + X[2]*conductivity_T12_2 + X[3]*conductivity_T12_3 + X[4]*conductivity_T12_4 + X[5]*conductivity_T12_5 + X[6]*conductivity_T12_6 + X[7]*conductivity_T12_7 + X[8]*conductivity_T12_8
  ) + 1./ (
@@ -210,7 +211,7 @@ float fg_thermal_conductivity_T_12_2(float ln_T, float ln_T_2, float ln_T_3, con
  );
 }
 
-void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln_T_3, const float X[], const float mass_fractions[], float* _) {
+__FG_DEVICE__ void fg_P_T_32_mixture_diffusion_coefficients(dfloat ln_T, dfloat ln_T_2, dfloat ln_T_3, const dfloat X[], const dfloat mass_fractions[], dfloat* _) {
  _[0] = (1. - mass_fractions[0]) / (
     X[1] / (-0.0027634242471602137 + 0.0014970127373923321*ln_T - 0.00018183505639942022*ln_T_2 + 9.247271186698533e-06*ln_T_3)+
     X[2] / (-0.009294293018406995 + 0.003983545752115762*ln_T - 0.00048550768359406675*ln_T_2 + 2.19994800888846e-05*ln_T_3)+
@@ -294,130 +295,224 @@ void fg_P_T_32_mixture_diffusion_coefficients(float ln_T, float ln_T_2, float ln
     X[7] / (-0.0014840480595479473 + 0.0006836430065661665*ln_T - 8.478291111095687e-05*ln_T_2 + 4.010999449470027e-06*ln_T_3));
 }
 #endif
-void fg_rates(const float log_T, const float T, const float T_2, const float T_4, const float rcp_T, const float rcp_T2, const float C0, const float rcp_C0, const float eG[], const float C[], float* rates) {
- float kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1;
+__FG_DEVICE__ void rates(const dfloat log_T, const dfloat T, const dfloat T_2, const dfloat T_4, const dfloat rcp_T, const dfloat rcp_T2, const dfloat C0, const dfloat rcp_C0, const dfloat eG[], const dfloat C[], dfloat* rates) {
+ dfloat kf, C_k0, k_inf, Pr, logFcent, logPr_c, f1, cR;
+    rates[0] = 0;
+    rates[1] = 0;
+    rates[2] = 0;
+    rates[3] = 0;
+    rates[4] = 0;
+    rates[5] = 0;
+    rates[6] = 0;
+    rates[7] = 0;
+    dfloat mixture_efficiency = C[0]+C[1]+C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8];
     //0: H + O2 <=> O + OH
     kf = exp2(-12050.746610262851 * rcp_T - 0.406 * log_T + 31.723952184259364);
     //printf("0: %f\n", kf);
-    const float cR0 = kf * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
-
+    cR = kf * (C[1]*C[3] - eG[4]*eG[5]/(eG[1]*eG[3]) * C[4]*C[5]);
+    rates[1] += -cR;
+    rates[3] += -cR;
+    rates[4] += cR;
+    rates[5] += cR;
     //1: O + H2 <=> H + OH
     kf = exp2(-4566.491727125329 * rcp_T + 2.67 * log_T - 4.299027692777283);
     //printf("1: %f\n", kf);
-    const float cR1 = kf * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
-
+    cR = kf * (C[0]*C[4] - eG[3]*eG[5]/(eG[0]*eG[4]) * C[3]*C[5]);
+    rates[0] += -cR;
+    rates[3] += cR;
+    rates[4] += -cR;
+    rates[5] += cR;
     //2: H2 + OH <=> H2O + H
     kf = exp2(-2490.1536763179456 * rcp_T + 1.51 * log_T + 7.754887502163468);
     //printf("2: %f\n", kf);
-    const float cR2 = kf * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
-
+    cR = kf * (C[0]*C[5] - eG[2]*eG[3]/(eG[0]*eG[5]) * C[2]*C[3]);
+    rates[0] += -cR;
+    rates[2] += cR;
+    rates[3] += cR;
+    rates[5] += -cR;
     //3: O + H2O <=> OH + OH
     kf = exp2(-9728.297161125503 * rcp_T + 2.02 * log_T + 1.570462931026041);
     //printf("3: %f\n", kf);
-    const float cR3 = kf * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
-
+    cR = kf * (C[2]*C[4] - eG[5]*eG[5]/(eG[2]*eG[4]) * C[5]*C[5]);
+    rates[2] += -cR;
+    rates[4] += -cR;
+    rates[5] += 2*cR;
     //4: H2 + M <=> H + H + M
-    kf = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    kf = exp2(-75779.07893121493 * rcp_T - 1.4 * log_T + 45.37946752547428) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("4: %f\n", kf);
-    const float cR4 = kf * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
-
+    cR = kf * (C[0] - eG[3]*eG[3]/(eG[0])* rcp_C0 * C[3]*C[3]);
+    rates[0] += -cR;
+    rates[3] += 2*cR;
     //5: O + O + M <=> O2 + M
-    kf = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    kf = exp2(-0.0 * rcp_T - 0.5 * log_T + 12.589885179290201) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("5: %f\n", kf);
-    const float cR5 = kf * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
-
+    cR = kf * (C[4]*C[4] - eG[1]/(eG[4]*eG[4])* C0 * C[1]);
+    rates[1] += cR;
+    rates[4] += -2*cR;
     //6: O + H + M <=> OH + M
-    kf = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    kf = exp2(-0.0 * rcp_T - 1.0 * log_T + 22.168520327912255) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("6: %f\n", kf);
-    const float cR6 = kf * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
-
+    cR = kf * (C[3]*C[4] - eG[5]/(eG[3]*eG[4])* C0 * C[5]);
+    rates[3] += -cR;
+    rates[4] += -cR;
+    rates[5] += cR;
     //7: H + OH + M <=> H2O + M
-    kf = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]);
+    kf = exp2(-0.0 * rcp_T - 2.0 * log_T + 35.14528036742985) * (mixture_efficiency+1.5*C[0]+11.0*C[2]);
     //printf("7: %f\n", kf);
-    const float cR7 = kf * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
-
+    cR = kf * (C[3]*C[5] - eG[2]/(eG[3]*eG[5])* C0 * C[2]);
+    rates[2] += cR;
+    rates[3] += -cR;
+    rates[5] += -cR;
     //8: H + O2 (+M) <=> HO2 (+M)
     k_inf = exp2(-0.0 * rcp_T + 0.6 * log_T + 20.492283523798655);
-            Pr = exp2(-381.0007723999002 * rcp_T - 1.72 * log_T + 29.245811916072732) * (2.0*C[0]+0.78*C[1]+11.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
+            Pr = exp2(-381.0007723999002 * rcp_T - 1.72 * log_T + 29.245811916072732) * (mixture_efficiency+1.0*C[0]-0.21999999999999997*C[1]+10.0*C[2]) / k_inf;
             logFcent = log2(0.19999999999999996 * exp2(-1.4426950408889633e+30*T) + 0.8 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     //printf("8: %f\n", kf);
-    const float cR8 = kf * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
-
+    cR = kf * (C[1]*C[3] - eG[6]/(eG[1]*eG[3])* C0 * C[6]);
+    rates[1] += -cR;
+    rates[3] += -cR;
+    rates[6] += cR;
     //9: HO2 + H <=> H2 + O2
     kf = exp2(-597.4916838512156 * rcp_T + 0.0 * log_T + 23.984679905783736);
     //printf("9: %f\n", kf);
-    const float cR9 = kf * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
-
+    cR = kf * (C[3]*C[6] - eG[0]*eG[1]/(eG[3]*eG[6]) * C[0]*C[1]);
+    rates[0] += cR;
+    rates[1] += cR;
+    rates[3] += -cR;
+    rates[6] += -cR;
     //10: HO2 + H <=> OH + OH
     kf = exp2(-214.16773600985246 * rcp_T + 0.0 * log_T + 26.07704223964188);
     //printf("10: %f\n", kf);
-    const float cR10 = kf * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
-
+    cR = kf * (C[3]*C[6] - eG[5]*eG[5]/(eG[3]*eG[6]) * C[5]*C[5]);
+    rates[3] += -cR;
+    rates[5] += 2*cR;
+    rates[6] += -cR;
     //11: HO2 + O <=> O2 + OH
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 24.95393638235263);
     //printf("11: %f\n", kf);
-    const float cR11 = kf * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
-
+    cR = kf * (C[4]*C[6] - eG[1]*eG[5]/(eG[4]*eG[6]) * C[1]*C[5]);
+    rates[1] += cR;
+    rates[4] += -cR;
+    rates[5] += cR;
+    rates[6] += -cR;
     //12: HO2 + OH <=> H2O + O2
     kf = exp2(360.8181857521921 * rcp_T + 0.0 * log_T + 24.78456615693749);
     //printf("12: %f\n", kf);
-    const float cR12 = kf * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
-
+    cR = kf * (C[5]*C[6] - eG[1]*eG[2]/(eG[5]*eG[6]) * C[1]*C[2]);
+    rates[1] += cR;
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += -cR;
     //13: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(-8698.840043627297 * rcp_T + 0.0 * log_T + 28.645814086990296);
     //printf("13: %f\n", kf);
-    const float cR13 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-
+    cR = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
+    rates[1] += cR;
+    rates[6] += -2*cR;
+    rates[7] += cR;
     //14: HO2 + HO2 <=> H2O2 + O2
     kf = exp2(1182.859295867297 * rcp_T + 0.0 * log_T + 16.98815209769054);
     //printf("14: %f\n", kf);
-    const float cR14 = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
-
+    cR = kf * (C[6]*C[6] - eG[1]*eG[7]/(eG[6]*eG[6]) * C[1]*C[7]);
+    rates[1] += cR;
+    rates[6] += -2*cR;
+    rates[7] += cR;
     //15: H2O2 (+M) <=> OH + OH (+M)
     k_inf = exp2(-35159.80832188866 * rcp_T + 0.0 * log_T + 48.06819724919299);
-            Pr = exp2(-33032.65080829928 * rcp_T + 0.0 * log_T + 36.80664593981008) * (2.5*C[0]+C[1]+12.0*C[2]+C[3]+C[4]+C[5]+C[6]+C[7]+C[8]) / k_inf;
+            Pr = exp2(-33032.65080829928 * rcp_T + 0.0 * log_T + 36.80664593981008) * (mixture_efficiency+1.5*C[0]+11.0*C[2]) / k_inf;
             logFcent = log2(0.5 * exp2(-1.4426950408889633e+30*T) + 0.5 * exp2(-1.4426950408889633e-30*T) );
             logPr_c = log2(Pr) - 0.67*logFcent - 1.328771237954945;
             f1 = logPr_c / (-0.14*logPr_c-1.27*logFcent+2.4914460711655217);
             kf = k_inf * Pr / (Pr + 1.) * exp2(logFcent/(f1*f1+1.));
     //printf("15: %f\n", kf);
-    const float cR15 = kf * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
-
+    cR = kf * (C[7] - eG[5]*eG[5]/(eG[7])* rcp_C0 * C[5]*C[5]);
+    rates[5] += 2*cR;
+    rates[7] += -cR;
     //16: H2O2 + H <=> H2O + OH
     kf = exp2(-2882.189532064794 * rcp_T + 0.0 * log_T + 24.522529810666775);
     //printf("16: %f\n", kf);
-    const float cR16 = kf * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
-
+    cR = kf * (C[3]*C[7] - eG[2]*eG[5]/(eG[3]*eG[7]) * C[2]*C[5]);
+    rates[2] += cR;
+    rates[3] += -cR;
+    rates[5] += cR;
+    rates[7] += -cR;
     //17: H2O2 + H <=> HO2 + H2
     kf = exp2(-5771.63898738416 * rcp_T + 0.0 * log_T + 25.522529810666775);
     //printf("17: %f\n", kf);
-    const float cR17 = kf * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
-
+    cR = kf * (C[3]*C[7] - eG[0]*eG[6]/(eG[3]*eG[7]) * C[0]*C[6]);
+    rates[0] += cR;
+    rates[3] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //18: H2O2 + O <=> OH + HO2
     kf = exp2(-2882.189532064794 * rcp_T + 2.0 * log_T + 3.255500733148386);
     //printf("18: %f\n", kf);
-    const float cR18 = kf * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
-
+    cR = kf * (C[4]*C[7] - eG[5]*eG[6]/(eG[4]*eG[7]) * C[5]*C[6]);
+    rates[4] += -cR;
+    rates[5] += cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //19: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-0.0 * rcp_T + 0.0 * log_T + 19.931568569324174);
     //printf("19: %f\n", kf);
-    const float cR19 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-
+    cR = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
     //20: H2O2 + OH <=> HO2 + H2O
     kf = exp2(-6938.308654393763 * rcp_T + 0.0 * log_T + 29.11147765933911);
     //printf("20: %f\n", kf);
-    const float cR20 = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
-
-    rates[0] = -cR1-cR2-cR4+cR9+cR17;
-    rates[1] = -cR0+cR5-cR8+cR9+cR11+cR12+cR13+cR14;
-    rates[2] = cR2-cR3+cR7+cR12+cR16+cR19+cR20;
-    rates[3] = -cR0+cR1+cR2+2*cR4-cR6-cR7-cR8-cR9-cR10-cR16-cR17;
-    rates[4] = cR0-cR1-cR3-2*cR5-cR6-cR11-cR18;
-    rates[5] = cR0+cR1-cR2+2*cR3+cR6-cR7+2*cR10+cR11-cR12+2*cR15+cR16+cR18-cR19-cR20;
-    rates[6] = cR8-cR9-cR10-cR11-cR12-2*cR13-2*cR14+cR17+cR18+cR19+cR20;
-    rates[7] = cR13+cR14-cR15-cR16-cR17-cR18-cR19-cR20;
+    cR = kf * (C[5]*C[7] - eG[2]*eG[6]/(eG[5]*eG[7]) * C[2]*C[6]);
+    rates[2] += cR;
+    rates[5] += -cR;
+    rates[6] += cR;
+    rates[7] += -cR;
 }
 
+__FG_DEVICE__ void fg_rates(const dfloat concentrations[], const dfloat tc[], dfloat* molar_rates) {
+    const dfloat log_T = tc[0];
+    const dfloat T = tc[1];
+    const dfloat T2 = tc[2];
+    const dfloat T3 = tc[3];
+    const dfloat T4 = tc[4];
+    const dfloat rcp_T = tc[5];
+    const dfloat kB = 1.380649e-23; // J/kelvin
+    const dfloat NA = 6.02214076e23; // /mole
+    const dfloat reference_pressure = 101325. / (kB*NA);
+    const dfloat C0 = reference_pressure * rcp_T;
+    const dfloat rcp_C0 = (1./reference_pressure) * T;
+    dfloat exp_Gibbs0_RT[n_active_species];
+    fg_exp_Gibbs_RT(log_T,T,T2,T3,T4,rcp_T, /*->*/ exp_Gibbs0_RT);
+    const dfloat rcp_T2 = rcp_T*rcp_T;
+    rates(log_T,T,T2,T4,rcp_T,rcp_T2, C0,rcp_C0, exp_Gibbs0_RT, concentrations, /*->*/ molar_rates);
+}
+
+__FG_DEVICE__ void fg_speciesEnthalpy_RT(/*out*/ dfloat* _ /*<-*/, const dfloat tc[]) {
+    const dfloat log_T = tc[0];
+    const dfloat T = tc[1];
+    const dfloat T2 = tc[2];
+    const dfloat T3 = tc[3];
+    const dfloat T4 = tc[4];
+    const dfloat rcp_T = tc[5];
+    fg_enthalpy_RT(log_T, T, T2, T3, T4, rcp_T, /*->*/ _);
+}
+
+__FG_DEVICE__ double fg_mean_specific_heat_at_CP_R(double T, const double mole_fractions[]) {
+    const double log_T = log2(T);
+    const double T2 = T*T;
+    const double T3 = T*T2;
+    const double T4 = T*T3;
+    const double rcp_T = 1./T;
+    dfloat Cp_R[n_species];
+    fg_molar_heat_capacity_at_constant_pressure_R(log_T,T,T2,T3,T4,rcp_T, /*->*/ Cp_R);
+    double sum = 0;
+    for(int k=0; k<n_species; k++) {
+        sum += Cp_R[k] * mole_fractions[k];
+    }
+    return sum;
+}
+#endif

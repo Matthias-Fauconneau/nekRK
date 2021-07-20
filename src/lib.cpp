@@ -69,7 +69,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 
       if(device.mode() == "CUDA") {
         setenv("OCCA_CXXFLAGS", incStatement.c_str(), 1); // required for launcher
-    kernel_properties["compiler_flags"] += " --fmad=true";
+                kernel_properties["compiler_flags"] += " --fmad=true";
         kernel_properties["compiler_flags"] += " -D__FG_DEVICE__=__device__";
         kernel_properties["compiler_flags"] += " -D__FG_CONST__=__constant__";
         kernel_properties["compiler_flags"] += " -D__FG_EXP_APPROX__=expf";
