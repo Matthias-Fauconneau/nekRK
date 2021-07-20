@@ -16,6 +16,8 @@
 #include <nekrk.h>
 #include "refBK1.h"
 
+using namespace std;
+
 int main(int argc, char **argv) {
     MPI_Init(&argc, &argv);
     int rank, size;
@@ -25,10 +27,10 @@ int main(int argc, char **argv) {
     // parse command line options
     int err = 0;
     std::string threadModel;
-    int n_states;
+    int n_states = 1;
     int mode = 0;
-    int blockSize = 512;
-    int nRep = 1;
+    int blockSize = 1;
+    int nRep = 0; // repetitions
     int fp32 = 0;
     int ci = 0;
     int deviceId = 0;
@@ -82,7 +84,7 @@ int main(int argc, char **argv) {
           break;
         case 'i':
           deviceId = std::stoi(optarg);
-      deviceIdFlag = 1;
+                    deviceIdFlag = 1;
           break;
     default:
           err++;
@@ -93,7 +95,7 @@ int main(int argc, char **argv) {
 
     if(err > 0) {
         if(rank == 0)
-          printf("Usage: ./bk --mode 1|2 --backend SERIAL|CUDA|HIP|OPENCL --n-states n "
+                    fprintf(stderr, "Usage: ./bk --mode 1|2 --backend SERIAL|CUDA|HIP|OPENCL --n-states n "
                  "[--repetitions n] [--fp32] [--ci] [--mechanism-name] [--block-size  n] [--device-id  n]\n");
         exit(EXIT_FAILURE);
     }
@@ -127,13 +129,16 @@ int main(int argc, char **argv) {
     device.setup(deviceConfigString);
 
     if(rank == 0) {
-      std::cout << "number of states: " << n_states << '\n';
-      std::cout << "use fp32: " << fp32 << '\n';
-      std::cout << "number of repetitions: " << nRep << '\n';
+      std::cerr << "number of states: " << n_states << '\n';
+      std::cerr << "use fp32: " << fp32 << '\n';
+      std::cerr << "number of repetitions: " << nRep << '\n';
     }
 
     nekRK::init(mech.c_str(), device, {}, blockSize, MPI_COMM_WORLD/*,*/ /*transport*//*mode==2*/);
     const int n_species = nekRK::number_of_species();
+
+        for (int k=0; k<n_species; k++) { cout << nekRK::species_names()[k]; if (k<n_species-1) { cout << ' '; } }
+        cout << '\n';
 
     // setup reference quantities
     double pressure_Pa   = 101325.;
@@ -207,8 +212,8 @@ int main(int argc, char **argv) {
       MPI_Barrier(MPI_COMM_WORLD);
       const auto elapsedTime = MPI_Wtime() - startTime;
       if(rank==0) {
-        printf("avg elapsed time: %.5f s\n", elapsedTime);
-        printf("avg aggregated throughput: %.3f GDOF/s\n",
+                fprintf(stderr, "avg elapsed time: %.5f s\n", elapsedTime);
+                fprintf(stderr, "avg aggregated throughput: %.3f GDOF/s\n",
           (size*(double)(n_states*(n_species+1))*nRep)/elapsedTime/1e9);
       }
 
@@ -227,7 +232,7 @@ int main(int argc, char **argv) {
         errInf = fmax(abs((rates[k*n_states+0] - refBK1Data[k+1])/refBK1Data[k+1]), errInf);
     }
     const int passed = (errInf < rtol);
-    printf("BK1 error_inf: %g (%s)\n", errInf, (passed) ? "passed" : "failed");
+    fprintf(stderr, "BK1 error_inf: %g (%s)\n", errInf, (passed) ? "passed" : "failed");
         if(!passed) (EXIT_FAILURE);
       }
     }

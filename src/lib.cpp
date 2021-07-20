@@ -1,4 +1,27 @@
+#include <vector>
 #include <string>
+using namespace std;
+vector<string> split (string s, string delimiter) {
+    size_t pos_start = 0, pos_end, delim_len = delimiter.length();
+    string token;
+    vector<string> res;
+
+    while ((pos_end = s.find (delimiter, pos_start)) != string::npos) {
+        token = s.substr (pos_start, pos_end - pos_start);
+        pos_start = pos_end + delim_len;
+        res.push_back (token);
+    }
+
+    res.push_back (s.substr (pos_start));
+    return res;
+}
+
+#include <fstream>
+string read(string path) {
+    ifstream input_file(path);
+    return string((istreambuf_iterator<char>(input_file)), istreambuf_iterator<char>());
+}
+
 #include <cassert>
 #include <unistd.h>
 
@@ -26,6 +49,8 @@ namespace {
 
     MPI_Comm comm;
     int initialized = 0;
+
+        std::vector<std::string> species_names;
 };
 
 void set_number_of_species()
@@ -48,7 +73,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
 {
     comm   = _comm;
     device = _device;
-    int group_size = std::max(_group_size,32);
+    int group_size = std::max(_group_size, /*32*/1); // Why ?
 
     const std::string mechFile = std::string(mech) + ".c";
     if(!getenv("NEKRK_PATH")) {
@@ -161,7 +186,7 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     set_molar_mass();
 
     if(rank==0) {
-      std::cout << "nekRK initialized successfully\n"
+      std::cerr << "nekRK initialized successfully\n"
                 << "mechanism file: " << mechFile << '\n'
                 << "nSpecies: "<< n_species << '\n'
                 << "active occa mode: " << device.mode() << '\n'
@@ -169,6 +194,13 @@ void setup(const char* mech, occa::device _device, occa::properties kernel_prope
     }
 
     initialized = 1;
+
+        auto mechanism_code_file_path = mechFile;
+        vector<string> lines = split(read(mechanism_code_file_path),"\n");
+        assert(lines.size() > 2);
+        //assert(is_number(lines[0].substr(2)));
+        //number_of_active_species = stoi(lines[0].substr(2));
+        species_names = split(lines[1].substr(2)," ");
 }
 
 #include "nekrk.h"
@@ -267,4 +299,9 @@ void nekRK::transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occ
         rho_Di,
         reference_temperature
     );
+}
+
+const std::vector<std::string> nekRK::species_names()
+{
+    return ::species_names;
 }

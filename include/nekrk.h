@@ -42,6 +42,8 @@ namespace nekRK {
     );
 
         void transportCoeffs(int nStates, double pressure_Pa, occa::memory T, occa::memory Yi, occa::memory mue, occa::memory lambda, occa::memory rho_Di, const double reference_temperature);
+
+        const std::vector<std::string> species_names();
 }
 
 #endif
