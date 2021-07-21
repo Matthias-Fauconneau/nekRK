@@ -39,7 +39,6 @@ namespace {
     occa::kernel production_rates_kernel;
     occa::kernel transportCoeffs_kernel;
     occa::kernel number_of_species_kernel;
-    occa::kernel number_of_active_species_kernel;
     occa::kernel mean_specific_heat_at_CP_R_kernel;
     occa::kernel molar_mass_kernel;
 
@@ -51,7 +50,7 @@ namespace {
     double reference_energy_rate;
 
     std::vector<std::string> species_names;
-    int number_of_active_species = -1;
+    std::optional<uint> number_of_active_species;
     std::vector<double> species_molar_mass;
 
     MPI_Comm comm;
@@ -193,7 +192,7 @@ int nekRK::number_of_species()
     return ::species_names.size();
 }
 
-int nekRK::number_of_active_species()
+uint nekRK::number_of_active_species()
 {
     assert(::number_of_active_species != ~0);
     return ::number_of_active_species;

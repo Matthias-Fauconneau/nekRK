@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
     auto elapsedTime = MPI_Wtime() - startTime;
     if(rank==0 && nRep>0) {
         assert(size==1);
-        fprintf(stderr,"%d: %.0fK in %fms = %.0fns, %.2f M/s\n", blockSize, n_states/1e3, elapsedTime*1e3, elapsedTime/double(n_states)*1e9, (size*(double)(n_states))*nRep/elapsedTime/1e6); //*(n_species+1
+        fprintf(stderr,"MF:%d:%dKx%.0fK=%.2f M/s (%.0fs)\n", blockSize, nRep/1e3, n_states/1e3, (size*double(n_states))*nRep/elapsedTime/1e6, elapsedTime); //*(n_species+1
     }
 
     // get results from device
